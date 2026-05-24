@@ -460,6 +460,20 @@ def seed_database_if_empty(db: Session):
         db.commit()
         db.refresh(researcher_user)
 
+    # Ensure admin exists
+    admin_user = db.query(models.User).filter(models.User.username == "admin").first()
+    if not admin_user:
+        admin_user = models.User(
+            username="admin",
+            hashed_password=get_password_hash("adminpass"),
+            farm_name="시스템 총괄 관리자",
+            role="admin"
+        )
+        db.add(admin_user)
+        db.commit()
+        db.refresh(admin_user)
+
+
     # Seed relational data if apiaries are empty
     if db.query(models.Apiary).count() > 0:
         return

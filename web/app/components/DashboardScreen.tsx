@@ -8,8 +8,9 @@ import ColonyPanel from "./ColonyPanel";
 import RecordPanel from "./RecordPanel";
 import ResearcherPanel from "./ResearcherPanel";
 import ManualPanel from "./ManualPanel";
+import AdminPanel from "./AdminPanel";
 
-type DashView = "overview" | "apiaries" | "colonies" | "records" | "researcher" | "manual";
+type DashView = "overview" | "apiaries" | "colonies" | "records" | "researcher" | "manual" | "admin";
 
 interface DashboardScreenProps {
   user: User;
@@ -73,6 +74,10 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
 
   if (user.role === "researcher" || user.role === "admin") {
     navItems.push({ key: "researcher", label: "연구원 분석", icon: "🔬" });
+  }
+
+  if (user.role === "admin") {
+    navItems.push({ key: "admin", label: "시스템 관리", icon: "⚙️" });
   }
 
   // Always show guidebook manual to all users
@@ -333,6 +338,9 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
           )}
           {view === "researcher" && (
             <ResearcherPanel />
+          )}
+          {view === "admin" && (
+            <AdminPanel />
           )}
           {view === "manual" && (
             <ManualPanel />

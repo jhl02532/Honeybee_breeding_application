@@ -14,12 +14,18 @@ router = APIRouter(
 @router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     """회원 가입 - 유저 생성 후 JWT 토큰 발급"""
+    if user.role == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="관리자 역할로는 가입할 수 없습니다."
+        )
     existing = crud.get_user_by_username(db, username=user.username)
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="이미 사용 중인 아이디입니다")
     db_user = crud.create_user(db=db, user=user)
     token = create_access_token(data={"sub": db_user.id})
     return {"access_token": token, "token_type": "bearer", "user": db_user}
+
 
 
 @router.post("/login", response_model=schemas.Token)

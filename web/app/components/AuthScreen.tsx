@@ -8,6 +8,7 @@ interface AuthScreenProps {
 }
 
 export default function AuthScreen({ onAuth }: AuthScreenProps) {
+  const [isAdminMode, setIsAdminMode] = useState(false);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -37,9 +38,10 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
     setError("");
     setBusy(true);
     try {
-      const path = mode === "login" ? "/api/v1/auth/login/json" : "/api/v1/auth/register";
+      const path = (isAdminMode || mode === "login") ? "/api/v1/auth/login/json" : "/api/v1/auth/register";
       const body: any = { username, password };
-      if (mode === "register") {
+      
+      if (!isAdminMode && mode === "register") {
         body.farm_name = farmName || null;
         body.role = role;
         if (role === "farmer") {
@@ -50,6 +52,7 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
           body.queen_types = [];
         }
       }
+      
       const res = await fetch(`${BASE}${path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,6 +60,12 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "인증 실패");
+      
+      // Strict role verification if Logging in as Admin
+      if (isAdminMode && data.user.role !== "admin") {
+        throw new Error("관리자 권한이 없는 계정입니다.");
+      }
+      
       onAuth(data as Token);
     } catch (err: any) {
       setError(err.message);
@@ -71,35 +80,71 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
       <div style={styles.authBgOrb1} />
       <div style={styles.authBgOrb2} />
 
-      <div style={styles.authCard} className="animate-fade">
+      <div 
+        style={{
+          ...styles.authCard,
+          border: isAdminMode ? "2px solid #fbbf24" : "1px solid rgba(255,255,255,0.08)",
+          boxShadow: isAdminMode ? "0 0 30px rgba(251,191,36,0.15), 0 20px 40px rgba(0,0,0,0.5)" : "0 20px 40px rgba(0,0,0,0.4)"
+        }} 
+        className="animate-fade"
+      >
         {/* Logo area */}
         <div style={styles.authLogoArea}>
-          <div style={styles.authLogo}>🐝</div>
-          <h1 style={styles.authTitle}>MelittaBreed</h1>
-          <p style={styles.authSubtitle}>양봉 육종 기록 관리 시스템</p>
+          <div style={{
+            ...styles.authLogo,
+            background: isAdminMode ? "linear-gradient(135deg, #fbbf24, #d97706)" : "linear-gradient(135deg, #fbbf24, #f59e0b)",
+            transform: isAdminMode ? "scale(1.1)" : "none",
+            transition: "all 0.3s ease"
+          }}>
+            {isAdminMode ? "⚙️" : "🐝"}
+          </div>
+          <h1 style={{
+            ...styles.authTitle,
+            color: isAdminMode ? "#fbbf24" : "#f3f4f6"
+          }}>
+            {isAdminMode ? "MelittaBreed Admin" : "MelittaBreed"}
+          </h1>
+          <p style={styles.authSubtitle}>
+            {isAdminMode ? "SaaS 시스템 통합 관리자 콘솔" : "양봉 육종 기록 관리 시스템"}
+          </p>
         </div>
 
-        {/* Tab switcher */}
-        <div style={styles.tabContainer}>
-          <button
-            style={{
-              ...styles.tab,
-              ...(mode === "login" ? styles.tabActive : {}),
-            }}
-            onClick={() => { setMode("login"); setError(""); }}
-          >
-            로그인
-          </button>
-          <button
-            style={{
-              ...styles.tab,
-              ...(mode === "register" ? styles.tabActive : {}),
-            }}
-            onClick={() => { setMode("register"); setError(""); }}
-          >
-            회원가입
-          </button>
-        </div>
+        {/* Tab switcher (Hidden in Admin Mode since registration is blocked) */}
+        {!isAdminMode ? (
+          <div style={styles.tabContainer}>
+            <button
+              style={{
+                ...styles.tab,
+                ...(mode === "login" ? styles.tabActive : {}),
+              }}
+              onClick={() => { setMode("login"); setError(""); }}
+            >
+              로그인
+            </button>
+            <button
+              style={{
+                ...styles.tab,
+                ...(mode === "register" ? styles.tabActive : {}),
+              }}
+              onClick={() => { setMode("register"); setError(""); }}
+            >
+              회원가입
+            </button>
+          </div>
+        ) : (
+          <div style={{
+            padding: "8px 12px",
+            background: "rgba(251,191,36,0.1)",
+            border: "1px dashed rgba(251,191,36,0.3)",
+            borderRadius: "6px",
+            fontSize: "12px",
+            color: "#fbbf24",
+            textAlign: "center",
+            marginBottom: "20px"
+          }}>
+            🔒 본 계정은 시스템 관리용 고유 보안 계정입니다.
+          </div>
+        )}
 
         <form onSubmit={submit} style={styles.authForm}>
           <div style={styles.inputGroup}>
@@ -110,7 +155,7 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="사용자 아이디 입력"
+              placeholder={isAdminMode ? "관리자 아이디 입력" : "사용자 아이디 입력"}
               required
             />
           </div>
@@ -128,7 +173,7 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
             />
           </div>
 
-          {mode === "register" && (
+          {!isAdminMode && mode === "register" && (
             <>
               <div style={styles.inputGroup} className="animate-fade">
                 <label style={styles.inputLabel}>가입 유형 (역할 선택) *</label>
@@ -244,12 +289,39 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
             type="submit"
             style={{
               ...styles.primaryBtn,
+              background: isAdminMode ? "linear-gradient(135deg, #fbbf24, #d97706)" : styles.primaryBtn.background,
+              color: isAdminMode ? "#000000" : "#ffffff",
+              fontWeight: "bold",
               opacity: busy ? 0.7 : 1,
             }}
             disabled={busy}
           >
-            {busy ? "처리 중..." : mode === "login" ? "로그인" : "가입하기"}
+            {busy ? "처리 중..." : isAdminMode ? "관리자 콘솔 접속" : mode === "login" ? "로그인" : "가입하기"}
           </button>
+
+          {/* Toggle admin login mode */}
+          <div style={{ textAlign: "center", marginTop: "16px" }}>
+            <button
+              type="button"
+              onClick={() => {
+                setIsAdminMode(!isAdminMode);
+                setError("");
+                setUsername("");
+                setPassword("");
+              }}
+              style={{
+                background: "none",
+                border: "none",
+                color: isAdminMode ? "#9ca3af" : "#fbbf24",
+                fontSize: "12px",
+                cursor: "pointer",
+                textDecoration: "underline",
+                transition: "color 0.2s"
+              }}
+            >
+              {isAdminMode ? "◀ 일반 사용자 로그인으로 돌아가기" : "⚙️ 시스템 총괄 관리자 로그인"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

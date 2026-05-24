@@ -7,7 +7,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from .database import engine, Base, get_db
 from . import crud
-from .routers import auth, apiaries, colonies, traits, stats, sync, researcher
+from .routers import auth, apiaries, colonies, traits, stats, sync, researcher, admin
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -69,3 +69,4 @@ app.include_router(traits.router)
 app.include_router(stats.router)
 app.include_router(sync.router)
 app.include_router(researcher.router)
+app.include_router(admin.router)
