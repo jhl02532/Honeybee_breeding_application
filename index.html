@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MelittaBreed - 꿀벌 스마트 육종 및 형질기록 플랫폼</title>
+  <meta name="description" content="양봉가 및 꿀벌 연구원을 위한 스마트 육종 데이터 기록 및 유전체 정보 연계 플랫폼">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐝</text></svg>">
+  <link rel="stylesheet" href="src/style.css">
+  <!-- Load Lucide Icons Locally for 100% Offline Synology Compatibility -->
+  <script src="src/lucide.min.js"></script>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Left Navigation Sidebar -->
+    <aside class="sidebar">
+      <div class="brand-section">
+        <div class="brand-icon-wrapper">
+          <i data-lucide="activity" class="nav-icon" style="color: var(--primary); width:24px; height:24px;"></i>
+        </div>
+        <div>
+          <div class="brand-name">MelittaBreed</div>
+          <div class="brand-subtitle">Smart Bee Breeding</div>
+        </div>
+      </div>
+
+      <nav class="flex-grow">
+        <ul class="nav-list">
+          <li class="nav-item active" data-tab="dashboard">
+            <i data-lucide="layout-dashboard" class="nav-icon"></i>
+            <span>연구 대시보드</span>
+          </li>
+          <li class="nav-item" data-tab="pedigree">
+            <i data-lucide="git-branch" class="nav-icon"></i>
+            <span>농가 및 계통 관리</span>
+          </li>
+          <li class="nav-item" data-tab="touch-recorder">
+            <i data-lucide="tablet" class="nav-icon"></i>
+            <span>야외 현장기록기</span>
+          </li>
+          <li class="nav-item" data-tab="db-visualizer">
+            <i data-lucide="database" class="nav-icon"></i>
+            <span>육종 데이터베이스</span>
+          </li>
+          <li class="nav-item" data-tab="genetics-sandbox">
+            <i data-lucide="dna" class="nav-icon"></i>
+            <span>유전체 샌드박스</span>
+          </li>
+          <li class="nav-item" data-tab="tutorial">
+            <i data-lucide="help-circle" class="nav-icon"></i>
+            <span>사용자 튜토리얼</span>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="researcher-card">
+        <div class="researcher-info">
+          <div class="researcher-avatar">꿀</div>
+          <div class="researcher-details">
+            <h4>김상식 연구원</h4>
+            <p>꿀벌육종학 박사과정</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- App Header -->
+      <header class="app-header">
+        <div class="header-title">
+          <h1 id="tab-title-text"><i data-lucide="layout-dashboard" class="text-gold"></i> 연구 대시보드</h1>
+        </div>
+        <div class="header-status">
+          <div style="font-size: 13px; color: var(--text-muted);">
+            <i data-lucide="database" style="width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;"></i>
+            농가: <span id="stat-apiaries-count" class="text-gold font-bold">0</span>개 |
+            봉군: <span id="stat-colonies-count" class="text-gold font-bold">0</span>개 |
+            기록: <span id="stat-records-count" class="text-gold font-bold">0</span>건
+          </div>
+          <div class="status-badge">
+            <div class="dot"></div>
+            <span>로컬 DB 서버 연결됨</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Scrollable Body -->
+      <div class="content-body">
+        
+        <!-- 1. DASHBOARD VIEW -->
+        <section id="dashboard-tab" class="tab-pane active">
+          <div class="dashboard-grid">
+            <div class="kpi-card">
+              <div class="kpi-info">
+                <h3>활성 연구 봉군</h3>
+                <div class="kpi-value" id="kpi-active-colonies">0 / 0</div>
+              </div>
+              <div class="kpi-icon-box">
+                <i data-lucide="home" style="width: 24px; height: 24px;"></i>
+              </div>
+            </div>
+            
+            <div class="kpi-card green">
+              <div class="kpi-info">
+                <h3>평균 채밀량</h3>
+                <div class="kpi-value"><span id="kpi-avg-honey">0.0</span><span class="kpi-unit">Kg</span></div>
+              </div>
+              <div class="kpi-icon-box">
+                <i data-lucide="droplet" style="width: 24px; height: 24px;"></i>
+              </div>
+            </div>
+            
+            <div class="kpi-card">
+              <div class="kpi-info">
+                <h3>평균 월동 생존률</h3>
+                <div class="kpi-value" id="kpi-overwinter">0%</div>
+              </div>
+              <div class="kpi-icon-box">
+                <i data-lucide="snowflake" style="width: 24px; height: 24px;"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Rows -->
+          <div class="chart-row">
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <div>
+                  <h4 class="chart-title"><i data-lucide="bar-chart-3" class="text-gold"></i> 봉군별 평균 꿀 생산량 현황</h4>
+                  <div class="chart-subtitle">각 연구 봉군(Hive)별 누적 채밀 기록 평균값 (Kg)</div>
+                </div>
+              </div>
+              <div class="svg-chart-container" id="honey-yield-chart-container">
+                <!-- Custom SVG Chart Rendered dynamically by app.js -->
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-card-header">
+                <div>
+                  <h4 class="chart-title"><i data-lucide="trending-up" class="text-gold"></i> 지리산 시험포 연간 기온 추이</h4>
+                  <div class="chart-subtitle">위치 위도에 기반한 월별 기상학적 평균 추이 (°C)</div>
+                </div>
+              </div>
+              <div class="svg-chart-container" id="weather-trends-chart-container">
+                <!-- Custom SVG Chart Rendered dynamically by app.js -->
+              </div>
+            </div>
+          </div>
+
+          <!-- National Bee Health Monitor Card (Government & RDA Health Alert View) -->
+          <div class="chart-card" style="margin-top: 24px;">
+            <div class="chart-card-header" style="border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+              <div>
+                <h4 class="chart-title"><i data-lucide="shield-alert" class="text-gold"></i> 농촌진흥청 연계 국가 꿀벌 질병 조기 예보 예찰 모니터링</h4>
+                <div class="chart-subtitle">전국 협력 농가 질병 및 건강 데이터를 취합한 실시간 기후연계 전염병 예보 맵</div>
+              </div>
+              <div class="status-badge" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: var(--danger);" id="national-risk-badge">
+                <span class="dot" style="background-color: var(--danger);"></span>
+                <span id="national-risk-text" style="font-weight: 700;">주의 (Alert)</span>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1.12fr 1fr; gap: 28px; margin-top: 20px; min-height: 260px;">
+              <!-- Left: South Korea glowing region Map SVG -->
+              <div id="national-health-map-container" style="background: rgba(0,0,0,0.15); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; display: flex; align-items: center; justify-content: center; position: relative;">
+                <!-- Map SVG drawn dynamically by app.js -->
+              </div>
+              <!-- Right: Regional stats and advisory logs -->
+              <div style="display: flex; flex-direction: column; justify-content: space-between; padding: 4px 0;">
+                <div>
+                  <h5 style="color: #FFF; font-size: 13.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); animation: pulse 1.5s infinite;"></span>
+                    최근 법정 주요 꿀벌 감염병 국가 예찰 지표
+                  </h5>
+                  <ul style="list-style: none; font-size: 12px; color: var(--text-muted); display: grid; gap: 9px;">
+                    <li style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 5px;">
+                      <span>낭충봉아부패병 (Sacbrood Virus)</span>
+                      <strong class="text-green" id="disease-risk-sacbrood">안전 (Safe)</strong>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 5px;">
+                      <span>부저병 (Foulbrood Disease)</span>
+                      <strong class="text-gold" id="disease-risk-foulbrood">주의 (Alert)</strong>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 5px;">
+                      <span>날개불구바이러스 (Deformed Wing)</span>
+                      <strong class="text-green" id="disease-risk-dwv">안전 (Safe)</strong>
+                    </li>
+                    <li style="display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border); padding-bottom: 5px;">
+                      <span>꿀벌응애 지수 (Varroa Mite Index)</span>
+                      <strong class="text-red" id="disease-risk-varroa">경계 (Critical)</strong>
+                    </li>
+                  </ul>
+                </div>
+                <div style="padding: 12px; background: rgba(245, 158, 11, 0.04); border: 1px solid rgba(245, 158, 11, 0.12); border-radius: 8px; font-size: 11.5px; line-height: 1.6;">
+                  <strong style="color: var(--primary); display: block; margin-bottom: 4px;"><i data-lucide="message-square" style="width:12px; height:12px; display:inline-block; vertical-align:middle; margin-right:4px;"></i> 농촌진흥청 긴급 사양 지도지침</strong>
+                  <span id="disease-advisory-text">특정 농가에서 응애 주의보가 발령되었습니다. 월동 전 진드기 급증 방지를 위해 개미산/티몰 방제제를 순차 투여하고 급이 상태를 유지하십시오.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Technical Breeding Guideline Info Card -->
+          <div class="chart-card" style="margin-top: 24px;">
+            <div class="chart-card-header" style="border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+              <h4 class="chart-title" style="font-size: 16px;"><i data-lucide="scroll" class="text-gold"></i> 스마트 육종 플랫폼 데이터 플로우 및 향후 계획</h4>
+            </div>
+            <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; font-size: 13px; color: var(--text-muted); line-height: 1.6;">
+              <div>
+                <strong style="color: #FFF; display: block; margin-bottom: 6px;">1. 현장 phenotypic 기록 관리</strong>
+                양봉 현장에서 농가, 개별 여왕벌 계통, 봉군 번호를 연결하여 꿀벌의 생물학적 형질을 정확히 축적합니다. 기상 및 환경 센서 데이터 연계를 통해 환경 효과를 제어합니다.
+              </div>
+              <div>
+                <strong style="color: #FFF; display: block; margin-bottom: 6px;">2. 유전체 정보와의 통합 (PLINK/R 연계)</strong>
+                본 시스템에서 수집 및 정제된 페노타입(Phenotype) CSV 데이터는 차세대 염기서열 분석(NGS)을 통해 추출한 꿀벌 SNP 유전체 칩 데이터와 완벽히 병합됩니다.
+              </div>
+              <div>
+                <strong style="color: #FFF; display: block; margin-bottom: 6px;">3. 스마트 육종 분자 선발 (GWAS / GS)</strong>
+                유전자 네트워크 분석 및 genomic 선발 지수 식에 의거하여, 온순도, 저항성 유전적 잠재가치가 극대화된 최고 종봉 여왕벌을 정밀 계산하여 선발합니다.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. PEDIGREE & INFRASTRUCTURE MANAGER -->
+        <section id="pedigree-tab" class="tab-pane">
+          
+          <!-- Section 1: Beekeeper / Apiary Registration -->
+          <div class="section-title-divider" style="margin-top: 0;"><i data-lucide="home"></i> 1단계: 협력 양봉가 농가 및 위치 정보 관리</div>
+          <div class="panel-grid" style="margin-bottom: 40px;">
+            <div class="form-card">
+              <h4 style="font-size: 15px; margin-bottom: 20px;"><i data-lucide="plus-circle" class="text-gold"></i> 농가 정보 신규 등록</h4>
+              <form id="apiary-form">
+                <div class="form-group">
+                  <label>농장명 (Apiary Yard Name)</label>
+                  <input type="text" name="apiary-name" class="form-control" placeholder="예: 지리산 육종 시험포" required>
+                </div>
+                <div class="form-group">
+                  <label>소유자/관리자명</label>
+                  <input type="text" name="apiary-owner" class="form-control" placeholder="예: 김상식" required>
+                </div>
+                <div class="form-group">
+                  <label>주소</label>
+                  <input type="text" name="apiary-address" class="form-control" placeholder="예: 경남 산청군 시천면" required>
+                </div>
+                <div class="form-group">
+                  <label>연락처</label>
+                  <input type="text" name="apiary-contact" class="form-control" placeholder="예: 010-XXXX-XXXX" required>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>위도 (Latitude)</label>
+                    <input type="number" step="0.000001" name="apiary-lat" class="form-control" value="35.3369" required>
+                  </div>
+                  <div class="form-group">
+                    <label>경도 (Longitude)</label>
+                    <input type="number" step="0.000001" name="apiary-lng" class="form-control" value="127.7306" required>
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary">농가 위치정보 저장</button>
+              </form>
+            </div>
+
+            <div class="list-card">
+              <h4 style="font-size: 15px;"><i data-lucide="list" class="text-gold"></i> 협력 농가 데이터 리스트</h4>
+              <div class="data-table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>농가명/주소</th>
+                      <th>소유자</th>
+                      <th>연락처</th>
+                      <th>GPS 좌표</th>
+                      <th>작업</th>
+                    </tr>
+                  </thead>
+                  <tbody id="apiary-table-body">
+                    <!-- Dynamic Rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Queen Bee Pedigree Registration -->
+          <div class="section-title-divider"><i data-lucide="crown"></i> 2단계: 여왕벌 종봉 유전계통 등록 (Pedigree)</div>
+          <div class="panel-grid" style="margin-bottom: 40px;">
+            <div class="form-card">
+              <h4 style="font-size: 15px; margin-bottom: 20px;"><i data-lucide="plus-circle" class="text-gold"></i> 신규 여왕벌 등록</h4>
+              <form id="queen-form">
+                <div class="form-group">
+                  <label>유전 계통 (Breed Line)</label>
+                  <select name="queen-breed" class="form-control" required>
+                    <option value="Carniolan (카니올란 원종)">Carniolan (카니올란 원종)</option>
+                    <option value="Italian (이탈리안 황색종)">Italian (이탈리안 황색종)</option>
+                    <option value="Caucasian (코카시안 그레이)">Caucasian (코카시안 그레이)</option>
+                    <option value="Local Yellow (한국 토착종)">Local Yellow (한국 토착종)</option>
+                    <option value="Hybrid (잡종계)">Hybrid (잡종계)</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>우화 일자 (Emergence Date)</label>
+                  <input type="date" name="queen-date" class="form-control" value="2026-05-01" required>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>모계 여왕벌 (Dam ID)</label>
+                    <select name="queen-dam" id="queen-dam-select" class="form-control">
+                      <!-- Filled by JS -->
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>부계 수컷라인 (Sire ID)</label>
+                    <select name="queen-sire" id="queen-sire-select" class="form-control">
+                      <!-- Filled by JS -->
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>생산처 및 분양/관리 상세 노트</label>
+                  <input type="text" name="queen-hatchery" class="form-control" placeholder="예: 국립축산과학원 22번 봉군 이식분양" required>
+                </div>
+                <button type="submit" class="btn-primary">여왕벌 Pedigree 추가</button>
+              </form>
+            </div>
+
+            <div class="list-card">
+              <h4 style="font-size: 15px;"><i data-lucide="list" class="text-gold"></i> 등록 여왕벌 혈통 리스트</h4>
+              <div class="data-table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>여왕벌 ID</th>
+                      <th>유전계통</th>
+                      <th>우화일자</th>
+                      <th>혈통 연계 (Dam / Sire)</th>
+                      <th>상태</th>
+                      <th>작업</th>
+                    </tr>
+                  </thead>
+                  <tbody id="queen-table-body">
+                    <!-- Dynamic Rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Colony / Hive Registration -->
+          <div class="section-title-divider"><i data-lucide="layers"></i> 3단계: 벌통 봉군(Colony) 편성</div>
+          <div class="panel-grid">
+            <div class="form-card">
+              <h4 style="font-size: 15px; margin-bottom: 20px;"><i data-lucide="plus-circle" class="text-gold"></i> 신규 봉군 편성</h4>
+              <form id="colony-form">
+                <div class="form-group">
+                  <label>소속 양봉장 (Select Apiary)</label>
+                  <select name="colony-apiary" id="colony-apiary-select" class="form-control" required>
+                    <!-- Filled by JS -->
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>벌통 코드 (Hive Code)</label>
+                  <input type="text" name="colony-code" class="form-control" placeholder="예: H-12" required>
+                </div>
+                <div class="form-group">
+                  <label>이식된 여왕벌 (Selected Queen)</label>
+                  <select name="colony-queen" id="colony-queen-select" class="form-control" required>
+                    <!-- Filled by JS -->
+                  </select>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>설치 편성일자</label>
+                    <input type="date" name="colony-setup-date" class="form-control" value="2026-05-15" required>
+                  </div>
+                  <div class="form-group">
+                    <label>시작 벌통 소비매 수</label>
+                    <input type="number" name="colony-frames" class="form-control" value="10" min="1" max="20" required>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>벌통 자재 타입</label>
+                  <select name="colony-type" class="form-control">
+                    <option value="개량 10매 벌통 (Langstroth)">개량 10매 나무벌통 (Langstroth)</option>
+                    <option value="EPP 단열 벌통">EPP 고단열 벌통</option>
+                    <option value="토종벌 설통/환태통">토종벌 설통/환태통</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn-primary">봉군 데이터베이스 연동</button>
+              </form>
+            </div>
+
+            <div class="list-card">
+              <h4 style="font-size: 15px;"><i data-lucide="list" class="text-gold"></i> 활성 봉군 인벤토리</h4>
+              <div class="data-table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>봉군 ID</th>
+                      <th>벌통 코드</th>
+                      <th>소속 양봉장</th>
+                      <th>종봉 여왕벌 ID</th>
+                      <th>편성일</th>
+                      <th>소비수</th>
+                      <th>상태</th>
+                      <th>작업</th>
+                    </tr>
+                  </thead>
+                  <tbody id="colony-table-body">
+                    <!-- Dynamic Rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. TOUCH PHENOTYPE & WEATHER RECORDER -->
+        <section id="touch-recorder-tab" class="tab-pane">
+          <div class="touch-recorder-container">
+            <form id="trait-form">
+              
+              <!-- Apiary Field Header -->
+              <div class="field-header">
+                <div style="flex-grow: 1;">
+                  <label style="display:block; font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px;">조사 봉군 선택 (Colony)</label>
+                  <select name="tr-colony" id="tr-colony-select" class="form-control" style="background:#151D30; border-color:var(--border-active); font-size: 16px; height: 50px; font-weight:bold; color:#FFF;">
+                    <!-- Dynamically populated -->
+                  </select>
+                </div>
+                
+                <!-- Weather info based on selected apiary -->
+                <div style="text-align: right; margin-left: 20px;">
+                  <label style="display:block; font-size:11px; font-weight:600; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px;">실시간 필드 환경데이터 센서연계</label>
+                  <div class="weather-indicator-box" id="tr-weather-badge-container">
+                    <!-- Rendered by JS -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Production Trait Card -->
+              <div class="recording-card-section">
+                <div class="section-title-divider"><i data-lucide="droplets"></i> 1. 벌꿀 및 양봉 산물 생산성 형질 (Productivity)</div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+                  <div class="form-group text-center">
+                    <label>꿀 생산량 (Honey Yield)</label>
+                    <div style="display: flex; justify-content: center; margin-top: 10px;">
+                      <div class="num-adjuster">
+                        <button type="button" class="num-btn" data-input="tr-honey-val" data-change="-5">-5</button>
+                        <button type="button" class="num-btn" data-input="tr-honey-val" data-change="-1">-1</button>
+                        <input type="number" step="0.1" name="tr-honey" id="tr-honey-val" class="num-val-input" value="0.0">
+                        <button type="button" class="num-btn" data-input="tr-honey-val" data-change="1">+1</button>
+                        <button type="button" class="num-btn" data-input="tr-honey-val" data-change="5">+5</button>
+                      </div>
+                    </div>
+                    <div style="font-size:13px; color:var(--text-gold); font-weight:600; margin-top:10px;">단위: Kg</div>
+                  </div>
+
+                  <div class="form-group text-center">
+                    <label>프로폴리스 생산량</label>
+                    <div style="display: flex; justify-content: center; margin-top: 10px;">
+                      <div class="num-adjuster">
+                        <button type="button" class="num-btn" data-input="tr-propolis-val" data-change="-50">-50</button>
+                        <button type="button" class="num-btn" data-input="tr-propolis-val" data-change="-10">-10</button>
+                        <input type="number" name="tr-propolis" id="tr-propolis-val" class="num-val-input" value="0">
+                        <button type="button" class="num-btn" data-input="tr-propolis-val" data-change="10">+10</button>
+                        <button type="button" class="num-btn" data-input="tr-propolis-val" data-change="50">+50</button>
+                      </div>
+                    </div>
+                    <div style="font-size:13px; color:var(--text-muted); margin-top:10px;">단위: g</div>
+                  </div>
+
+                  <div class="form-group text-center">
+                    <label>로얄젤리 생산량</label>
+                    <div style="display: flex; justify-content: center; margin-top: 10px;">
+                      <div class="num-adjuster">
+                        <button type="button" class="num-btn" data-input="tr-jelly-val" data-change="-20">-20</button>
+                        <button type="button" class="num-btn" data-input="tr-jelly-val" data-change="-5">-5</button>
+                        <input type="number" name="tr-jelly" id="tr-jelly-val" class="num-val-input" value="0">
+                        <button type="button" class="num-btn" data-input="tr-jelly-val" data-change="5">+5</button>
+                        <button type="button" class="num-btn" data-input="tr-jelly-val" data-change="20">+20</button>
+                      </div>
+                    </div>
+                    <div style="font-size:13px; color:var(--text-muted); margin-top:10px;">단위: g</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Qualities and Resistance (Touch Sliders) -->
+              <div class="recording-card-section">
+                <div class="section-title-divider"><i data-lucide="shield"></i> 2. 저항성, 온순함 및 생태적 환경 적응성 형질</div>
+                
+                <!-- Gentleness -->
+                <div class="slider-group">
+                  <div class="slider-labels">
+                    <span class="slider-title font-bold text-gold"><i data-lucide="smile" style="width:14px; height:14px; vertical-align:middle;"></i> 봉군 온순함 (Gentleness)</span>
+                    <span class="slider-val-bubble" id="bubble-gentle">3점</span>
+                  </div>
+                  <div class="slider-container">
+                    <input type="range" name="tr-gentle" min="1" max="5" step="1" value="3" class="styled-range" data-bubble="bubble-gentle">
+                  </div>
+                  <div class="slider-desc">
+                    <span>1점: 극도로 공격적 (훈연 필수)</span>
+                    <span>3점: 일반적 온순도</span>
+                    <span>5점: 극도로 온순 (훈연 무필요)</span>
+                  </div>
+                </div>
+
+                <!-- Mite Resistance -->
+                <div class="slider-group">
+                  <div class="slider-labels">
+                    <span class="slider-title font-bold text-green"><i data-lucide="bug" style="width:14px; height:14px; vertical-align:middle;"></i> 응애(Varroa Mite) 저항성</span>
+                    <span class="slider-val-bubble" id="bubble-mite">3점</span>
+                  </div>
+                  <div class="slider-container">
+                    <input type="range" name="tr-mite" min="1" max="5" step="1" value="3" class="styled-range" data-bubble="bubble-mite">
+                  </div>
+                  <div class="slider-desc">
+                    <span>1점: 진드기 피해 심각 / 방제 필수</span>
+                    <span>3점: 평균적 응애 기생률</span>
+                    <span>5점: 자가 그루밍 저항성 탁월</span>
+                  </div>
+                </div>
+
+                <!-- Virus Resistance -->
+                <div class="slider-group">
+                  <div class="slider-labels">
+                    <span class="slider-title font-bold"><i data-lucide="activity" style="width:14px; height:14px; vertical-align:middle;"></i> 바이러스 저항성 (Hygienic Behavior)</span>
+                    <span class="slider-val-bubble" id="bubble-virus">3점</span>
+                  </div>
+                  <div class="slider-container">
+                    <input type="range" name="tr-virus" min="1" max="5" step="1" value="3" class="styled-range" data-bubble="bubble-virus">
+                  </div>
+                  <div class="slider-desc">
+                    <span>1점: 낭충봉아부패병 등 발병 취약</span>
+                    <span>3점: 질병 징후 없음</span>
+                    <span>5점: 소방 청소율(Hygienic) 극대화</span>
+                  </div>
+                </div>
+
+                <!-- Swarming Rate -->
+                <div class="slider-group">
+                  <div class="slider-labels">
+                    <span class="slider-title font-bold"><i data-lucide="users" style="width:14px; height:14px; vertical-align:middle;"></i> 분봉률 (Swarming Propensity)</span>
+                    <span class="slider-val-bubble" id="bubble-swarming">3점</span>
+                  </div>
+                  <div class="slider-container">
+                    <input type="range" name="tr-swarming" min="1" max="5" step="1" value="3" class="styled-range" data-bubble="bubble-swarming">
+                  </div>
+                  <div class="slider-desc">
+                    <span>1점: 왕대 수시 조성 / 제어 불가 분봉</span>
+                    <span>3점: 표준 분봉율</span>
+                    <span>5점: 극도의 저분봉성 (봉군 유지 용이)</span>
+                  </div>
+                </div>
+
+                <!-- Climate Adaptability -->
+                <div class="slider-group">
+                  <div class="slider-labels">
+                    <span class="slider-title font-bold"><i data-lucide="wind" style="width:14px; height:14px; vertical-align:middle;"></i> 기후 적응성 (Climate Adaptability)</span>
+                    <span class="slider-val-bubble" id="bubble-climate">3점</span>
+                  </div>
+                  <div class="slider-container">
+                    <input type="range" name="tr-climate" min="1" max="5" step="1" value="3" class="styled-range" data-bubble="bubble-climate">
+                  </div>
+                  <div class="slider-desc">
+                    <span>1점: 기온 급하강/다습시 활동력 상실</span>
+                    <span>3점: 표준적인 비행 활동성</span>
+                    <span>5점: 비바람 및 쌀쌀한 날씨 채밀력 유지</span>
+                  </div>
+                </div>
+
+                <!-- Overwintering Survival Rate -->
+                <div class="slider-group" style="margin-bottom: 0;">
+                  <div class="slider-labels">
+                    <span class="slider-title font-bold text-gold"><i data-lucide="snowflake" style="width:14px; height:14px; vertical-align:middle;"></i> 월동 생존률 (Overwintering Survival)</span>
+                    <span class="slider-val-bubble" id="bubble-overwinter">90%</span>
+                  </div>
+                  <div class="slider-container">
+                    <input type="range" name="tr-overwinter" min="50" max="100" step="5" value="90" class="styled-range" data-bubble="bubble-overwinter">
+                  </div>
+                  <div class="slider-desc">
+                    <span>50%: 동사 및 소군 피해 심각 (봉실 50%)</span>
+                    <span>80%: 평균 월동 생존</span>
+                    <span>100%: 월동 피해율 0% (완전 생존)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Hive Daily Management Logs (Beekeeper Daily Operations Usability) -->
+              <div class="recording-card-section">
+                <div class="section-title-divider"><i data-lucide="clipboard-list"></i> 3. 사양 관리 및 벌통 종합 건강 등급 기록 (Touch Logs)</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px;">
+                  
+                  <div class="form-group text-center">
+                    <label>벌통 건강 등급 (Hive Health Grade)</label>
+                    <div style="display: flex; justify-content: center; gap: 8px; margin-top: 10px;">
+                      <label class="touch-radio-label">
+                        <input type="radio" name="tr-health-grade" value="Healthy" checked>
+                        <span class="touch-radio-btn Healthy">정상 (Healthy)</span>
+                      </label>
+                      <label class="touch-radio-label">
+                        <input type="radio" name="tr-health-grade" value="Alert">
+                        <span class="touch-radio-btn Alert">주의 (Alert)</span>
+                      </label>
+                      <label class="touch-radio-label">
+                        <input type="radio" name="tr-health-grade" value="Critical">
+                        <span class="touch-radio-btn Critical">위험 (Critical)</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label>사양 및 당액/대용분 급여 (Feeding Status)</label>
+                    <select name="tr-feeding-status" id="tr-feeding-status-select" class="form-control" style="background:#151D30; border-color:var(--border-active); font-size:14px; margin-top:8px;">
+                      <option value="None" selected>None (사양 처리 안함)</option>
+                      <option value="Sugar water">Sugar water (당액/설탕물 급이)</option>
+                      <option value="Pollen cake">Pollen cake (대용화분/화분떡 급이)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label>약제 처리 및 전염병 예방 방제 (Treatment Log)</label>
+                    <select name="tr-treatment-log" id="tr-treatment-log-select" class="form-control" style="background:#151D30; border-color:var(--border-active); font-size:14px; margin-top:8px;">
+                      <option value="None" selected>None (화학 약제 처리 없음)</option>
+                      <option value="Formic acid">Formic acid (개미산 방제)</option>
+                      <option value="Thymol">Thymol (티몰 진드기 처리)</option>
+                      <option value="Amitraz">Amitraz (아미트라즈 긴드기약 살포)</option>
+                    </select>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Environment Fields (Hidden / Read-Only but submitted) -->
+              <div class="recording-card-section" style="padding: 20px;">
+                <div class="form-row">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label>기록 일자</label>
+                    <input type="date" name="tr-date" class="form-control" value="2026-05-22">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label>조사자 성명</label>
+                    <input type="text" name="tr-inspector" id="tr-inspector" class="form-control" placeholder="조사자 이름 입력">
+                  </div>
+                </div>
+                <!-- Invisible telemetry helper variables -->
+                <input type="hidden" name="tr-temp" id="tr-env-temp" value="20">
+                <input type="hidden" name="tr-humid" id="tr-env-humid" value="50">
+                <input type="hidden" name="tr-weather-status" id="tr-env-status" value="Sunny">
+              </div>
+
+              <!-- Large mobile glove-friendly submit button -->
+              <button type="submit" class="btn-primary" style="height: 60px; font-size: 16px; border-radius: var(--radius); margin-bottom: 40px; box-shadow: 0 10px 20px var(--primary-glow);">
+                <i data-lucide="upload-cloud"></i> 형질 및 환경 연계 데이터 전송 (Sync DB)
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <!-- 4. DATABASE VISUALIZER VIEW -->
+        <section id="db-visualizer-tab" class="tab-pane">
+          <div class="db-visualizer-container">
+            <!-- Toolbar -->
+            <div class="db-toolbar">
+              <div style="display:flex; align-items:center; gap: 16px;">
+                <label style="font-size:12px; font-weight:600; color:var(--text-muted); text-transform:uppercase;">조회할 테이블</label>
+                <select id="db-table-select" class="form-control" style="width: 180px; background:var(--bg-input); height:40px;">
+                  <option value="traits" selected>형질 기록 대장 (Traits Table)</option>
+                  <option value="colonies">봉군/벌통 목록 (Colonies Table)</option>
+                  <option value="queens">여왕벌 pedigree (Queens Table)</option>
+                  <option value="apiaries">양봉가 농가 대장 (Apiaries Table)</option>
+                </select>
+              </div>
+
+              <div class="search-box-wrapper">
+                <i data-lucide="search" class="search-icon-inside" style="width:16px; height:16px;"></i>
+                <input type="text" id="db-search-input" class="search-input" placeholder="키워드 검색 (ID, 이름 등)...">
+              </div>
+
+              <div class="toolbar-actions">
+                <button id="btn-export-csv" class="btn-secondary"><i data-lucide="download"></i> CSV 내보내기</button>
+                <button id="btn-export-plink" class="btn-secondary" style="border-color: var(--secondary); background: rgba(16, 185, 129, 0.05); color: var(--secondary);"><i data-lucide="dna"></i> PLINK (PED/MAP) 추출</button>
+                <button id="btn-export-r-pedigree" class="btn-secondary" style="border-color: #3b82f6; background: rgba(59, 130, 246, 0.05); color: #60a5fa;"><i data-lucide="terminal"></i> R 혈통행렬 스크립트</button>
+                <button id="btn-backup-json" class="btn-secondary"><i data-lucide="save"></i> 전체 JSON 백업</button>
+                <label for="db-import-file" class="btn-secondary" style="margin-bottom:0; display:flex; align-items:center; cursor:pointer;">
+                  <i data-lucide="upload" style="margin-right:6px;"></i> JSON 복구
+                </label>
+                <input type="file" id="db-import-file" style="display:none;" accept=".json">
+                <button id="btn-reset-db" class="btn-secondary" style="border-color:rgba(239, 68, 68, 0.3); color:var(--danger);"><i data-lucide="refresh-cw"></i> 로컬 DB 리셋</button>
+              </div>
+            </div>
+
+            <!-- Dynamic Table Grid -->
+            <div class="list-card">
+              <div class="data-table-container">
+                <table class="data-table" style="font-size:13px;">
+                  <thead>
+                    <tr id="db-table-header-row">
+                      <!-- Dynamically generated headers -->
+                    </tr>
+                  </thead>
+                  <tbody id="db-table-body-row">
+                    <!-- Dynamically generated rows -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. GENETICS SANDBOX VIEW -->
+        <section id="genetics-sandbox-tab" class="tab-pane">
+          <div class="genetics-container">
+            
+            <!-- Left Side: Selection Index Configuration -->
+            <div>
+              <div class="selection-weights-card">
+                <div class="section-title-divider" style="margin-top: 0;"><i data-lucide="settings"></i> 1단계: 선발 지수 가중치 배정</div>
+                <p style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-bottom:20px;">
+                  각 형질별 유전적 육종 가치 가중치를 직접 배정해 정밀 선발 지수를 설계합니다. (가중치 총 합계가 <strong>100%</strong>가 되어야 정상 동작합니다.)
+                </p>
+
+                <!-- Honey Yield Weight -->
+                <div class="slider-group" style="margin-bottom: 16px;">
+                  <div class="slider-labels" style="font-size: 13px;">
+                    <span>꿀 생산량 가중치 (Honey)</span>
+                    <span id="w-val-honey" class="font-bold text-gold">20%</span>
+                  </div>
+                  <input type="range" class="weight-slider styled-range" data-trait="honey" min="0" max="60" step="5" value="20">
+                </div>
+
+                <!-- Propolis Weight -->
+                <div class="slider-group" style="margin-bottom: 16px;">
+                  <div class="slider-labels" style="font-size: 13px;">
+                    <span>프로폴리스 가중치 (Propolis)</span>
+                    <span id="w-val-propolis" class="font-bold">10%</span>
+                  </div>
+                  <input type="range" class="weight-slider styled-range" data-trait="propolis" min="0" max="40" step="5" value="10">
+                </div>
+
+                <!-- Royal Jelly Weight -->
+                <div class="slider-group" style="margin-bottom: 16px;">
+                  <div class="slider-labels" style="font-size: 13px;">
+                    <span>로얄젤리 가중치 (Jelly)</span>
+                    <span id="w-val-jelly" class="font-bold">10%</span>
+                  </div>
+                  <input type="range" class="weight-slider styled-range" data-trait="jelly" min="0" max="40" step="5" value="10">
+                </div>
+
+                <!-- Varroa Mite Resistance Weight -->
+                <div class="slider-group" style="margin-bottom: 16px;">
+                  <div class="slider-labels" style="font-size: 13px;">
+                    <span>응애 저항성 가중치 (Varroa Mite)</span>
+                    <span id="w-val-mite" class="font-bold text-green">15%</span>
+                  </div>
+                  <input type="range" class="weight-slider styled-range" data-trait="mite" min="0" max="50" step="5" value="15">
+                </div>
+
+                <!-- Virus Resistance Weight -->
+                <div class="slider-group" style="margin-bottom: 16px;">
+                  <div class="slider-labels" style="font-size: 13px;">
+                    <span>바이러스 저항성 가중치 (Virus)</span>
+                    <span id="w-val-virus" class="font-bold">15%</span>
+                  </div>
+                  <input type="range" class="weight-slider styled-range" data-trait="virus" min="0" max="50" step="5" value="15">
+                </div>
+
+                <!-- Gentleness Weight -->
+                <div class="slider-group" style="margin-bottom: 16px;">
+                  <div class="slider-labels" style="font-size: 13px;">
+                    <span>온순함 가중치 (Gentleness)</span>
+                    <span id="w-val-gentle" class="font-bold">10%</span>
+                  </div>
+                  <input type="range" class="weight-slider styled-range" data-trait="gentle" min="0" max="40" step="5" value="10">
+                </div>
+
+                <!-- Swarming Rate Weight -->
+                <div class="slider-group" style="margin-bottom: 16px;">
+                  <div class="slider-labels" style="font-size: 13px;">
+                    <span>분봉률(낮은 분봉성) 가중치 (Swarming)</span>
+                    <span id="w-val-swarming" class="font-bold">5%</span>
+                  </div>
+                  <input type="range" class="weight-slider styled-range" data-trait="swarming" min="0" max="30" step="5" value="5">
+                </div>
+
+                <!-- Overwintering Weight -->
+                <div class="slider-group" style="margin-bottom: 16px;">
+                  <div class="slider-labels" style="font-size: 13px;">
+                    <span>월동 생존률 가중치 (Overwinter)</span>
+                    <span id="w-val-winter" class="font-bold">10%</span>
+                  </div>
+                  <input type="range" class="weight-slider styled-range" data-trait="winter" min="0" max="30" step="5" value="10">
+                </div>
+
+                <!-- Climate Adaptability Weight -->
+                <div class="slider-group" style="margin-bottom: 24px;">
+                  <div class="slider-labels" style="font-size: 13px;">
+                    <span>기후 적응성 가중치 (Climate)</span>
+                    <span id="w-val-climate" class="font-bold">5%</span>
+                  </div>
+                  <input type="range" class="weight-slider styled-range" data-trait="climate" min="0" max="30" step="5" value="5">
+                </div>
+
+                <!-- Total Indicator Badge -->
+                <div class="weights-total-badge ok" id="total-weights-badge">
+                  <span>🟢 총 가중치 합계가 올바릅니다.</span>
+                  <span id="w-val-total" class="font-bold">100%</span>
+                </div>
+              </div>
+
+              <!-- Top Ranked Queens List -->
+              <div class="list-card" style="margin-top: 24px;">
+                <h4 style="font-size: 15px;"><i data-lucide="crown" class="text-gold"></i> 최우수 종봉 여왕벌 순위 (Index Ranking)</h4>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom: 12px;">선발 지수 기반 실시간 다변량 육종 순위 산출 결과</p>
+                <ul id="breeding-ranking-list" style="list-style: none;">
+                  <!-- Dynamically populated rank list -->
+                </ul>
+              </div>
+
+              <!-- Virtual Breed-Line Mating Simulator (Breeder's View) -->
+              <div class="list-card" style="margin-top: 24px; border: 1px solid var(--border-active);">
+                <h4 style="font-size: 15px;"><i data-lucide="heart" class="text-gold"></i> 스마트 여왕벌 가상 교배 시뮬레이터 (Virtual Mating)</h4>
+                <p style="font-size:11px; color:var(--text-muted); margin-bottom: 14px;">모계 여왕벌과 부계 수컷라인의 Pedigree 연동 근친도(F) 및 progeny 예측</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 11px; font-weight:600;">모계 여왕벌 (Dam Queen)</label>
+                    <select id="mating-dam-select" class="form-control" style="background: var(--bg-input); font-size:12px; height: 38px;">
+                      <!-- Populated by JS -->
+                    </select>
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 11px; font-weight:600;">부계 수컷라인 (Sire Line)</label>
+                    <select id="mating-sire-select" class="form-control" style="background: var(--bg-input); font-size:12px; height: 38px;">
+                      <!-- Populated by JS -->
+                    </select>
+                  </div>
+                </div>
+
+                <button type="button" id="btn-run-mating" class="btn-primary" style="height: 42px; font-size: 13px;">가상 인공수정 및 교배 시뮬레이션 실행</button>
+
+                <!-- Mating Output Panel -->
+                <div id="mating-result-panel" style="margin-top: 16px; padding: 16px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--border); border-radius: 8px; display: none; font-size:13px; line-height:1.6;">
+                  <!-- Generated by app.js -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: Chromosomes SNP Interactive Visualizer -->
+            <div class="chromosome-map-card">
+              <div class="section-title-divider" style="margin-top: 0;"><i data-lucide="dna"></i> 2단계: 유전체 연계 DNA 마커 맵 (n=16)</div>
+              <p style="font-size:12px; color:var(--text-muted); line-height:1.5; margin-bottom:20px;">
+                조사 대상 봉군의 유전자 DNA 샘플 칩 분석 결과를 시각화합니다. 꿀벌 염색체 16개(`Apis mellifera`, n=16) 맵에서 주요 SNP 마커 부위를 탭해 보세요!
+              </p>
+
+              <!-- Selected Colony for SNP analysis -->
+              <div style="display:flex; align-items:center; gap: 16px; margin-bottom: 24px; padding: 12px 18px; background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px;">
+                <label style="font-size:13px; font-weight:600; color:var(--text-muted);">DNA 마커 연동 벌통 선택</label>
+                <select id="genetics-colony-select" class="form-control" style="max-width:240px; height: 38px; background:var(--bg-input);">
+                  <!-- Dynamically populated -->
+                </select>
+              </div>
+
+              <!-- Chromosomes SVG Visualizer Render Area -->
+              <div id="chromosome-svg-container" class="chromosome-visualizer-svg">
+                <!-- Renders the 16 glowing chromosomes -->
+              </div>
+
+              <!-- Chromosome Detail Card Panel -->
+              <div id="genetics-marker-detail-card" class="form-card" style="background:rgba(255,255,255,0.01); border-color:var(--border-active); min-height: 180px; padding: 20px;">
+                <!-- Clicked Marker Details generated here -->
+              </div>
+
+              <!-- Genomic DNA Samples Call list -->
+              <h4 style="font-size: 14px; margin-top: 28px; margin-bottom: 12px;"><i data-lucide="list" class="text-gold"></i> 전체 SNP 분자 유전 마커 호출 현황 (Genotypes)</h4>
+              <div class="snps-table-container" id="genetics-snps-table-body">
+                <!-- SNP details -->
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- 6. USER TUTORIAL VIEW -->
+        <section id="tutorial-tab" class="tab-pane">
+          <div class="tutorial-container">
+            <div class="tutorial-header-card">
+              <div class="tutorial-header-title">
+                <h2><i data-lucide="book-open" class="text-gold"></i> MelittaBreed 사용자 가이드 및 튜토리얼</h2>
+                <p>MelittaBreed 플랫폼의 각 역할군(양봉가, 육종가, 연구원, 정부 예찰원)을 위한 핵심 사용 시나리오와 데이터 연계 튜토리얼을 제공합니다. 가이드를 클릭하여 세부 단계를 확인해 보세요.</p>
+              </div>
+            </div>
+
+            <div class="tutorial-accordion-container">
+              
+              <!-- Card 1: Beekeeper -->
+              <div class="tutorial-card" id="tutorial-beekeeper">
+                <div class="tutorial-card-header">
+                  <div class="header-main">
+                    <div class="tutorial-icon-box">
+                      <i data-lucide="tablet" class="tutorial-icon"></i>
+                    </div>
+                    <div>
+                      <h3>현장 양봉가 (Beekeeper) 핵심 가이드</h3>
+                      <p>농가 등록부터 봉군 편성, 야외 장갑 터치 현장기록기 활용법</p>
+                    </div>
+                  </div>
+                  <i data-lucide="chevron-down" class="accordion-arrow"></i>
+                </div>
+                <div class="tutorial-card-body">
+                  <div class="tutorial-body-content">
+                    <div class="tutorial-step">
+                      <span class="step-num">1</span>
+                      <div>
+                        <h4>농가 및 GPS 정보 등록</h4>
+                        <p><code>농가 및 계통 관리</code> 탭의 1단계에서 농가명, 소유자, 정확한 GPS 좌표(위도, 경도)를 입력하여 농가를 생성합니다. 이 위치는 대시보드의 실시간 기상 상태 시뮬레이션 및 국가 GIS 보건 방역 지도 핀 매핑에 자동으로 실시간 반영됩니다.</p>
+                      </div>
+                    </div>
+                    <div class="tutorial-step">
+                      <span class="step-num">2</span>
+                      <div>
+                        <h4>종봉 여왕벌 혈통 및 봉군 편성</h4>
+                        <p>2단계에서 종봉 여왕벌의 유전 계통(카니올란, 이탈리안 등) 및 Dam(모계)/Sire(부계) 혈통을 연결하여 여왕벌을 등록합니다. 그 후 3단계에서 소속 농가와 여왕벌, 벌통 코드를 연결하여 봉군(Colony)을 완성합니다.</p>
+                      </div>
+                    </div>
+                    <div class="tutorial-step">
+                      <span class="step-num">3</span>
+                      <div>
+                        <h4>야외 현장기록기 활용 및 DB 동기화</h4>
+                        <p><code>야외 현장기록기</code> 탭에서 조사를 진행할 벌통을 선택합니다. 장갑을 낀 상태에서도 손쉽게 조작할 수 있는 특대형 수치 조정 버튼(+1, +5)과 슬라이더를 통해 채밀량, 프로폴리스/로얄젤리 생산량, 온순도, 응애 저항성 등을 즉석 입력하고 <strong>[데이터 전송 (Sync DB)]</strong> 버튼을 클릭하여 데이터베이스에 무결하게 영구 저장합니다.</p>
+                      </div>
+                    </div>
+                    <div class="action-btn-wrapper">
+                      <button class="btn-primary redirect-btn" data-target="touch-recorder">
+                        <i data-lucide="tablet" style="width: 16px; height: 16px; margin-right: 6px;"></i> 야외 현장기록기 바로가기
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 2: Breeder -->
+              <div class="tutorial-card" id="tutorial-breeder">
+                <div class="tutorial-card-header">
+                  <div class="header-main">
+                    <div class="tutorial-icon-box">
+                      <i data-lucide="git-branch" class="tutorial-icon"></i>
+                    </div>
+                    <div>
+                      <h3>전문 육종가 (Breeder) 핵심 가이드</h3>
+                      <p>선발 지수 가중치 설계 및 가상 인공수정 교배 시뮬레이터 구동법</p>
+                    </div>
+                  </div>
+                  <i data-lucide="chevron-down" class="accordion-arrow"></i>
+                </div>
+                <div class="tutorial-card-body">
+                  <div class="tutorial-body-content">
+                    <div class="tutorial-step">
+                      <span class="step-num">1</span>
+                      <div>
+                        <h4>다변량 선발 지수(Selection Index) 가중치 설정</h4>
+                        <p><code>유전체 샌드박스</code> 탭의 1단계에서 농가 고유의 개량 방향(예: 꿀 다수확, 저항성 강화)에 맞춰 형질별 선발 가중치를 조정합니다. 가중치의 합계가 정확히 100%가 되면, 플랫폼 내부 육종 계산기 엔진이 실시간으로 다변량 최우수 종봉 여왕벌 순위를 산출하여 보여줍니다.</p>
+                      </div>
+                    </div>
+                    <div class="tutorial-step">
+                      <span class="step-num">2</span>
+                      <div>
+                        <h4>가상 인공수정 및 교배 시뮬레이터 구동</h4>
+                        <p>하단의 가상 교배 시뮬레이터에서 교배를 희망하는 모계 여왕벌(Dam)과 부계 수컷라인(Sire)을 매칭시킵니다. <strong>[시뮬레이션 실행]</strong> 버튼을 누르면 혈통 연동에 따른 자손의 근친도(Inbreeding Coefficient, F)와 progeny의 꿀 생산량, 저항성 등 9대 형질 예측 가치가 시각화됩니다. 이를 통해 근친 퇴화를 방지하고 우수 형질 결합 개량 성과를 극대화할 수 있습니다.</p>
+                      </div>
+                    </div>
+                    <div class="action-btn-wrapper">
+                      <button class="btn-primary redirect-btn" data-target="genetics-sandbox">
+                        <i data-lucide="dna" style="width: 16px; height: 16px; margin-right: 6px;"></i> 유전체 샌드박스 바로가기
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 3: Researcher -->
+              <div class="tutorial-card" id="tutorial-researcher">
+                <div class="tutorial-card-header">
+                  <div class="header-main">
+                    <div class="tutorial-icon-box">
+                      <i data-lucide="database" class="tutorial-icon"></i>
+                    </div>
+                    <div>
+                      <h3>학술 연구원 (Researcher) 핵심 가이드</h3>
+                      <p>육종 DB 250ms 검색, PLINK(PED/MAP) 및 R kinship2 혈통 스크립트 추출</p>
+                    </div>
+                  </div>
+                  <i data-lucide="chevron-down" class="accordion-arrow"></i>
+                </div>
+                <div class="tutorial-card-body">
+                  <div class="tutorial-body-content">
+                    <div class="tutorial-step">
+                      <span class="step-num">1</span>
+                      <div>
+                        <h4>실시간 디바운스 검색 및 DB 조회</h4>
+                        <p><code>육종 데이터베이스</code> 탭에서 조회할 타겟 테이블(형질, 봉군, 여왕벌, 농가)을 선택합니다. 검색창에 키워드를 타이핑하면 250ms 디바운스 쿼리 게이트 인터셉터가 작동하여 대용량 테이블도 버벅임 없이 실시간으로 고속 필터링하여 시각화합니다.</p>
+                      </div>
+                    </div>
+                    <div class="tutorial-step">
+                      <span class="step-num">2</span>
+                      <div>
+                        <h4>GWAS 분석용 유전체 연계 데이터 추출 (PLINK)</h4>
+                        <p><strong>[PLINK (PED/MAP) 추출]</strong> 버튼을 통해 야외 현장기록기로 수집된 페노타입(Phenotype) 기록을 16개 꿀벌 염색체 DNA NGS SNP 마커 데이터와 실시간으로 조인 및 머지하여 PLINK 분석 도구 규격(PED/MAP 포맷) 패키지로 즉시 내보냅니다. 이를 통해 유전체 연관성 분석(GWAS)을 외부 분석 서버에서 즉각 수행할 수 있습니다.</p>
+                      </div>
+                    </div>
+                    <div class="tutorial-step">
+                      <span class="step-num">3</span>
+                      <div>
+                        <h4>위상 정렬(Topological Sort) R 혈통 분석 스크립트 생성</h4>
+                        <p><strong>[R 혈통행렬 스크립트]</strong> 버튼을 누르면 꿀벌의 Dam-Sire 혈통 관계를 topological sort 알고리즘으로 위상 정렬하여 순환 참조 오류(가령 조상이 후손보다 늦게 등록되거나 우화일자가 꼬인 경우)를 원천 차단하고 R <code>kinship2</code> 분석 패키지에서 에러 없이 100% 실행 가능한 혈통 구조 행렬 계산용 스크립트 파일(.R)을 자동 빌드하여 생성 및 다운로드합니다.</p>
+                      </div>
+                    </div>
+                    <div class="action-btn-wrapper">
+                      <button class="btn-primary redirect-btn" data-target="db-visualizer">
+                        <i data-lucide="database" style="width: 16px; height: 16px; margin-right: 6px;"></i> 육종 데이터베이스 바로가기
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 4: RDA Alert Inspector -->
+              <div class="tutorial-card" id="tutorial-rda">
+                <div class="tutorial-card-header">
+                  <div class="header-main">
+                    <div class="tutorial-icon-box">
+                      <i data-lucide="shield-alert" class="tutorial-icon"></i>
+                    </div>
+                    <div>
+                      <h3>정부 예찰원 (RDA) 핵심 가이드</h3>
+                      <p>실시간 국가 꿀벌 질병 조기 예찰 모니터링 및 방제 경보 발령</p>
+                    </div>
+                  </div>
+                  <i data-lucide="chevron-down" class="accordion-arrow"></i>
+                </div>
+                <div class="tutorial-card-body">
+                  <div class="tutorial-body-content">
+                    <div class="tutorial-step">
+                      <span class="step-num">1</span>
+                      <div>
+                        <h4>전국 협력농가 실시간 질병 모니터링</h4>
+                        <p><code>연구 대시보드</code>의 하단에 배치된 <strong>국가 꿀벌 질병 조기 예보 예찰 모니터링</strong> 맵을 통해 지리산, 여주, 보성 등 전국 핵심 시험포 및 협력농가의 실시간 질병 현황을 지리적(GIS)으로 한눈에 파악합니다.</p>
+                      </div>
+                    </div>
+                    <div class="tutorial-step">
+                      <span class="step-num">2</span>
+                      <div>
+                        <h4>실시간 감염병 경보 및 지도지침 연계</h4>
+                        <p>낭충봉아부패병, 부저병, 날개불구바이러스, 응애 지수 등의 수치에 따라 지도 상의 각 농가 노드가 위험 단계별 색상(안전: 녹색, 주의: 황색, 위험: 적색)으로 바뀌며 펄스 링이 점멸합니다. 경보/주의보 발령 시 농진청 긴급 사양 지도지침 박스에 입력된 지시사항(예: 개미산/티몰 등 방제제 적기 살포 및 사양 수 조절 등)이 유기적으로 자동 업데이트되어 전국의 양봉가들이 대시보드 접속 즉시 대처 지침을 인지하게 됩니다.</p>
+                      </div>
+                    </div>
+                    <div class="action-btn-wrapper">
+                      <button class="btn-primary redirect-btn" data-target="dashboard">
+                        <i data-lucide="layout-dashboard" style="width: 16px; height: 16px; margin-right: 6px;"></i> 연구 대시보드 바로가기
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Load all core models and app controller logic in order -->
+  <script src="src/db.js"></script>
+  <script src="src/weather.js"></script>
+  <script src="src/genetics.js"></script>
+  <script src="src/app.js"></script>
+  
+  <!-- Fire Lucide Icons initial call -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
