@@ -38,8 +38,9 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
         db.refresh(db_apiary)
         
         # 2. Create N Colonies
-        q_type = getattr(user, "queen_type", "Unknown") or "Unknown"
+        q_types = getattr(user, "queen_types", []) or []
         for i in range(1, initial_count + 1):
+            q_type = q_types[i - 1] if i - 1 < len(q_types) else "이탈리안"
             db_colony = models.Colony(
                 code=f"C-{db_user.id:02d}-{i:02d}",
                 apiary_id=db_apiary.id,

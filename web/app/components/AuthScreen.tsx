@@ -12,10 +12,25 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [farmName, setFarmName] = useState("");
+  const [role, setRole] = useState("farmer"); // farmer, researcher
   const [initialColonyCount, setInitialColonyCount] = useState("5");
-  const [queenType, setQueenType] = useState("이탈리안");
+  const [queenTypes, setQueenTypes] = useState<string[]>(["이탈리안", "이탈리안", "이탈리안", "이탈리안", "이탈리안"]);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const handleColonyCountChange = (countStr: string) => {
+    setInitialColonyCount(countStr);
+    const count = parseInt(countStr) || 0;
+    setQueenTypes((prev) => {
+      const next = [...prev];
+      if (next.length < count) {
+        while (next.length < count) next.push("이탈리안");
+      } else if (next.length > count) {
+        next.splice(count);
+      }
+      return next;
+    });
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +41,14 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
       const body: any = { username, password };
       if (mode === "register") {
         body.farm_name = farmName || null;
-        body.initial_colony_count = parseInt(initialColonyCount) || 0;
-        body.queen_type = queenType || "Unknown";
+        body.role = role;
+        if (role === "farmer") {
+          body.initial_colony_count = parseInt(initialColonyCount) || 0;
+          body.queen_types = queenTypes;
+        } else {
+          body.initial_colony_count = 0;
+          body.queen_types = [];
+        }
       }
       const res = await fetch(`${BASE}${path}`, {
         method: "POST",
@@ -110,46 +131,105 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
           {mode === "register" && (
             <>
               <div style={styles.inputGroup} className="animate-fade">
-                <label style={styles.inputLabel}>농장명 (선택)</label>
-                <input
-                  id="auth-farmname"
-                  style={styles.input}
-                  type="text"
-                  value={farmName}
-                  onChange={(e) => setFarmName(e.target.value)}
-                  placeholder="예: 남한산성 양봉원"
-                />
-              </div>
-
-              <div style={styles.inputGroup} className="animate-fade">
-                <label style={styles.inputLabel}>초기 봉군 수 (Colonies)</label>
-                <input
-                  id="auth-initial-colonies"
-                  style={styles.input}
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={initialColonyCount}
-                  onChange={(e) => setInitialColonyCount(e.target.value)}
-                  placeholder="예: 5"
-                />
-              </div>
-
-              <div style={styles.inputGroup} className="animate-fade">
-                <label style={styles.inputLabel}>기본 여왕벌 종류 (Pedigree Breed)</label>
+                <label style={styles.inputLabel}>가입 유형 (역할 선택) *</label>
                 <select
-                  id="auth-queen-type"
+                  id="auth-role"
                   style={styles.input}
-                  value={queenType}
-                  onChange={(e) => setQueenType(e.target.value)}
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  required
                 >
-                  <option value="이탈리안">이탈리안 (Italian - 다수 황색 우종)</option>
-                  <option value="카니올란">카니올란 (Carniolan - 온순/월동 우종)</option>
-                  <option value="코카시안">코카시안 (Caucasian - 프로폴리스 채취종)</option>
-                  <option value="한봉">한봉 (Korean Native - 동양종 토종벌)</option>
-                  <option value="기타">기타 육종 혼합 (Hybrid/Other)</option>
+                  <option value="farmer">🐝 양봉 농가 사용자</option>
+                  <option value="researcher">🔬 전문 육종 연구원</option>
                 </select>
               </div>
+
+              {role === "farmer" && (
+                <>
+                  <div style={styles.inputGroup} className="animate-fade">
+                    <label style={styles.inputLabel}>농장명 (선택)</label>
+                    <input
+                      id="auth-farmname"
+                      style={styles.input}
+                      type="text"
+                      value={farmName}
+                      onChange={(e) => setFarmName(e.target.value)}
+                      placeholder="예: 남한산성 양봉원"
+                    />
+                  </div>
+
+                  <div style={styles.inputGroup} className="animate-fade">
+                    <label style={styles.inputLabel}>초기 봉군 수 (Colonies)</label>
+                    <input
+                      id="auth-initial-colonies"
+                      style={styles.input}
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={initialColonyCount}
+                      onChange={(e) => handleColonyCountChange(e.target.value)}
+                      placeholder="예: 5"
+                    />
+                  </div>
+
+                  {parseInt(initialColonyCount) > 0 && (
+                    <div style={{ ...styles.inputGroup, marginTop: "8px" }} className="animate-fade">
+                      <label style={styles.inputLabel}>벌통별 여왕벌 품종 지정</label>
+                      <div
+                        style={{
+                          maxHeight: "130px",
+                          overflowY: "auto",
+                          padding: "10px",
+                          background: "rgba(17,24,39,0.5)",
+                          borderRadius: "8px",
+                          border: "1px solid rgba(255,255,255,0.06)",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "8px",
+                        }}
+                      >
+                        {Array.from({ length: parseInt(initialColonyCount) || 0 }).map((_, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              gap: "10px",
+                            }}
+                          >
+                            <span style={{ fontSize: "12px", color: "#9ca3af" }}>Colony {idx + 1}</span>
+                            <select
+                              style={{
+                                ...styles.input,
+                                padding: "6px 10px",
+                                fontSize: "12px",
+                                width: "160px",
+                                background: "rgba(17,24,39,0.8)",
+                              }}
+                              value={queenTypes[idx] || "이탈리안"}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setQueenTypes((prev) => {
+                                  const next = [...prev];
+                                  next[idx] = val;
+                                  return next;
+                                });
+                              }}
+                            >
+                              <option value="이탈리안">이탈리안 (Italian)</option>
+                              <option value="카니올란">카니올란 (Carniolan)</option>
+                              <option value="코카시안">코카시안 (Caucasian)</option>
+                              <option value="한봉">한봉 (Korean Native)</option>
+                              <option value="기타">기타 혼합 (Hybrid)</option>
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </>
           )}
 

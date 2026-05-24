@@ -8,7 +8,7 @@ class UserCreate(BaseModel):
     farm_name: Optional[str] = None
     role: Optional[str] = "farmer" # farmer, researcher, admin
     initial_colony_count: Optional[int] = Field(default=0, ge=0, le=100)
-    queen_type: Optional[str] = "Unknown"
+    queen_types: Optional[List[str]] = []
 
 class UserLogin(BaseModel):
     username: str
