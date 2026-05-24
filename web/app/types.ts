@@ -2,6 +2,7 @@ export interface User {
   id: number;
   username: string;
   farm_name: string | null;
+  role: string;
 }
 
 export interface Token {
@@ -46,6 +47,8 @@ export interface TraitRecord {
   climate_adaptation: number;
   temperature: number | null;
   humidity: number | null;
+  vsh_rate?: number;
+  hygienic_rate?: number;
   notes: string | null;
 }
 

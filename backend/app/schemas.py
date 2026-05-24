@@ -6,6 +6,7 @@ class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=100)
     password: str = Field(..., min_length=4, max_length=100)
     farm_name: Optional[str] = None
+    role: Optional[str] = "farmer" # farmer, researcher, admin
 
 class UserLogin(BaseModel):
     username: str
@@ -15,6 +16,7 @@ class UserOut(BaseModel):
     id: int
     username: str
     farm_name: Optional[str] = None
+    role: str = "farmer"
 
     class Config:
         from_attributes = True
@@ -39,6 +41,8 @@ class TraitRecordBase(BaseModel):
     climate_adaptation: int = Field(default=3, ge=1, le=5)
     temperature: Optional[float] = Field(None, ge=-50.0, le=60.0)
     humidity: Optional[float] = Field(None, ge=0.0, le=100.0)
+    vsh_rate: float = Field(default=0.0, ge=0.0, le=100.0)
+    hygienic_rate: float = Field(default=0.0, ge=0.0, le=100.0)
     notes: Optional[str] = None
 
 class TraitRecordCreate(TraitRecordBase):
@@ -130,3 +134,42 @@ class BulkSyncResponse(BaseModel):
     created_apiaries: int
     created_colonies: int
     created_records: int
+
+
+# --- Morphological Record (Lab Research) Schemas ---
+class MorphologicalRecordBase(BaseModel):
+    queen_tag: str = Field(..., min_length=1, max_length=100)
+    colony_id: Optional[int] = None
+    date: str
+    cubital_index: Optional[float] = Field(None, ge=0.0, le=20.0)
+    proboscis_length: Optional[float] = Field(None, ge=0.0, le=15.0)
+    tergite_color: Optional[str] = Field(None, max_length=50)
+    basitarsus_length: Optional[float] = Field(None, ge=0.0, le=10.0)
+    basitarsus_width: Optional[float] = Field(None, ge=0.0, le=10.0)
+    researcher_notes: Optional[str] = None
+
+class MorphologicalRecordCreate(MorphologicalRecordBase):
+    pass
+
+class MorphologicalRecord(MorphologicalRecordBase):
+    id: int
+
+    class Config:
+        from_attributes = True
+
+
+# --- Researcher Dashboard Stats Schemas ---
+class ResearcherStats(BaseModel):
+    total_farmers: int
+    total_apiaries: int
+    total_colonies: int
+    total_records: int
+    avg_honey: float
+    avg_propolis: float
+    avg_royal_jelly: float
+    avg_survival_rate: float
+    active_colonies: int
+    weak_colonies: int
+    dead_colonies: int
+    queen_types: int
+

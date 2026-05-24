@@ -10,6 +10,7 @@ class User(Base):
     username = Column(String(100), unique=True, index=True, nullable=False)
     hashed_password = Column(String(255), nullable=False)
     farm_name = Column(String(100), nullable=True)
+    role = Column(String(20), default="farmer") # farmer, researcher, admin
 
     apiaries = relationship("Apiary", back_populates="owner_user", cascade="all, delete-orphan")
 
@@ -62,6 +63,8 @@ class TraitRecord(Base):
     swarming_rate = Column(Float, default=0.0)          # 분봉률 (%)
     overwintering_survival = Column(Float, default=100.0) # 월동 생존율 (%)
     climate_adaptation = Column(Integer, default=3)     # 기후 적응성 (1-5)
+    vsh_rate = Column(Float, default=0.0)                # VSH 행동 발현율 (%) [farmer log]
+    hygienic_rate = Column(Float, default=0.0)           # 핀테스트 청소율 (%) [farmer log]
     
     # Environment telemetry (기상/환경 데이터)
     temperature = Column(Float, nullable=True)          # 온도 (°C)
@@ -69,3 +72,23 @@ class TraitRecord(Base):
     notes = Column(String, nullable=True)               # 비고
 
     colony = relationship("Colony", back_populates="records")
+
+
+class MorphologicalRecord(Base):
+    __tablename__ = "morphological_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    queen_tag = Column(String(100), index=True, nullable=False) # 여왕벌 기준 바인딩!
+    colony_id = Column(Integer, ForeignKey("colonies.id", ondelete="CASCADE"), nullable=True, index=True)
+    date = Column(String, nullable=False, index=True)           # 분석 일자 (YYYY-MM-DD)
+    
+    # 연구실 형태 정밀 측정 데이터
+    cubital_index = Column(Float, nullable=True)        # 큐비탈 지수 (a/b ratio)
+    proboscis_length = Column(Float, nullable=True)     # 설수장 (혀 길이, mm)
+    tergite_color = Column(String(50), nullable=True)   # 복판 색상 마커 (Yellow, Brown, Dark 등)
+    basitarsus_length = Column(Float, nullable=True)    # 후경부 마디 길이 (mm)
+    basitarsus_width = Column(Float, nullable=True)     # 후경부 마디 너비 (mm)
+    researcher_notes = Column(String, nullable=True)    # 연구원 관찰 특이사항
+
+    colony = relationship("Colony")
+

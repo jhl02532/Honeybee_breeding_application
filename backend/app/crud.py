@@ -14,6 +14,7 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
         username=user.username,
         hashed_password=get_password_hash(user.password),
         farm_name=user.farm_name,
+        role=user.role
     )
     db.add(db_user)
     db.commit()
@@ -131,6 +132,8 @@ def create_trait_record(db: Session, record: schemas.TraitRecordCreate):
         climate_adaptation=record.climate_adaptation,
         temperature=record.temperature,
         humidity=record.humidity,
+        vsh_rate=record.vsh_rate,
+        hygienic_rate=record.hygienic_rate,
         notes=record.notes
     )
     db.add(db_record)
@@ -313,6 +316,8 @@ def bulk_sync_data(db: Session, owner_id: int, payload: schemas.BulkSyncPayload)
             climate_adaptation=record.climate_adaptation,
             temperature=record.temperature,
             humidity=record.humidity,
+            vsh_rate=record.vsh_rate,
+            hygienic_rate=record.hygienic_rate,
             notes=record.notes
         )
         db.add(db_record)
@@ -356,3 +361,112 @@ def seed_database_if_empty(db: Session):
     
     db.add_all([r1, r2, r3, r4, r5])
     db.commit()
+
+
+# ========== MORPHOLOGICAL RECORD CRUD (Lab Research) ==========
+
+def get_morphological_records(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.MorphologicalRecord).offset(skip).limit(limit).all()
+
+def get_morphological_records_by_queen(db: Session, queen_tag: str):
+    return db.query(models.MorphologicalRecord).filter(
+        models.MorphologicalRecord.queen_tag == queen_tag
+    ).order_by(models.MorphologicalRecord.date.asc()).all()
+
+def create_morphological_record(db: Session, record: schemas.MorphologicalRecordCreate):
+    db_record = models.MorphologicalRecord(
+        queen_tag=record.queen_tag,
+        colony_id=record.colony_id,
+        date=record.date,
+        cubital_index=record.cubital_index,
+        proboscis_length=record.proboscis_length,
+        tergite_color=record.tergite_color,
+        basitarsus_length=record.basitarsus_length,
+        basitarsus_width=record.basitarsus_width,
+        researcher_notes=record.researcher_notes
+    )
+    db.add(db_record)
+    db.commit()
+    db.refresh(db_record)
+    return db_record
+
+def delete_morphological_record(db: Session, record_id: int):
+    db_record = db.query(models.MorphologicalRecord).filter(models.MorphologicalRecord.id == record_id).first()
+    if db_record:
+        db.delete(db_record)
+        db.commit()
+        return True
+    return False
+
+
+# ========== DATA SEEDING ==========
+
+def seed_database_if_empty(db: Session):
+    # Ensure melitta exists
+    melitta_user = db.query(models.User).filter(models.User.username == "melitta").first()
+    if not melitta_user:
+        melitta_user = models.User(
+            username="melitta",
+            hashed_password=get_password_hash("melittapass"),
+            farm_name="멜리타 스마트 양봉장",
+            role="farmer"
+        )
+        db.add(melitta_user)
+        db.commit()
+        db.refresh(melitta_user)
+
+    # Ensure researcher exists
+    researcher_user = db.query(models.User).filter(models.User.username == "researcher").first()
+    if not researcher_user:
+        researcher_user = models.User(
+            username="researcher",
+            hashed_password=get_password_hash("researcherpass"),
+            farm_name="국립 꿀벌 육종 연구소",
+            role="researcher"
+        )
+        db.add(researcher_user)
+        db.commit()
+        db.refresh(researcher_user)
+
+    # Seed relational data if apiaries are empty
+    if db.query(models.Apiary).count() > 0:
+        return
+    
+    # 1. Create Apiaries
+    apiary1 = models.Apiary(name="남한산성 연구 봉장", owner="박박사", location="경기도 광주시 남한산성면", latitude=37.4782, longitude=127.1895, owner_id=melitta_user.id)
+    apiary2 = models.Apiary(name="제주 아열대 육종원", owner="김석사", location="제주특별자치도 서귀포시", latitude=33.2541, longitude=126.5601, owner_id=melitta_user.id)
+    db.add_all([apiary1, apiary2])
+    db.commit()
+
+    # 2. Create Colonies
+    c1 = models.Colony(code="K-01", apiary_id=apiary1.id, status="Active", queen_tag="Q-2025-N01")
+    c2 = models.Colony(code="K-02", apiary_id=apiary1.id, status="Active", queen_tag="Q-2025-N02")
+    c3 = models.Colony(code="J-01", apiary_id=apiary2.id, status="Active", queen_tag="Q-2026-J01")
+    c4 = models.Colony(code="J-02", apiary_id=apiary2.id, status="Weak", queen_tag="Q-2026-J02")
+    db.add_all([c1, c2, c3, c4])
+    db.commit()
+
+    # 3. Create Trait Records (incorporating VSH and Hygienic behavior!)
+    r1 = models.TraitRecord(colony_id=c1.id, date="2026-05-10", honey_production=45.2, propolis_production=320.0, royal_jelly_production=12.0, temperament=5, virus_resistance=4, mite_resistance=4, swarming_rate=12.5, overwintering_survival=95.0, climate_adaptation=4, temperature=21.5, humidity=62.0, vsh_rate=80.0, hygienic_rate=95.0, notes="활동성 매우 강함, 분봉 징후 없음")
+    r2 = models.TraitRecord(colony_id=c1.id, date="2026-05-20", honey_production=52.8, propolis_production=340.0, royal_jelly_production=15.0, temperament=5, virus_resistance=5, mite_resistance=4, swarming_rate=15.0, overwintering_survival=95.0, climate_adaptation=5, temperature=24.0, humidity=58.0, vsh_rate=85.0, hygienic_rate=98.0, notes="꿀 수밀 능력 극대화 상태")
+    r3 = models.TraitRecord(colony_id=c2.id, date="2026-05-12", honey_production=38.0, propolis_production=290.0, royal_jelly_production=8.0, temperament=4, virus_resistance=3, mite_resistance=3, swarming_rate=20.0, overwintering_survival=90.0, climate_adaptation=4, temperature=22.0, humidity=65.0, vsh_rate=60.0, hygienic_rate=80.0, notes="온순하나 응애 다소 관찰됨")
+    r4 = models.TraitRecord(colony_id=c3.id, date="2026-05-15", honey_production=62.0, propolis_production=480.0, royal_jelly_production=25.0, temperament=4, virus_resistance=5, mite_resistance=5, swarming_rate=8.0, overwintering_survival=98.0, climate_adaptation=5, temperature=26.5, humidity=75.0, vsh_rate=90.0, hygienic_rate=99.0, notes="제주 기후 완전 적응, 다수 채밀")
+    r5 = models.TraitRecord(colony_id=c4.id, date="2026-05-16", honey_production=15.0, propolis_production=100.0, royal_jelly_production=2.0, temperament=2, virus_resistance=2, mite_resistance=2, swarming_rate=35.0, overwintering_survival=70.0, climate_adaptation=2, temperature=26.0, humidity=78.0, vsh_rate=40.0, hygienic_rate=50.0, notes="세력 약화, 여왕벌 산란율 부진")
+    db.add_all([r1, r2, r3, r4, r5])
+    db.commit()
+
+    # 4. Create Morphological Lab Samples (Seeding morphological values linked to Q-2025-N01)
+    morph1 = models.MorphologicalRecord(
+        queen_tag="Q-2025-N01",
+        colony_id=c1.id,
+        date="2026-05-18",
+        cubital_index=1.85,
+        proboscis_length=6.45,
+        tergite_color="Yellow-Stripes",
+        basitarsus_length=3.25,
+        basitarsus_width=1.15,
+        researcher_notes="이탈리안 순종 계열의 날개 시맥 비율 확인됨. 혀 길이도 매우 양호하여 채밀성 보증."
+    )
+    db.add(morph1)
+    db.commit()
+

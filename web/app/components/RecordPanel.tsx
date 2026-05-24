@@ -39,6 +39,8 @@ export default function RecordPanel({
     swarming_rate: "0",
     overwintering_survival: "100",
     climate_adaptation: "3",
+    vsh_rate: "0",
+    hygienic_rate: "0",
     temperature: "",
     humidity: "",
     notes: "",
@@ -67,6 +69,8 @@ export default function RecordPanel({
         swarming_rate: parseFloat(form.swarming_rate),
         overwintering_survival: parseFloat(form.overwintering_survival),
         climate_adaptation: parseInt(form.climate_adaptation),
+        vsh_rate: parseFloat(form.vsh_rate),
+        hygienic_rate: parseFloat(form.hygienic_rate),
         temperature: form.temperature ? parseFloat(form.temperature) : null,
         humidity: form.humidity ? parseFloat(form.humidity) : null,
         notes: form.notes || null,
@@ -93,6 +97,8 @@ export default function RecordPanel({
         swarming_rate: "0",
         overwintering_survival: "100",
         climate_adaptation: "3",
+        vsh_rate: "0",
+        hygienic_rate: "0",
         temperature: "",
         humidity: "",
         notes: "",
@@ -132,6 +138,8 @@ export default function RecordPanel({
       "분봉률(%)",
       "월동생존율(%)",
       "기후적응성(1-5)",
+      "VSH저항성(%)",
+      "청소청결율(%)",
       "온도(°C)",
       "습도(%)",
       "비고"
@@ -150,6 +158,8 @@ export default function RecordPanel({
         r.swarming_rate,
         r.overwintering_survival,
         r.climate_adaptation,
+        r.vsh_rate ?? 0,
+        r.hygienic_rate ?? 0,
         r.temperature ?? "",
         r.humidity ?? "",
         (r.notes || "").replace(/"/g, '""')
@@ -231,6 +241,8 @@ export default function RecordPanel({
                 <th style={styles.th}>바이러스</th>
                 <th style={styles.th}>응애</th>
                 <th style={styles.th}>생존율(%)</th>
+                <th style={styles.th}>VSH(%)</th>
+                <th style={styles.th}>청소(%)</th>
                 <th style={styles.th}>비고</th>
                 <th style={styles.th}>삭제</th>
               </tr>
@@ -249,6 +261,8 @@ export default function RecordPanel({
                     <td style={styles.td}>{renderStars(r.virus_resistance)}</td>
                     <td style={styles.td}>{renderStars(r.mite_resistance)}</td>
                     <td style={styles.td}>{r.overwintering_survival}</td>
+                    <td style={styles.td}>{r.vsh_rate ?? 0}%</td>
+                    <td style={styles.td}>{r.hygienic_rate ?? 0}%</td>
                     <td style={{ ...styles.td, maxWidth: "150px", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {r.notes || "-"}
                     </td>
@@ -317,6 +331,12 @@ export default function RecordPanel({
               <FormNum label="분봉률 (%)" value={form.swarming_rate} onChange={(v) => setForm({ ...form, swarming_rate: v })} />
               <FormNum label="월동 생존율 (%)" value={form.overwintering_survival} onChange={(v) => setForm({ ...form, overwintering_survival: v })} />
               <FormNum label="기후 적응성" value={form.climate_adaptation} onChange={(v) => setForm({ ...form, climate_adaptation: v })} min={1} max={5} step={1} />
+            </div>
+
+            <h4 style={styles.formSection}>🛡️ 행동학적 저항성 형질 (농가 관찰치)</h4>
+            <div style={{ display: "flex", gap: "12px" }}>
+              <FormNum label="VSH 행동 발현율 (%)" value={form.vsh_rate} onChange={(v) => setForm({ ...form, vsh_rate: v })} min={0} max={100} step={5} />
+              <FormNum label="청소 청결율 (%)" value={form.hygienic_rate} onChange={(v) => setForm({ ...form, hygienic_rate: v })} min={0} max={100} step={5} />
             </div>
 
             <h4 style={styles.formSection}>🌡 환경 데이터</h4>
