@@ -19,6 +19,37 @@ def create_user(db: Session, user: schemas.UserCreate) -> models.User:
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    
+    # Auto-Onboarding: if initial_colony_count > 0, automatically seed 1 apiary and N colonies
+    initial_count = getattr(user, "initial_colony_count", 0) or 0
+    if initial_count > 0 and db_user.role == "farmer":
+        # 1. Create Default Apiary
+        apiary_name = f"{db_user.farm_name or db_user.username} 제1봉장"
+        db_apiary = models.Apiary(
+            name=apiary_name,
+            owner=db_user.username,
+            location="가입 온보딩 자동생성 봉장",
+            latitude=37.5665,
+            longitude=126.9780,
+            owner_id=db_user.id
+        )
+        db.add(db_apiary)
+        db.commit()
+        db.refresh(db_apiary)
+        
+        # 2. Create N Colonies
+        q_type = getattr(user, "queen_type", "Unknown") or "Unknown"
+        for i in range(1, initial_count + 1):
+            db_colony = models.Colony(
+                code=f"C-{db_user.id:02d}-{i:02d}",
+                apiary_id=db_apiary.id,
+                status="Active",
+                queen_tag=q_type
+            )
+            db.add(db_colony)
+        db.commit()
+        db.refresh(db_user)
+        
     return db_user
 
 

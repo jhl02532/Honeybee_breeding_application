@@ -7,8 +7,9 @@ import ApiaryPanel from "./ApiaryPanel";
 import ColonyPanel from "./ColonyPanel";
 import RecordPanel from "./RecordPanel";
 import ResearcherPanel from "./ResearcherPanel";
+import ManualPanel from "./ManualPanel";
 
-type DashView = "overview" | "apiaries" | "colonies" | "records" | "researcher";
+type DashView = "overview" | "apiaries" | "colonies" | "records" | "researcher" | "manual";
 
 interface DashboardScreenProps {
   user: User;
@@ -73,6 +74,9 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
   if (user.role === "researcher" || user.role === "admin") {
     navItems.push({ key: "researcher", label: "연구원 분석", icon: "🔬" });
   }
+
+  // Always show guidebook manual to all users
+  navItems.push({ key: "manual", label: "사용 매뉴얼", icon: "📖" });
 
   return (
     <div style={{ ...styles.dashLayout, position: "relative" }}>
@@ -329,6 +333,9 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
           )}
           {view === "researcher" && (
             <ResearcherPanel />
+          )}
+          {view === "manual" && (
+            <ManualPanel />
           )}
         </div>
       </main>

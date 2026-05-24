@@ -315,32 +315,32 @@ export default function RecordPanel({
             </div>
 
             <h4 style={styles.formSection}>🍯 생산량</h4>
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               <FormNum label="꿀 (kg)" value={form.honey_production} onChange={(v) => setForm({ ...form, honey_production: v })} />
               <FormNum label="프로폴리스 (g)" value={form.propolis_production} onChange={(v) => setForm({ ...form, propolis_production: v })} />
               <FormNum label="로얄젤리 (g)" value={form.royal_jelly_production} onChange={(v) => setForm({ ...form, royal_jelly_production: v })} />
             </div>
 
             <h4 style={styles.formSection}>📊 형질 평가 (1-5)</h4>
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               <FormNum label="온순함" value={form.temperament} onChange={(v) => setForm({ ...form, temperament: v })} min={1} max={5} step={1} />
               <FormNum label="바이러스 저항성" value={form.virus_resistance} onChange={(v) => setForm({ ...form, virus_resistance: v })} min={1} max={5} step={1} />
               <FormNum label="응애 저항성" value={form.mite_resistance} onChange={(v) => setForm({ ...form, mite_resistance: v })} min={1} max={5} step={1} />
             </div>
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               <FormNum label="분봉률 (%)" value={form.swarming_rate} onChange={(v) => setForm({ ...form, swarming_rate: v })} />
               <FormNum label="월동 생존율 (%)" value={form.overwintering_survival} onChange={(v) => setForm({ ...form, overwintering_survival: v })} />
               <FormNum label="기후 적응성" value={form.climate_adaptation} onChange={(v) => setForm({ ...form, climate_adaptation: v })} min={1} max={5} step={1} />
             </div>
 
             <h4 style={styles.formSection}>🛡️ 행동학적 저항성 형질 (농가 관찰치)</h4>
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               <FormNum label="VSH 행동 발현율 (%)" value={form.vsh_rate} onChange={(v) => setForm({ ...form, vsh_rate: v })} min={0} max={100} step={5} />
               <FormNum label="청소 청결율 (%)" value={form.hygienic_rate} onChange={(v) => setForm({ ...form, hygienic_rate: v })} min={0} max={100} step={5} />
             </div>
 
             <h4 style={styles.formSection}>🌡 환경 데이터</h4>
-            <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
               <FormNum label="온도 (°C)" value={form.temperature} onChange={(v) => setForm({ ...form, temperature: v })} />
               <FormNum label="습도 (%)" value={form.humidity} onChange={(v) => setForm({ ...form, humidity: v })} />
             </div>

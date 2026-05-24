@@ -12,6 +12,8 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [farmName, setFarmName] = useState("");
+  const [initialColonyCount, setInitialColonyCount] = useState("5");
+  const [queenType, setQueenType] = useState("이탈리안");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -22,7 +24,11 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
     try {
       const path = mode === "login" ? "/api/v1/auth/login/json" : "/api/v1/auth/register";
       const body: any = { username, password };
-      if (mode === "register") body.farm_name = farmName || null;
+      if (mode === "register") {
+        body.farm_name = farmName || null;
+        body.initial_colony_count = parseInt(initialColonyCount) || 0;
+        body.queen_type = queenType || "Unknown";
+      }
       const res = await fetch(`${BASE}${path}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -102,17 +108,49 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
           </div>
 
           {mode === "register" && (
-            <div style={styles.inputGroup} className="animate-fade">
-              <label style={styles.inputLabel}>농장명 (선택)</label>
-              <input
-                id="auth-farmname"
-                style={styles.input}
-                type="text"
-                value={farmName}
-                onChange={(e) => setFarmName(e.target.value)}
-                placeholder="예: 남한산성 양봉원"
-              />
-            </div>
+            <>
+              <div style={styles.inputGroup} className="animate-fade">
+                <label style={styles.inputLabel}>농장명 (선택)</label>
+                <input
+                  id="auth-farmname"
+                  style={styles.input}
+                  type="text"
+                  value={farmName}
+                  onChange={(e) => setFarmName(e.target.value)}
+                  placeholder="예: 남한산성 양봉원"
+                />
+              </div>
+
+              <div style={styles.inputGroup} className="animate-fade">
+                <label style={styles.inputLabel}>초기 봉군 수 (Colonies)</label>
+                <input
+                  id="auth-initial-colonies"
+                  style={styles.input}
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={initialColonyCount}
+                  onChange={(e) => setInitialColonyCount(e.target.value)}
+                  placeholder="예: 5"
+                />
+              </div>
+
+              <div style={styles.inputGroup} className="animate-fade">
+                <label style={styles.inputLabel}>기본 여왕벌 종류 (Pedigree Breed)</label>
+                <select
+                  id="auth-queen-type"
+                  style={styles.input}
+                  value={queenType}
+                  onChange={(e) => setQueenType(e.target.value)}
+                >
+                  <option value="이탈리안">이탈리안 (Italian - 다수 황색 우종)</option>
+                  <option value="카니올란">카니올란 (Carniolan - 온순/월동 우종)</option>
+                  <option value="코카시안">코카시안 (Caucasian - 프로폴리스 채취종)</option>
+                  <option value="한봉">한봉 (Korean Native - 동양종 토종벌)</option>
+                  <option value="기타">기타 육종 혼합 (Hybrid/Other)</option>
+                </select>
+              </div>
+            </>
           )}
 
           {error && (

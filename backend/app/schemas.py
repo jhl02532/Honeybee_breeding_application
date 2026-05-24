@@ -7,6 +7,8 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=4, max_length=100)
     farm_name: Optional[str] = None
     role: Optional[str] = "farmer" # farmer, researcher, admin
+    initial_colony_count: Optional[int] = Field(default=0, ge=0, le=100)
+    queen_type: Optional[str] = "Unknown"
 
 class UserLogin(BaseModel):
     username: str

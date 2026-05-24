@@ -558,10 +558,11 @@ export const styles: Record<string, React.CSSProperties> = {
     background: "rgba(0,0,0,0.6)",
     backdropFilter: "blur(8px)",
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "center",
     zIndex: 1000,
-    padding: "20px",
+    padding: "40px 20px",
+    overflowY: "auto" as const,
   },
   modalContent: {
     width: "100%",

@@ -36,7 +36,7 @@ export default function FormNum({
   };
 
   return (
-    <div style={{ ...styles.inputGroup, flex: 1 }}>
+    <div style={{ ...styles.inputGroup, flex: "1 1 120px", minWidth: "120px" }}>
       <label style={styles.inputLabel}>{label}</label>
       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
         <button
