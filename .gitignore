@@ -1,38 +1,4 @@
-# Next.js / React / Node
-node_modules/
-.next/
-out/
-build/
-.env*.local
-
-# Python / FastAPI
-.venv/
-venv/
-ENV/
-__pycache__/
-*.py[cod]
-*$py.class
-
-# Databases (Local SQLite)
-*.db
-*.db-shm
-*.db-wal
-*.sqlite3
-
-# Mobile (Flutter / Android / iOS)
-.dart_tool/
-.packages
-.pub-cache/
-.pub/
-/build/
-ios/.symlinks/
-android/.gradle/
-*.keystore
-*.jks
-
-# IDE / System
-.vscode/
-.idea/
 .DS_Store
-Thumbs.db
-desktop.ini
+*.log
+.system_generated/
+data/

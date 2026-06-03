@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apis mellifera Genomic Mapping Portal (Amel_HAv3.1)</title>
+    <meta name="description" id="meta-desc" content="서양종 꿀벌(Apis mellifera)의 주요 기능 유전자 및 변이, QTL 정보를 최신 reference genome 어셈블리인 Amel_HAv3.1에 매핑하여 함축적으로 시각화하는 인터랙티브 게놈 브라우저 허브입니다.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Dashboard Header & Hero Stats -->
+        <header>
+            <div class="header-top">
+                <div class="brand">
+                    <svg class="brand-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z" />
+                    </svg>
+                    <div>
+                        <h1 id="brand-title">Apis mellifera Genomic Portal</h1>
+                        <p id="brand-subtitle">꿀벌 주요 기능 유전자, QTL 및 변이 통합 맵</p>
+                    </div>
+                </div>
+
+                <!-- Species Switcher Tab -->
+                <div class="species-selector">
+                    <button class="species-btn active" id="btn-species-mellifera" data-species="mellifera">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width:1rem; height:1rem;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Apis mellifera
+                    </button>
+                    <button class="species-btn" id="btn-species-cerana" data-species="cerana">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" style="width:1rem; height:1rem;">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Apis cerana
+                    </button>
+                </div>
+                
+                <!-- Assembly Stats Pills -->
+                <div class="meta-pills">
+                    <div class="meta-pill" id="pill-assembly">
+                        Assembly: <strong id="val-assembly">-</strong>
+                    </div>
+                    <div class="meta-pill" id="pill-accession">
+                        RefSeq: <strong id="val-accession">-</strong>
+                    </div>
+                    <div class="meta-pill" id="pill-size">
+                        Size: <strong id="val-size">-</strong>
+                    </div>
+                    <div class="meta-pill" id="pill-chroms">
+                        Chroms: <strong id="val-chroms">16</strong>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="header-desc" id="header-desc">-</div>
+        </header>
+
+        <!-- Dynamic Navigation Tabs -->
+        <nav class="app-tabs" style="display: flex; gap: 0.5rem; background: rgba(15, 23, 42, 0.4); padding: 0.35rem; border-radius: 12px; border: 1px solid var(--border-color); margin-top: 0.5rem;">
+            <button class="tab-btn active" data-tab="browser" style="background: transparent; border: none; color: var(--text-secondary); padding: 0.5rem 1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: var(--transition-normal); display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.05rem; height:1.05rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                Genome Browser
+            </button>
+            <button class="tab-btn" data-tab="synteny" style="background: transparent; border: none; color: var(--text-secondary); padding: 0.5rem 1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: var(--transition-normal); display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.05rem; height:1.05rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                </svg>
+                Comparative Synteny
+            </button>
+            <button class="tab-btn" data-tab="chemo" style="background: transparent; border: none; color: var(--text-secondary); padding: 0.5rem 1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: var(--transition-normal); display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.05rem; height:1.05rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+                Chemoreceptor Explorer
+            </button>
+            <button class="tab-btn" data-tab="marker" style="background: transparent; border: none; color: var(--text-secondary); padding: 0.5rem 1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: var(--transition-normal); display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.05rem; height:1.05rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                Marker Assay Designer
+            </button>
+            <button class="tab-btn" data-tab="farmer" style="background: transparent; border: none; color: var(--text-secondary); padding: 0.5rem 1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: var(--transition-normal); display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.05rem; height:1.05rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+                </svg>
+                Farmer Trait Simulator
+            </button>
+            <button class="tab-btn" data-tab="matchmaker" style="background: transparent; border: none; color: var(--text-secondary); padding: 0.5rem 1rem; font-weight: 700; border-radius: 8px; cursor: pointer; transition: var(--transition-normal); display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.05rem; height:1.05rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Breeding Matchmaker
+            </button>
+        </nav>
+
+        <!-- TAB 1: Genome Browser -->
+        <div id="tab-content-browser" class="tab-pane active">
+            <!-- Main Body Grid -->
+            <div class="grid-container">
+                <!-- Sidebar: Chromosome Navigation -->
+                <aside class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                            </svg>
+                            염색체 목록 (LGs)
+                        </h2>
+                    </div>
+                    <div class="chr-nav-list" id="chr-list-container">
+                        <!-- Dynamic rendering by app.js -->
+                    </div>
+                </aside>
+
+                <!-- Main Content Area: Genome Visual Map & Tracks -->
+                <main class="browser-display">
+                    <!-- SVG Overview Map -->
+                    <section class="panel">
+                        <div class="panel-header">
+                            <h2 class="panel-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                </svg>
+                                유전체 맵 물리적 축척 보기
+                            </h2>
+                        </div>
+                        <div id="svg-map-wrapper">
+                            <!-- Dynamic SVG rendering by app.js -->
+                        </div>
+                    </section>
+
+                    <!-- Zoomed-in Track Browser -->
+                    <section class="panel">
+                        <div class="panel-header" style="flex-wrap: wrap; gap: 0.75rem;">
+                            <h2 class="panel-title" id="track-browser-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                염색체 상세 트랙 브라우저
+                            </h2>
+                            
+                            <!-- Upload custom track dropzone -->
+                            <div class="track-upload-bar" style="display: flex; align-items: center; background: rgba(15, 23, 42, 0.4); padding: 0.25rem 0.5rem; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.08);">
+                                <span class="upload-label" style="font-size: 0.75rem; color: var(--text-secondary); margin-right: 0.5rem; display: flex; align-items: center; gap: 0.25rem;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:0.85rem; height:0.85rem;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    Private VCF/TXT:
+                                </span>
+                                <input type="file" id="vcf-upload-input" accept=".vcf,.txt" style="display:none;">
+                                <button class="locate-btn" onclick="document.getElementById('vcf-upload-input').click()" style="padding: 0.2rem 0.4rem; font-size: 0.65rem; border-radius: 4px;">
+                                    VCF 로드
+                                </button>
+                                <span id="vcf-upload-status" style="font-size:0.65rem; color:var(--text-muted); margin-left:0.5rem;">대기중</span>
+                            </div>
+
+                            <div class="meta-pill" style="margin: 0; font-family: var(--font-mono); font-size: 0.75rem;" id="track-selected-info">
+                                NC_037638.1 | Size: 27.75 Mb
+                            </div>
+                        </div>
+
+                        <!-- Scrollable Track Area -->
+                        <div class="track-viewer">
+                            <div class="focus-line" id="track-focus-line"></div>
+                            <div class="track-container">
+                                <!-- Ruler Track -->
+                                <div class="track-header-row ruler-track">
+                                    <div class="track-label">Position (Mb)</div>
+                                    <div class="track-content ruler-track" id="track-content-ruler">
+                                        <!-- Dynamic ticks rendering by app.js -->
+                                    </div>
+                                </div>
+                                
+                                <!-- QTL Track -->
+                                <div class="track-header-row">
+                                    <div class="track-label">QTL Regions</div>
+                                    <div class="track-content" id="track-content-qtl">
+                                        <!-- Dynamic QTL blocks -->
+                                    </div>
+                                </div>
+
+                                <!-- Gene Track -->
+                                <div class="track-header-row">
+                                    <div class="track-label">Functional Genes</div>
+                                    <div class="track-content" id="track-content-gene">
+                                        <!-- Dynamic Gene blocks -->
+                                    </div>
+                                </div>
+
+                                <!-- Variant/SNP Track -->
+                                <div class="track-header-row">
+                                    <div class="track-label">Variants (SNPs)</div>
+                                    <div class="track-content" id="track-content-variant">
+                                        <!-- Dynamic Variant markers -->
+                                    </div>
+                                </div>
+
+                                <!-- Private User Track -->
+                                <div class="track-header-row" id="private-track-row" style="display: none;">
+                                    <div class="track-label" style="color: #10b981;">Private Track</div>
+                                    <div class="track-content" id="track-content-private" style="border-color: rgba(16, 185, 129, 0.3);">
+                                        <!-- Dynamic Private Variant markers -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </main>
+            </div>
+
+            <!-- Integrated Feature Finder (Data Table) -->
+            <section class="panel data-portal">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        통합 유전정보 탐색기 (Search Finder)
+                    </h2>
+                </div>
+                
+                <div class="search-filter-bar" style="align-items: center;">
+                    <div class="search-input-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input type="text" class="search-input" id="search-box" placeholder="심볼, 형질, 키워드, 논문명 등을 입력하세요...">
+                    </div>
+                    
+                    <select class="filter-select" id="filter-type">
+                        <option value="all">모든 유형</option>
+                        <option value="gene">기능 유전자 (Genes)</option>
+                        <option value="qtl">양적형질유전자좌 (QTLs)</option>
+                        <option value="variant">변이/SNP (Variants)</option>
+                    </select>
+                    
+                    <select class="filter-select" id="filter-category">
+                        <option value="all">모든 기능 카테고리</option>
+                        <option value="Behavior">행동 특성 (Behavior)</option>
+                        <option value="Immunity">질병 저항성/면역 (Immunity)</option>
+                        <option value="Development">형태/발달/생산성 (Development)</option>
+                    </select>
+
+                    <div class="export-btn-group" style="display: flex; gap: 0.5rem; margin-left: auto;">
+                        <button class="locate-btn" id="export-csv-btn" title="CSV 형식으로 내보내기">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:0.85rem; height:0.85rem; vertical-align:middle; margin-right:0.25rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            CSV
+                        </button>
+                        <button class="locate-btn" id="export-bed-btn" title="BED 형식으로 내보내기">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:0.85rem; height:0.85rem; vertical-align:middle; margin-right:0.25rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            BED
+                        </button>
+                        <button class="locate-btn" id="export-fasta-btn" title="FASTA 형식으로 내보내기">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:0.85rem; height:0.85rem; vertical-align:middle; margin-right:0.25rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            FASTA
+                        </button>
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">유형</th>
+                                <th style="width: 140px;">심볼 / 이름</th>
+                                <th style="width: 80px;">염색체</th>
+                                <th id="table-header-range">Range / 물리적 위치 (Amel_HAv3.1)</th>
+                                <th>관련 형질 및 기능 설명</th>
+                                <th style="width: 100px;">액션</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            <!-- Dynamic items rendering by app.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Assembly Comparison Panel -->
+            <section class="panel comparison-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                        꿀벌 참조 유전체 어셈블리 맵 보완 통계
+                    </h2>
+                </div>
+                
+                <div class="comparison-grid" id="comparison-container">
+                    <!-- Dynamic comparison cards rendered by app.js -->
+                </div>
+            </section>
+        </div>
+
+        <!-- TAB 2: Comparative Synteny -->
+        <div id="tab-content-synteny" class="tab-pane">
+            <div class="synteny-grid" style="display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem;">
+                <!-- Main Synteny SVG display -->
+                <div class="panel synteny-display">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                            </svg>
+                            1대1 상동유전자 (Ortholog) 물리적 매핑 비교
+                        </h2>
+                        
+                        <div class="synteny-controls">
+                            <label for="synteny-chrom-select" style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-right:0.5rem;">염색체 비교 쌍:</label>
+                            <select id="synteny-chrom-select" class="filter-select" style="margin: 0; padding: 0.35rem 1.5rem 0.35rem 0.75rem; font-size:0.8rem;">
+                                <option value="LG1">LG1 (Mellifera) vs LG1 (Cerana) [Tyramine Receptor]</option>
+                                <option value="LG2">LG2 (Mellifera) vs LG12 (Cerana) [Or Receptor Cluster]</option>
+                                <option value="LG4">LG4 (Mellifera) vs LG4 (Cerana) [Vitellogenin (Vg)]</option>
+                                <option value="LG5">LG5 (Mellifera) vs LG5 (Cerana) [Atlastin & Neurexin-1]</option>
+                                <option value="LG9">LG9 (Mellifera) vs LG9 (Cerana) [Dop3 receptor]</option>
+                                <option value="LG11">LG11 (Mellifera) vs LG11 (Cerana) [MRJP cluster]</option>
+                                <option value="LG15">LG15 (Mellifera) vs LG15 (Cerana) [OBP cluster]</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="synteny-svg-wrapper" id="synteny-svg-wrapper" style="background: rgba(10, 15, 26, 0.5); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 1rem; overflow-x: auto;">
+                        <!-- Comparative SVG Synteny Map drawn dynamically by app.js -->
+                    </div>
+                </div>
+                
+                <!-- Homology Info Card Panel -->
+                <div class="panel homology-inspector">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            상동유전자 분석 정보 (Ortholog Card)
+                        </h2>
+                    </div>
+                    <div id="homology-card-container">
+                        <div style="text-align:center; padding:3rem 1.5rem; color:var(--text-muted); font-size:0.9rem;">
+                            비교 유전체 맵의 유전자 블록이나 연결선(Bezier Line)을 클릭하면 1:1 상동유전자 쌍의 상세 정보가 이곳에 표시됩니다.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: Chemoreceptor Explorer -->
+        <div id="tab-content-chemo" class="tab-pane">
+            <div class="panel chemo-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                        </svg>
+                        Chemoreceptor & Sensory Pathway 탐색기
+                    </h2>
+                </div>
+                
+                <div class="search-filter-bar">
+                    <div class="search-input-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input type="text" class="search-input" id="chemo-search-box" placeholder="수용체 이름, 리간드, 경로, 키워드를 입력하세요...">
+                    </div>
+                    
+                    <select class="filter-select" id="chemo-filter-class">
+                        <option value="all">모든 감각 수용체 유형</option>
+                        <option value="Or/Obp">Odorant Receptors (Or / Obp)</option>
+                        <option value="Gr">Gustatory Receptors (Gr)</option>
+                        <option value="Ir">Ionotropic Receptors (Ir)</option>
+                    </select>
+                    
+                    <select class="filter-select" id="chemo-filter-pathway">
+                        <option value="all">모든 감각/대사 신호전달 경로</option>
+                        <option value="PW_OLFACTORY">후각 수용 및 페로몬 수송 경로 (Olfactory)</option>
+                        <option value="PW_MONOAMINE">모노아민 신호전달 (Sucrose/Tyramine)</option>
+                        <option value="PW_DOPAMINE">도파민 수용 반응 (Olfactory learning)</option>
+                        <option value="PW_NEUROPEPTIDE">신경펩타이드 조절 (Leucokinin/Lkr)</option>
+                    </select>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                          <tr>
+                            <th style="width: 100px;">수용체 유형</th>
+                            <th style="width: 140px;">Apis mellifera</th>
+                            <th style="width: 140px;">Apis cerana</th>
+                            <th style="width: 160px;">상동성 & Identity</th>
+                            <th>리간드 및 알려진 기능 경로</th>
+                            <th>연관 서열 변이 (Variants)</th>
+                          </tr>
+                        </thead>
+                        <tbody id="chemo-table-body">
+                            <!-- Dynamic render by app.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: Marker Assay Designer -->
+        <div id="tab-content-marker" class="tab-pane">
+            <div class="marker-grid" style="display: grid; grid-template-columns: 1fr 420px; gap: 1.5rem;">
+                <!-- Left panel: PCR parameters & Primer design details -->
+                <div class="panel pcr-controls-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                            </svg>
+                            육종 스크리닝 마커 선택 & PCR 조건
+                        </h2>
+                    </div>
+                    
+                    <div class="pcr-input-group" style="display: flex; flex-direction: column;">
+                        <label for="breeding-marker-select" class="pcr-label" style="font-size:0.875rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.5rem;">육종 마커 선택:</label>
+                        <select id="breeding-marker-select" class="filter-select" style="width: 100%; margin-bottom: 1.25rem;">
+                            <option value="KZ288474.1_322717">CSBV-Resist-15 [Apis cerana] 낭충봉아부패병(SBV) 저항성 연계 마커</option>
+                            <option value="var_atpalpha_del">var_atpalpha_del [Apis cerana] 한랭 기후 적응 Atpalpha 결실 구조변이</option>
+                            <option value="var_E23_intron">var_E23_intron [Apis mellifera] 바로아 응애 위생행동(VSH) 진단 마커</option>
+                            <option value="var_membrin_5utr">var_membrin_5utr [Apis mellifera] 채집 정찰벌 vs 동료 소집벌 분화 마커</option>
+                        </select>
+                        
+                        <div class="primer-sequence-card" style="background: rgba(0,0,0,0.25); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.03); margin-bottom: 1.25rem;">
+                            <div class="primer-title" style="font-weight: 700; color: var(--color-gold); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.75rem;">Target Primer Sequences (PCR)</div>
+                            <div class="primer-row" style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-bottom: 0.5rem; margin-bottom: 0.5rem;">
+                                <span class="primer-type" style="font-size:0.75rem; color: var(--text-secondary);">Forward (5' &rarr; 3')</span>
+                                <span class="primer-seq" id="pcr-primer-fwd" style="font-family:var(--font-mono); font-size:0.8rem; color:#f8fafc;">5'-GGTACCGACTAGCTAGCTAG-3'</span>
+                            </div>
+                            <div class="primer-row" style="display: flex; justify-content: space-between;">
+                                <span class="primer-type" style="font-size:0.75rem; color: var(--text-secondary);">Reverse (5' &rarr; 3')</span>
+                                <span class="primer-seq" id="pcr-primer-rev" style="font-family:var(--font-mono); font-size:0.8rem; color:#f8fafc;">5'-AAGCTTCGATCGATCGCATC-3'</span>
+                            </div>
+                        </div>
+                        
+                        <div class="pcr-conditions-block" style="background: rgba(0,0,0,0.15); border-radius: 8px; padding: 1rem; border: 1px solid rgba(255,255,255,0.03);">
+                            <div class="pcr-title" style="font-weight: 700; color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.75rem;">PCR Amplification Protocol</div>
+                            <div class="pcr-condition-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.50rem;">
+                                <div class="pcr-cond-item" style="font-size: 0.75rem;"><strong>Denaturing</strong>: <span style="color:var(--text-primary);">95°C, 30s</span></div>
+                                <div class="pcr-cond-item" style="font-size: 0.75rem;"><strong>Annealing</strong>: <span id="pcr-temp-anneal" style="color:var(--text-primary);">58°C, 30s</span></div>
+                                <div class="pcr-cond-item" style="font-size: 0.75rem;"><strong>Extension</strong>: <span style="color:var(--text-primary);">72°C, 45s</span></div>
+                                <div class="pcr-cond-item" style="font-size: 0.75rem;"><strong>Cycles</strong>: <span style="color:var(--text-primary);">35 cycles</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right panel: Simulated Gel Electrophoresis image -->
+                <div class="panel gel-visualizer-panel" style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="panel-header" style="width: 100%;">
+                        <h2 class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                            </svg>
+                            전기영동 아가로스 겔 (Gel Electrophoresis)
+                        </h2>
+                    </div>
+                    
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: Farmer Trait Simulator -->
+        <div id="tab-content-farmer" class="tab-pane">
+            <div class="farmer-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.2rem; height:1.2rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            봉군 유전자형 입력 폼 (Colony Genotype Form)
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem; padding: 1.5rem;">
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; margin: 0;">
+                            농가 또는 연구소에서 동정한 개별 봉군의 주요 마커 유전자형을 입력해 주세요. 조합된 대립유전자에 따른 경제 형질 기대치가 우측 다이어그램에 실시간 반영됩니다.
+                        </p>
+                        
+                        <div class="form-group" style="display:flex; flex-direction:column; gap:0.4rem;">
+                            <label style="font-size:0.8rem; font-weight:700; color:var(--text-primary);">1. 낭충봉아부패병 저항성 마커 (CSBV Resistance SNP)</label>
+                            <select id="farmer-csbv" style="background: rgba(15, 23, 42, 0.6); color: var(--text-primary); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 6px; font-family: inherit;">
+                                <option value="AA">AA (동형접합 저항성형 - 우수)</option>
+                                <option value="Aa" selected>Aa (이형접합 보인자형 - 보통)</option>
+                                <option value="aa">aa (동형접합 감수성형 - 취약)</option>
+                            </select>
+                            <span style="font-size:0.7rem; color:var(--text-muted);">LG15:322,717 bp 부근의 유해 바이러스 대응 생존력 마커.</span>
+                        </div>
+
+                        <div class="form-group" style="display:flex; flex-direction:column; gap:0.4rem;">
+                            <label style="font-size:0.8rem; font-weight:700; color:var(--text-primary);">2. 응애 위생 행동 유전자 (VSH Intronic E23)</label>
+                            <select id="farmer-vsh" style="background: rgba(15, 23, 42, 0.6); color: var(--text-primary); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 6px; font-family: inherit;">
+                                <option value="AA">AA (동형접합 VSH 탐색형 - 우수)</option>
+                                <option value="Aa" selected>Aa (이형접합 위생 행동형 - 보통)</option>
+                                <option value="aa">aa (동형접합 청소 행동 결핍 - 취약)</option>
+                            </select>
+                            <span style="font-size:0.7rem; color:var(--text-muted);">LG11 ABCG transporter 내 인트론 SNP 진단 마커.</span>
+                        </div>
+
+                        <div class="form-group" style="display:flex; flex-direction:column; gap:0.4rem;">
+                            <label style="font-size:0.8rem; font-weight:700; color:var(--text-primary);">3. 설탕 민감도 및 채집 성향 마커 (Sugar Sensing - TyrR/membrin)</label>
+                            <select id="farmer-sugar" style="background: rgba(15, 23, 42, 0.6); color: var(--text-primary); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 6px; font-family: inherit;">
+                                <option value="High" selected>High (수크로스 초민감성 - 꿀/화분 수밀형)</option>
+                                <option value="Medium">Medium (일반 탐색형 - 평균 수준 채집)</option>
+                                <option value="Low">Low (둔감성 - 수집 행동 성향 낮음)</option>
+                            </select>
+                            <span style="font-size:0.7rem; color:var(--text-muted);">수크로스 감지 역치 조절을 통한 봉군의 전체 수밀력 지표.</span>
+                        </div>
+
+                        <div class="form-group" style="display:flex; flex-direction:column; gap:0.4rem;">
+                            <label style="font-size:0.8rem; font-weight:700; color:var(--text-primary);">4. 봉군 온순성 조절 수용체 (Temperament - dpr4 sweeping)</label>
+                            <select id="farmer-temper" style="background: rgba(15, 23, 42, 0.6); color: var(--text-primary); border: 1px solid var(--border-color); padding: 0.5rem; border-radius: 6px; font-family: inherit;">
+                                <option value="Gentle" selected>Gentle (온순 유전자형 고정 - 훌륭한 관리 적합성)</option>
+                                <option value="Moderate">Moderate (보통의 야외 방어 성향)</option>
+                                <option value="Aggressive">Aggressive (공격성 다소 발현 - 관리 주의 필요)</option>
+                            </select>
+                            <span style="font-size:0.7rem; color:var(--text-muted);">LG7 defective proboscis response 4 좌의 Gentleness 유도 유전형.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel" id="farmer-certificate-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.2rem; height:1.2rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            종봉 형질 예측 진단서 (Colony Trait Analysis)
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.25rem; padding: 1.5rem;">
+                        <div style="width: 260px; height: 260px; position: relative;">
+                            <canvas id="farmer-radar-chart"></canvas>
+                        </div>
+                        
+                        <button class="locate-btn" id="show-reliability-btn" style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); border: 1px solid rgba(255,255,255,0.1); font-size:0.75rem; padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; margin-top: -0.25rem; transition: var(--transition-normal);">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:0.9rem; height:0.9rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                            형질 예측 신뢰도 검증 데이터 보기
+                        </button>
+
+                        <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem;">
+                            <h3 style="font-size: 0.9rem; font-weight: 700; color: var(--color-gold); margin-bottom: 0.5rem;">형질 종합 분석 리포트</h3>
+                            <p id="farmer-report-text" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+                                데이터를 불러오는 중...
+                            </p>
+                        </div>
+                        
+                        <button class="locate-btn" id="farmer-print-btn" style="width: 100%; justify-content: center; font-size: 0.85rem; padding: 0.65rem 1rem;">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.05rem; height:1.05rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                            </svg>
+                            진단서 인쇄 / PDF 다운로드
+                        </button>
+
+                        <!-- Legal Disclaimer (Printed at bottom) -->
+                        <div class="disclaimer-container" style="width: 100%; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 0.7rem; color: var(--text-muted); line-height: 1.4; text-align: justify;">
+                            <strong>[유전 예측 면책 조항]</strong> 본 진단서는 입력된 유전자형 마커에 기반한 통계적 기대치 시뮬레이션 결과이며, 실제 봉군의 사육 환경(기후, 밀원 식물, 질병 전파 경로 등) 및 기타 미량 유전자 상호작용에 따라 실제 형질은 다르게 나타날 수 있습니다. 본 예측 결과는 개량 참고용이며 법적 책임의 근거가 될 수 없습니다.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 6: Breeding Matchmaker -->
+        <div id="tab-content-matchmaker" class="tab-pane">
+            <div class="matchmaker-grid" style="display: grid; grid-template-columns: 400px 1fr; gap: 1.5rem;">
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.2rem; height:1.2rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 0A7.5 7.5 0 105.146 19.82a9 9 0 0013.22-13.22zm-3.536 3.536L12 12.243m0-6.136a6 6 0 11-6 6M12 6.107V3m0 3v2.243" />
+                            </svg>
+                            교배 봉군 부모 선택 (Select Parents)
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.25rem; padding: 1.5rem;">
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4; margin: 0;">
+                            여왕벌(이배체, 2n)과 대립유전자 뱅크인 수벌(반배체, 1n)의 유전자형을 선택해 가상 교배를 수행합니다. 멘델 유전 패턴에 맞춰 F1 자손의 분리비가 계산됩니다.
+                        </p>
+
+                        <!-- Queen Selection -->
+                        <div style="background: rgba(255, 255, 255, 0.03); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            <h3 style="font-size: 0.85rem; font-weight:700; color:var(--color-gene); margin-bottom: 0.75rem; display:flex; align-items:center; gap:0.35rem;">
+                                <span style="display:inline-block; width:8px; height:8px; background:var(--color-gene); border-radius:50%;"></span> 모본: 여왕벌 유전자형 (2n Queen)
+                            </h3>
+                            <div class="form-group" style="display:flex; flex-direction:column; gap:0.4rem; margin-bottom:0.75rem;">
+                                <label style="font-size:0.75rem; font-weight:600; color:var(--text-secondary);">낭충봉아부패병 저항성 인자 (CSBV)</label>
+                                <select id="match-queen-csbv" style="background: rgba(15, 23, 42, 0.6); color: var(--text-primary); border: 1px solid var(--border-color); padding: 0.4rem; border-radius: 6px; font-family: inherit; font-size:0.8rem;">
+                                    <option value="AA">AA (동형접합 저항성형)</option>
+                                    <option value="Aa" selected>Aa (이형접합 보인자형)</option>
+                                    <option value="aa">aa (동형접합 감수성형)</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="display:flex; flex-direction:column; gap:0.4rem;">
+                                <label style="font-size:0.75rem; font-weight:600; color:var(--text-secondary);">위생 행동 마커 (VSH E23)</label>
+                                <select id="match-queen-vsh" style="background: rgba(15, 23, 42, 0.6); color: var(--text-primary); border: 1px solid var(--border-color); padding: 0.4rem; border-radius: 6px; font-family: inherit; font-size:0.8rem;">
+                                    <option value="AA">AA (동형접합 VSH형)</option>
+                                    <option value="Aa" selected>Aa (이형접합 캐리어)</option>
+                                    <option value="aa">aa (위생 행동 없음)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Drone Selection (Polyandry - up to 15 drones) -->
+                        <div style="background: rgba(255, 255, 255, 0.03); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            <h3 style="font-size: 0.85rem; font-weight:700; color:var(--color-gold-hover); margin-bottom: 0.75rem; display:flex; align-items:center; gap:0.35rem;">
+                                <span style="display:inline-block; width:8px; height:8px; background:var(--color-gold-hover); border-radius:50%;"></span> 부본: 수벌 집단 유전자형 빈도 (1n Drones - Max 15)
+                            </h3>
+                            <div class="form-group" style="display:flex; flex-direction:column; gap:0.4rem; margin-bottom:1rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <label style="font-size:0.75rem; font-weight:600; color:var(--text-secondary);">CSBV 저항성 인자 (A 대립유전자 수)</label>
+                                    <span id="match-drone-csbv-val" style="font-size:0.75rem; font-weight:700; color:var(--color-gene);">A 수벌: 10마리 / a 수벌: 5마리</span>
+                                </div>
+                                <input type="range" id="match-drone-csbv-slider" min="0" max="15" value="10" style="width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); outline: none; cursor: pointer;">
+                                <span style="font-size:0.65rem; color:var(--text-muted); margin-bottom:0.2rem;">수벌 집단 내 CSBV 저항성(A) 대립유전자 개체 수 조절</span>
+                                <div id="match-drone-csbv-checkboxes" style="display: flex; gap: 0.25rem; flex-wrap: wrap; background: rgba(0,0,0,0.25); padding: 0.4rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.04); justify-content: space-between;">
+                                    <!-- Dynamic Checkboxes -->
+                                </div>
+                            </div>
+                            <div class="form-group" style="display:flex; flex-direction:column; gap:0.4rem;">
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <label style="font-size:0.75rem; font-weight:600; color:var(--text-secondary);">VSH 위생 행동 인자 (A 대립유전자 수)</label>
+                                    <span id="match-drone-vsh-val" style="font-size:0.75rem; font-weight:700; color:var(--color-qtl);">A 수벌: 8마리 / a 수벌: 7마리</span>
+                                </div>
+                                <input type="range" id="match-drone-vsh-slider" min="0" max="15" value="8" style="width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); outline: none; cursor: pointer;">
+                                <span style="font-size:0.65rem; color:var(--text-muted); margin-bottom:0.2rem;">수벌 집단 내 VSH 청소본능(A) 대립유전자 개체 수 조절</span>
+                                <div id="match-drone-vsh-checkboxes" style="display: flex; gap: 0.25rem; flex-wrap: wrap; background: rgba(0,0,0,0.25); padding: 0.4rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.04); justify-content: space-between;">
+                                    <!-- Dynamic Checkboxes -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.2rem; height:1.2rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            교배 자손 유전 확률 예측 결과 (Cross Projections)
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 1.5rem; padding: 1.5rem;">
+                        
+                        <!-- Prediction Probability Blocks -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03);">
+                                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.8rem; color: var(--color-gene); text-transform: uppercase;">CSBV 저항성 인자 자손 비율</h4>
+                                <div id="match-prob-csbv" style="font-size: 0.85rem; font-weight: 700; display:flex; flex-direction:column; gap:0.25rem;">
+                                    <!-- Dynamic -->
+                                </div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.03);">
+                                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.8rem; color: var(--color-qtl); text-transform: uppercase;">VSH 위생 행동 자손 비율</h4>
+                                <div id="match-prob-vsh" style="font-size: 0.85rem; font-weight: 700; display:flex; flex-direction:column; gap:0.25rem;">
+                                    <!-- Dynamic -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Punnett Squares Graphics container -->
+                        <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+                            <h4 style="margin: 0 0 0.75rem 0; font-size: 0.85rem; font-weight:700; color: var(--color-gold);">가상 교배 퍼넷 사각형 (Virtual Punnett Squares)</h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                <div>
+                                    <h5 style="margin: 0 0 0.5rem 0; font-size:0.75rem; color: var(--text-secondary); text-align:center;">CSBV 분리비</h5>
+                                    <div id="punnett-csbv-container" style="display:flex; justify-content:center;"></div>
+                                </div>
+                                <div>
+                                    <h5 style="margin: 0 0 0.5rem 0; font-size:0.75rem; color: var(--text-secondary); text-align:center;">VSH 분리비</h5>
+                                    <div id="punnett-vsh-container" style="display:flex; justify-content:center;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Farmer Recommendation Text Panel -->
+                        <div style="background: rgba(16, 185, 129, 0.05); border-left: 4px solid #10b981; padding: 1rem; border-radius: 6px;">
+                            <h3 style="font-size: 0.9rem; font-weight: 700; color: #34d399; margin: 0 0 0.5rem 0; display:flex; align-items:center; gap:0.35rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.1rem; height:1.1rem;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                </svg>
+                                농가 맞춤 교배 가이드 (Breeder Expert Advisory)
+                            </h3>
+                            <p id="match-advice-text" style="font-size: 0.85rem; color: #a7f3d0; line-height: 1.5; margin: 0;">
+                                로딩 중...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sliding Info Drawer -->
+    <div class="info-drawer" id="info-drawer">
+        <div class="drawer-header">
+            <div class="drawer-title-wrapper">
+                <div class="drawer-category" id="drawer-cat">-</div>
+                <div class="drawer-title" id="drawer-name">-</div>
+            </div>
+            <button class="close-drawer-btn" id="close-drawer-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 1.25rem; height: 1.25rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div class="drawer-body">
+            <div class="drawer-meta-grid">
+                <div class="drawer-meta-item">
+                    <div class="drawer-meta-label">염색체</div>
+                    <div class="drawer-meta-value" id="drawer-chrom">-</div>
+                </div>
+                <div class="drawer-meta-item">
+                    <div class="drawer-meta-label">유형</div>
+                    <div class="drawer-meta-value" id="drawer-type-label">-</div>
+                </div>
+                <div class="drawer-meta-item" id="drawer-robertson-item" style="display: none;">
+                    <div class="drawer-meta-label">Robertson ID</div>
+                    <div class="drawer-meta-value drawer-meta-value-mono" id="drawer-robertson-id">-</div>
+                </div>
+                <div class="drawer-meta-item" id="drawer-source-item" style="display: none;">
+                    <div class="drawer-meta-label">데이터 출처</div>
+                    <div class="drawer-meta-value" id="drawer-source-val">-</div>
+                </div>
+                <div class="drawer-meta-item" style="grid-column: span 2;">
+                    <div class="drawer-meta-label">물리적 위치 (bp)</div>
+                    <div class="drawer-meta-value drawer-meta-value-mono" id="drawer-coords">-</div>
+                </div>
+            </div>
+
+            <!-- Curation Note Block -->
+            <div class="drawer-desc-block" id="drawer-curation-block" style="display: none;">
+                <div class="drawer-section-title">연구소 큐레이션 검증 (Lab Curation)</div>
+                <div class="curation-badge-container" style="display: flex; gap: 0.5rem; margin-bottom: 0.25rem; align-items: center;">
+                    <span id="drawer-source-badge"></span>
+                    <span id="drawer-status-badge"></span>
+                </div>
+                <div class="curation-note-container">
+                    <p class="curation-note-text" id="drawer-curation-note">-</p>
+                </div>
+            </div>
+
+            <div class="drawer-desc-block">
+                <div class="drawer-section-title">주요 유전 정보 및 기능</div>
+                <p class="drawer-desc" id="drawer-description">-</p>
+            </div>
+
+            <div class="drawer-desc-block" id="drawer-ref-block">
+                <div class="drawer-section-title">연구 참고문헌 및 보고자</div>
+                <p class="drawer-desc" id="drawer-references">-</p>
+            </div>
+
+            <a href="#" target="_blank" class="ncbi-link-btn" id="drawer-ncbi-link">
+                NCBI Link
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 1rem; height: 1rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+            </a>
+    </div>
+
+    <!-- Reliability Statistics Modal -->
+    <div id="reliability-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; width: 90%; max-width: 550px; padding: 1.5rem; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); font-family: inherit;">
+            <button id="close-reliability-modal" style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; color: var(--text-secondary); cursor: pointer; transition: var(--transition-normal); display:flex; align-items:center; justify-content:center;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width: 1.25rem; height: 1.25rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h3 style="margin: 0 0 0.5rem 0; font-size: 1.1rem; font-weight: 700; color: var(--color-gold); display: flex; align-items: center; gap: 0.5rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:1.3rem; height:1.3rem;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                형질 예측 신뢰도 검증 데이터 (R² Validation)
+            </h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                우리 연구소의 실제 사육 실험 봉군(총 120개 군)의 검증 수치와 유전자 마커 조합 기반 예측 기대값 간의 상관관계를 나타낸 분포 그래프입니다.
+            </p>
+            
+            <!-- Modal Tabs -->
+            <div class="modal-tabs" style="display: flex; gap: 0.25rem; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.5rem; margin-bottom: 1rem; overflow-x: auto;">
+                <button class="modal-tab-btn active" data-trait="honey" style="background: transparent; border: none; color: var(--text-secondary); padding: 0.4rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: var(--transition-normal);">수밀력</button>
+                <button class="modal-tab-btn" data-trait="disease" style="background: transparent; border: none; color: var(--text-secondary); padding: 0.4rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: var(--transition-normal);">질병저항성</button>
+                <button class="modal-tab-btn" data-trait="gentle" style="background: transparent; border: none; color: var(--text-secondary); padding: 0.4rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: var(--transition-normal);">온순성</button>
+                <button class="modal-tab-btn" data-trait="fecundity" style="background: transparent; border: none; color: var(--text-secondary); padding: 0.4rem 0.75rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: var(--transition-normal);">번식력</button>
+            </div>
+            
+            <!-- SVG Plot Container -->
+            <div id="reliability-plot-container" style="background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; width: 100%; height: 280px; display: flex; align-items: center; justify-content: center;">
+                <!-- SVG dynamically drawn by JS -->
+            </div>
+            
+            <!-- Statistics Summary -->
+            <div id="reliability-stats-summary" style="margin-top: 1rem; display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.04);">
+                <!-- Dynamic text from JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

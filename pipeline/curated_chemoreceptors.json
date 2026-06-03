@@ -1,0 +1,60 @@
+[
+  {
+    "id": "AcerOr4_v1.0",
+    "robertson_id": "AmOr4_Ortholog",
+    "symbol": "AcerOr4",
+    "source": "NCBI_RefSeq",
+    "status": "Validated",
+    "coordinates": {
+      "lg": "LG12",
+      "start": 811405,
+      "end": 815499,
+      "strand": "+"
+    },
+    "note": "Standard RefSeq model showing high syntenic conservation with AmOr4."
+  },
+  {
+    "id": "AcerOr11_v2.0",
+    "robertson_id": "AmOr11_Ortholog",
+    "symbol": "AcerOr11",
+    "source": "Lab_Curated",
+    "status": "Validated",
+    "coordinates": {
+      "lg": "LG12",
+      "start": 819514,
+      "end": 822584,
+      "strand": "+"
+    },
+    "note": "NCBI GFF에서 누락된 5번 엑손을 Robertson 서열 기반 매핑으로 복원함 (Exon 5 Restored).",
+    "curator": "Advanced Genomics Lab"
+  },
+  {
+    "id": "AcerOr151_v2.0",
+    "robertson_id": "AmOr151_Ortholog",
+    "symbol": "AcerOr151",
+    "source": "Lab_Curated",
+    "status": "Validated",
+    "coordinates": {
+      "lg": "LG12",
+      "start": 839145,
+      "end": 843487,
+      "strand": "+"
+    },
+    "note": "RefSeq locus LOC107992663 transcript contains downstream fusion error; split and validated as separate transcript monomer.",
+    "curator": "Advanced Genomics Lab"
+  },
+  {
+    "id": "AcerLkr_v2.0",
+    "robertson_id": "AmLkr_Ortholog",
+    "symbol": "AcerLkr",
+    "source": "Lab_Curated",
+    "status": "Validated",
+    "coordinates": {
+      "lg": "LG15",
+      "start": 8271429,
+      "end": 8337633,
+      "strand": "-"
+    },
+    "note": "Corrected neuropeptide Lkr model, restoring the missing 3'-UTR terminal signal transduction exon."
+  }
+]
