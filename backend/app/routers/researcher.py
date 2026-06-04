@@ -229,6 +229,10 @@ def get_sampling_status():
             filepath = os.path.join(sampling_dir, filename)
             if os.path.exists(filepath):
                 df = pd.read_csv(filepath, sep="\t")
+                # Drop personal data columns to prevent privacy leaks
+                cols_to_drop = [c for c in ["농가(대표자)", "농가주", "연락처", "주소 (상세)", "주소", "대표자"] if c in df.columns]
+                if cols_to_drop:
+                    df = df.drop(columns=cols_to_drop)
                 # 1. FastAPI JSON 크래시 방지: 모든 날짜형(DateTime) 및 결측치(NaN)를 안전하게 문자열화
                 df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
                 all_sheet_data[sheet_key] = df.to_dict(orient="records")

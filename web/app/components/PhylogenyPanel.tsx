@@ -192,9 +192,13 @@ export default function PhylogenyPanel() {
             key={`link-${node.x}-${node.y}-${c.x}-${c.y}`}
             d={pathData}
             fill="none"
-            stroke={isHighlight ? "var(--color-gold)" : "var(--border-color)"}
-            strokeWidth={isHighlight ? "3" : "1"}
-            opacity={isHighlight ? "1" : "0.5"}
+            stroke={isHighlight ? "var(--color-gold)" : "#222222"}
+            strokeWidth={isHighlight ? "3" : "2"}
+            opacity={1}
+            style={{
+              stroke: isHighlight ? "var(--color-gold) !important" : "#222222 !important",
+              strokeWidth: isHighlight ? "3px !important" : "2px !important",
+            }}
           />
         );
         renderLinks(c, links);

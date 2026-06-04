@@ -35,21 +35,27 @@ export default function SamplingStatusPanel() {
 
   // Projection functions to map lat/lng to Y/X on a 300x420 SVG canvas (Korea)
   const getXY = (latVal: number, lngVal: number) => {
-    const minLat = 33.0;
-    const maxLat = 39.0;
-    const minLng = 125.0;
-    const maxLng = 130.5;
+    // Reference geographical center of South Korea
+    const centerLat = 36.0;
+    const centerLng = 127.75;
+    
+    // Scale factor (pixels per degree) adjusted for the 300x400 canvas height
+    const latScale = 65.0;
+    // Longitude scale factor corrected for the aspect ratio at 36 deg latitude (cos(36 deg) ≈ 0.81)
+    const lngScale = latScale * 0.81;
 
-    const width = 300;
-    const height = 400;
+    // Viewport center on the 300x400 SVG canvas
+    const canvasCenterX = 150;
+    const canvasCenterY = 200;
 
-    const lat = Math.max(minLat, Math.min(maxLat, latVal));
-    const lng = Math.max(minLng, Math.min(maxLng, lngVal));
+    const x = canvasCenterX + (lngVal - centerLng) * lngScale;
+    const y = canvasCenterY - (latVal - centerLat) * latScale; // SVG coordinates go downwards
 
-    const x = ((lng - minLng) / (maxLng - minLng)) * width;
-    const y = (1 - (lat - minLat) / (maxLat - minLat)) * height;
+    // Safe bounds padding check
+    const finalX = Math.max(10, Math.min(290, x));
+    const finalY = Math.max(10, Math.min(390, y));
 
-    return { x, y };
+    return { x: finalX, y: finalY };
   };
 
   // Projection functions to map lat/lng to Y/X on a 500x300 SVG canvas (World)
@@ -293,14 +299,13 @@ export default function SamplingStatusPanel() {
           position: "relative"
         }}>
           <style>{`
-            @keyframes pulse-dot {
-              0% { transform: scale(0.9); opacity: 0.8; }
-              50% { transform: scale(1.4); opacity: 0.3; }
-              100% { transform: scale(0.9); opacity: 0.8; }
-            }
-            .pulse-ring {
-              animation: pulse-dot 2s infinite ease-in-out;
+            .map-marker {
+              transition: transform 0.2s ease-in-out;
               transform-origin: center;
+              transform-box: fill-box;
+            }
+            .map-marker:hover {
+              transform: scale(1.5);
             }
           `}</style>
 
@@ -384,10 +389,10 @@ export default function SamplingStatusPanel() {
                   const { x, y } = getXY(latVal, lngVal);
 
                   const sampleId = row["시료 ID"] || row["시료ID"] || "-";
-                  const farmerName = row["농가(대표자)"] || row["농가주"] || "-";
-                  const address = row["주소 (상세)"] || row["주소"] || "-";
+                  const region = row["권역"] || "-";
+                  const lineage = row["계통"] || "-";
 
-                  const tooltipText = `[${sampleId}] ${farmerName} - ${address}`;
+                  const tooltipText = `[${sampleId}] ${region} - ${lineage}`;
 
                   return (
                     <g 
@@ -400,14 +405,14 @@ export default function SamplingStatusPanel() {
                       <circle
                         r="6"
                         fill="var(--color-gold)"
-                        opacity="0.4"
-                        className="pulse-ring"
+                        opacity="0.3"
                       />
                       <circle
                         r="4.5"
                         fill="var(--color-gold)"
                         stroke="#ffffff"
                         strokeWidth="1"
+                        className="map-marker"
                       />
                     </g>
                   );
@@ -485,14 +490,14 @@ export default function SamplingStatusPanel() {
                         <circle
                           r={bubbleRadius + 2.5}
                           fill="var(--color-gold)"
-                          opacity="0.3.5"
-                          className="pulse-ring"
+                          opacity="0.3"
                         />
                         <circle
                           r={bubbleRadius}
                           fill="var(--color-gold)"
                           stroke="#ffffff"
                           strokeWidth="0.8"
+                          className="map-marker"
                         />
                       </g>
                     );
@@ -806,137 +811,7 @@ export default function SamplingStatusPanel() {
         </div>
       </div>
 
-      {/* 📄 Interactive Data Table */}
-      <div style={{
-        overflowX: "auto",
-        borderRadius: "12px",
-        border: "1px solid var(--border-color)",
-        background: "var(--bg-surface)",
-        boxShadow: "var(--shadow-sm)"
-      }}>
-        {mapMode === "korea" ? (
-          filteredRows.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
-              검색 필터 조건에 부합하는 유전자원 시료가 존재하지 않습니다.
-            </div>
-          ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-              <thead>
-                <tr style={{ background: "var(--bg-app)" }}>
-                  {columns.map((col) => (
-                    <th
-                      key={col}
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "left",
-                        fontWeight: 600,
-                        color: "var(--text-muted)",
-                        borderBottom: "1px solid var(--border-color)"
-                      }}
-                    >
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRows.map((row, idx) => (
-                  <tr
-                    key={idx}
-                    style={{
-                      borderBottom: "1px solid var(--border-color)",
-                      background: idx % 2 === 0 ? "transparent" : "rgba(255, 255, 255, 0.015)"
-                    }}
-                    className="tr-hover-effect"
-                  >
-                    {columns.map((col) => (
-                      <td
-                        key={col}
-                        style={{
-                          padding: "10px 16px",
-                          color: "var(--text-main)"
-                        }}
-                      >
-                        {col.includes("시료 ID") || col.includes("시료ID") ? (
-                          <span style={{
-                            background: "var(--color-gold-glow)",
-                            color: "var(--color-gold)",
-                            padding: "2px 6px",
-                            borderRadius: "4px",
-                            fontWeight: "bold",
-                            fontSize: "12px"
-                          }}>
-                            {row[col]}
-                          </span>
-                        ) : (
-                          String(row[col] ?? "-")
-                        )}
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )
-        ) : (
-          filteredWgsRows.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px", color: "var(--text-muted)" }}>
-              검색 필터 조건에 부합하는 세계 WGS 시료가 존재하지 않습니다.
-            </div>
-          ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-              <thead>
-                <tr style={{ background: "var(--bg-app)" }}>
-                  {["국가 (Country)", "도시/구역 (Region)", "수집 종 (Species)", "시퀀싱 수 (Count)", "위도 (Latitude)", "경도 (Longitude)"].map((col) => (
-                    <th
-                      key={col}
-                      style={{
-                        padding: "12px 16px",
-                        textAlign: "left",
-                        fontWeight: 600,
-                        color: "var(--text-muted)",
-                        borderBottom: "1px solid var(--border-color)"
-                      }}
-                    >
-                      {col}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredWgsRows.map((row, idx) => (
-                  <tr
-                    key={idx}
-                    style={{
-                      borderBottom: "1px solid var(--border-color)",
-                      background: idx % 2 === 0 ? "transparent" : "rgba(255, 255, 255, 0.015)"
-                    }}
-                    className="tr-hover-effect"
-                  >
-                    <td style={{ padding: "10px 16px", color: "var(--text-main)", fontWeight: "bold" }}>{row.Country}</td>
-                    <td style={{ padding: "10px 16px", color: "var(--text-main)" }}>{row.Region}</td>
-                    <td style={{ padding: "10px 16px", color: "var(--color-gold)", fontStyle: "italic" }}>{row.Species}</td>
-                    <td style={{ padding: "10px 16px" }}>
-                      <span style={{
-                        background: "rgba(59, 130, 246, 0.15)",
-                        color: "#60a5fa",
-                        padding: "2px 6px",
-                        borderRadius: "4px",
-                        fontWeight: "bold",
-                        fontSize: "12px"
-                      }}>
-                        {row.Count}
-                      </span>
-                    </td>
-                    <td style={{ padding: "10px 16px", color: "var(--text-muted)" }}>{row.lat}</td>
-                    <td style={{ padding: "10px 16px", color: "var(--text-muted)" }}>{row.lng}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )
-        )}
-      </div>
+
       
     </div>
   );
