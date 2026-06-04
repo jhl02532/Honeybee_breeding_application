@@ -51,7 +51,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(RateLimitMiddleware, limit=120, window=60)
 
-# Auto-seed database on startup
+# Auto-seed database on startup (Neon schema migrations synced)
 @app.on_event("startup")
 def startup_event():
     db = next(get_db())
