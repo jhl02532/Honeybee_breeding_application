@@ -211,7 +211,7 @@ def export_global_csv(
 
 
 @router.get("/sampling-status")
-def get_sampling_status(current_user: models.User = Depends(get_current_user)):
+def get_sampling_status():
     """가입자 전체에 열린 유전자원 수집 현황 (안전한 동적 시트 파싱 및 스트링 직렬화 적용)"""
     EXCEL_PATH = "/Users/jeonghyeonlee/Desktop/Ongoing/2026/2026_육종과제/02_샘플링/샘플링최종.xlsx"
     fallback_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "샘플링최종.xlsx")
@@ -261,7 +261,7 @@ def get_sampling_status(current_user: models.User = Depends(get_current_user)):
 
 
 @router.get("/phylogeny-data")
-def get_phylogeny_data(current_user: models.User = Depends(get_current_user)):
+def get_phylogeny_data():
     """mtDNA 계통수 Newick 파일 및 TSV 메타데이터를 상대경로로 읽어 일괄 조회"""
     mt_dna_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "mtDNA")
     

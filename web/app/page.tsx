@@ -5,6 +5,8 @@ import { User, Token } from "./types";
 import { getStoredUser, getToken, setAuth, clearAuth } from "./utils";
 import AuthBar from "./components/AuthBar";
 import DashboardScreen from "./components/DashboardScreen";
+import SamplingStatusPanel from "./components/SamplingStatusPanel";
+import PhylogenyPanel from "./components/PhylogenyPanel";
 import { styles } from "./styles";
 
 type DashView =
@@ -35,6 +37,8 @@ export default function Page() {
   const aboutRef = useRef<HTMLDivElement>(null);
   const roadmapRef = useRef<HTMLDivElement>(null);
   const manualRef = useRef<HTMLDivElement>(null);
+  const samplingRef = useRef<HTMLDivElement>(null);
+  const phylogenyRef = useRef<HTMLDivElement>(null);
 
   // Initialize theme from localStorage on mount
   useEffect(() => {
@@ -78,6 +82,10 @@ export default function Page() {
         setActiveSection("manual");
       } else if (roadmapRef.current && scrollPos >= roadmapRef.current.offsetTop) {
         setActiveSection("roadmap");
+      } else if (phylogenyRef.current && scrollPos >= phylogenyRef.current.offsetTop) {
+        setActiveSection("phylogeny");
+      } else if (samplingRef.current && scrollPos >= samplingRef.current.offsetTop) {
+        setActiveSection("sampling");
       } else if (aboutRef.current && scrollPos >= aboutRef.current.offsetTop) {
         setActiveSection("about");
       } else if (backgroundRef.current && scrollPos >= backgroundRef.current.offsetTop) {
@@ -191,6 +199,26 @@ export default function Page() {
           <button
             style={{
               ...styles.landingNavLink,
+              ...(activeSection === "sampling" ? styles.landingNavLinkActive : {}),
+            }}
+            onClick={() => scrollToSection(samplingRef, "sampling")}
+            className="landing-nav-link-hover"
+          >
+            유전자원 현황
+          </button>
+          <button
+            style={{
+              ...styles.landingNavLink,
+              ...(activeSection === "phylogeny" ? styles.landingNavLinkActive : {}),
+            }}
+            onClick={() => scrollToSection(phylogenyRef, "phylogeny")}
+            className="landing-nav-link-hover"
+          >
+            국내 계통수
+          </button>
+          <button
+            style={{
+              ...styles.landingNavLink,
               ...(activeSection === "roadmap" ? styles.landingNavLinkActive : {}),
             }}
             onClick={() => scrollToSection(roadmapRef, "roadmap")}
@@ -292,96 +320,123 @@ export default function Page() {
       </header>
 
       {/* Section 1: Hero Area */}
-      <div ref={homeRef} style={{ ...styles.landingHero, maxWidth: "1200px", padding: "80px 20px 60px 20px" }} className="mobile-hero-padding">
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "48px",
+      <div 
+        ref={homeRef} 
+        style={{ 
+          position: "relative",
+          width: "100%",
+          minHeight: "75vh",
+          display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          textAlign: "left"
-        }}>
-          {/* Left Column: Text Content */}
-          <div>
-            <h1 style={{ ...styles.heroTitle, textAlign: "left", fontSize: "38px", lineHeight: "1.25", marginBottom: "16px" }} className="mobile-hero-title">
-              이상기온 대응 꿀벌 육종 유전자원 플랫폼
-            </h1>
-            <p style={{ ...styles.heroSubtitle, textAlign: "left", margin: "0 0 28px 0", fontSize: "15px", lineHeight: "1.6" }} className="mobile-hero-subtitle">
-              기후변화와 월동 폐사 위기를 극복하기 위해 서양벌(Apis mellifera) 및 토종벌(Apis cerana)의 유전체-표현형 데이터를 통합한 AI 기반 디지털 정밀 육종 솔루션
-            </p>
-            {/* Dynamic Launcher vs Prompt block */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-              {!user ? (
-                /* Unauthenticated -> prompt login with pulse helper text */
-                <div 
-                  style={{ 
-                    padding: "14px 24px", 
-                    borderRadius: "10px", 
-                    background: "var(--bg-surface)", 
-                    border: "1px solid var(--border-color)",
-                    boxShadow: "var(--shadow-sm)"
-                  }}
-                  className="pulse-glow-tip"
-                >
-                  <span style={{ fontSize: "13px", fontWeight: "bold", color: "var(--color-gold)" }}>
-                    💡 우상단에서 로그인 후 플랫폼 서비스를 이용하실 수 있습니다. ↗
-                  </span>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setShowDashboard(true)}
-                  style={styles.btnGold}
-                  className="btn-hover-effect"
-                >
-                  플랫폼 대시보드 바로가기 ➔
-                </button>
-              )}
-            </div>
-          </div>
+          justifyContent: "center",
+          overflow: "hidden",
+          background: "#0d1527",
+          padding: "100px 20px 80px 20px"
+        }}
+      >
+        {/* Background Video */}
+        <video
+          src="/hero-video.mp4"
+          muted
+          playsInline
+          autoPlay
+          loop
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            zIndex: 1
+          }}
+        />
 
-          {/* Right Column: Hero Video Component */}
-          <div style={{
-            position: "relative",
-            borderRadius: "16px",
-            overflow: "hidden",
-            border: "1px solid var(--border-color)",
-            boxShadow: "var(--shadow-lg)",
-            aspectRatio: "16 / 9",
-            background: "#0d1527"
+        {/* Transparent Black Overlay */}
+        <div style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "rgba(0, 0, 0, 0.65)",
+          zIndex: 2
+        }} />
+
+        {/* Content Card (Transparent Black Board) */}
+        <div style={{
+          position: "relative",
+          zIndex: 3,
+          width: "100%",
+          maxWidth: "840px",
+          background: "rgba(11, 17, 32, 0.75)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: "20px",
+          padding: "50px 40px",
+          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "24px"
+        }} className="animate-fade">
+          
+          <h1 style={{
+            fontSize: "44px",
+            fontWeight: 800,
+            color: "var(--color-gold)",
+            letterSpacing: "-1px",
+            margin: 0,
+            textShadow: "0 2px 10px rgba(0,0,0,0.5)"
           }}>
-            <video
-              src="/hero-video.mp4"
-              muted
-              playsInline
-              autoPlay
-              loop
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover"
-              }}
-            />
-            {/* High-tech watermark / label overlay */}
-            <div style={{
-              position: "absolute",
-              bottom: "10px",
-              left: "10px",
-              background: "rgba(11,17,32,0.85)",
-              backdropFilter: "blur(4px)",
-              color: "var(--color-gold)",
-              padding: "4px 8px",
-              borderRadius: "6px",
-              fontSize: "10px",
-              fontWeight: "bold",
-              border: "1px solid rgba(251,191,36,0.25)"
-            }}>
-              📡 MelittaBreed Live Breeding Platform
-            </div>
+            꿀벌 디지털 육종플랫폼
+          </h1>
+
+          <p style={{
+            fontSize: "16px",
+            lineHeight: "1.7",
+            color: "#e2e8f0",
+            margin: 0,
+            maxWidth: "680px",
+            wordBreak: "keep-all"
+          }}>
+            기후변화와 월동 폐사 위기를 극복하기 위해 서양벌(Apis mellifera) 및 토종벌(Apis cerana)의 유전체-표현형 데이터를 통합한 AI 기반 디지털 정밀 육종 솔루션
+          </p>
+
+          <div style={{ display: "flex", justifyContent: "center", width: "100%", marginTop: "10px" }}>
+            {!user ? (
+              <div 
+                style={{ 
+                  padding: "14px 24px", 
+                  borderRadius: "10px", 
+                  background: "rgba(255, 255, 255, 0.05)", 
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+                }}
+                className="pulse-glow-tip"
+              >
+                <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>
+                  💡 우측 상단에서 로그인 후 플랫폼 대시보드 서비스를 이용하실 수 있습니다. ↗
+                </span>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowDashboard(true)}
+                style={styles.btnGold}
+                className="btn-hover-effect"
+              >
+                플랫폼 대시보드 바로가기 ➔
+              </button>
+            )}
           </div>
         </div>
 
         {/* Big Launcher Grid (appears below the columns if user is logged in) */}
         {user && (
-          <div style={{ marginTop: "60px", textAlign: "left" }} className="animate-fade">
+          <div style={{ position: "relative", zIndex: 3, marginTop: "40px", width: "100%", maxWidth: "1000px", textAlign: "left" }} className="animate-fade">
             <h3 style={{ fontSize: "13px", fontWeight: 700, textTransform: "uppercase", color: "var(--color-gold)", letterSpacing: "1px", marginBottom: "16px" }}>
               🚀 플랫폼 서비스 바로가기 런처
             </h3>
@@ -398,7 +453,7 @@ export default function Page() {
                 <>
                   <div 
                     onClick={() => handleLaunch("apiaries")}
-                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid var(--color-gold)", padding: "20px" }}
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid var(--color-gold)", padding: "20px", background: "rgba(11, 17, 32, 0.8)", backdropFilter: "blur(8px)" }}
                     className="feature-card-hover"
                   >
                     <span style={{ fontSize: "28px" }}>🏡</span>
@@ -408,7 +463,7 @@ export default function Page() {
 
                   <div 
                     onClick={() => handleLaunch("records")}
-                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #f97316", padding: "20px" }}
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #f97316", padding: "20px", background: "rgba(11, 17, 32, 0.8)", backdropFilter: "blur(8px)" }}
                     className="feature-card-hover"
                   >
                     <span style={{ fontSize: "28px" }}>📋</span>
@@ -423,7 +478,7 @@ export default function Page() {
                 <>
                   <div 
                     onClick={() => handleLaunch("browser")}
-                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #3b82f6", padding: "20px" }}
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #3b82f6", padding: "20px", background: "rgba(11, 17, 32, 0.8)", backdropFilter: "blur(8px)" }}
                     className="feature-card-hover"
                   >
                     <span style={{ fontSize: "28px" }}>🧬</span>
@@ -433,7 +488,7 @@ export default function Page() {
 
                   <div 
                     onClick={() => handleLaunch("researcher")}
-                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #c084fc", padding: "20px" }}
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #c084fc", padding: "20px", background: "rgba(11, 17, 32, 0.8)", backdropFilter: "blur(8px)" }}
                     className="feature-card-hover"
                   >
                     <span style={{ fontSize: "28px" }}>🔬</span>
@@ -528,7 +583,33 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Section 4: Annual Roadmap */}
+      {/* Section 4: 유전자원 수집 현황 */}
+      <div ref={samplingRef} style={styles.landingSection} className="mobile-section-padding">
+        <div style={styles.sectionHeaderLanding}>
+          <div style={styles.sectionTitlePre}>Genetic Resources Database</div>
+          <h2 style={styles.sectionMainTitle} className="mobile-section-title">
+            국내 꿀벌 유전자원 수집 현황
+          </h2>
+        </div>
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <SamplingStatusPanel />
+        </div>
+      </div>
+
+      {/* Section 5: 국내 꿀벌 계통수 */}
+      <div ref={phylogenyRef} style={styles.landingSection} className="mobile-section-padding">
+        <div style={styles.sectionHeaderLanding}>
+          <div style={styles.sectionTitlePre}>Phylogenetic Tree Cladogram</div>
+          <h2 style={styles.sectionMainTitle} className="mobile-section-title">
+            국내 꿀벌 계통수 및 유전 거리 판별
+          </h2>
+        </div>
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          <PhylogenyPanel />
+        </div>
+      </div>
+
+      {/* Section 6: Annual Roadmap */}
       <div ref={roadmapRef} style={styles.landingSection} className="mobile-section-padding">
         <div style={styles.sectionHeaderLanding}>
           <div style={styles.sectionTitlePre}>Project Roadmap</div>
