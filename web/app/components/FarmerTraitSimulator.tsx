@@ -199,7 +199,7 @@ export default function FarmerTraitSimulator({ apiaries }: FarmerTraitSimulatorP
         <div className="flex items-center gap-3">
           <span className="text-3xl">📈</span>
           <div>
-            <h2 className="text-xl font-bold text-amber-400">형질 예측 시뮬레이터 (Farmer Trait Simulator)</h2>
+            <h2 className="text-xl font-bold text-amber-400">형질 예측 시뮬레이터 (Farmer Trait Simulator) <span className="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-full font-medium ml-2 border border-slate-700">(개발 중 / In Progress)</span></h2>
             <p className="text-xs text-slate-400 font-medium">
               CSBV, VSH 유전자형과 화학적 감각 성향 값을 기반으로 종합 유밀 채집력, 질병 방어 지표를 모사 진단합니다.
             </p>

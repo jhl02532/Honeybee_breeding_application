@@ -93,6 +93,7 @@ export default function DashboardScreen({
   }, []);
 
   const fetchDashboard = useCallback(async (farmerId?: string) => {
+    if (user.role === "guest") return; // Guest has no data
     try {
       const targetId = farmerId !== undefined ? farmerId : selectedFarmerId;
       const query = targetId ? `?owner_id=${targetId}` : "";
@@ -105,7 +106,7 @@ export default function DashboardScreen({
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     }
-  }, [selectedFarmerId]);
+  }, [selectedFarmerId, user.role]);
 
   useEffect(() => {
     fetchDashboard();
@@ -136,37 +137,46 @@ export default function DashboardScreen({
     fetchDashboard(farmerId);
   };
 
-  const navItems: { key: DashView; label: string; icon: string }[] = [
-    { key: "overview", label: "대시보드", icon: "📊" },
-    { key: "apiaries", label: "양봉장 관리", icon: "🏡" },
-    { key: "colonies", label: "봉군 관리", icon: "🐝" },
-    { key: "records", label: "형질 기록", icon: "📋" },
-  ];
+  let navItems: { key: DashView; label: string; icon: string }[] = [];
 
-  if (user.role === "researcher" || user.role === "admin") {
-    navItems.push(
+  if (user.role === "guest") {
+    navItems = [
       { key: "browser", label: "게놈 브라우저", icon: "🧬" },
-      { key: "synteny", label: "비교 유전체 분석", icon: "🔀" },
-      { key: "chemo", label: "화학수용체 탐색기", icon: "👃" },
-      { key: "marker", label: "분자 마커 설계", icon: "🏷️" }
-    );
+      { key: "manual", label: "사용 매뉴얼", icon: "📖" }
+    ];
+  } else {
+    navItems = [
+      { key: "overview", label: "대시보드", icon: "📊" },
+      { key: "apiaries", label: "양봉장 관리", icon: "🏡" },
+      { key: "colonies", label: "봉군 관리", icon: "🐝" },
+      { key: "records", label: "형질 기록", icon: "📋" },
+    ];
+
+    if (user.role === "researcher" || user.role === "admin") {
+      navItems.push(
+        { key: "browser", label: "게놈 브라우저", icon: "🧬" },
+        { key: "synteny", label: "비교 유전체 분석", icon: "🔀" },
+        { key: "chemo", label: "화학수용체 탐색기", icon: "👃" },
+        { key: "marker", label: "분자 마커 설계", icon: "🏷️" }
+      );
+    }
+
+    navItems.push({ key: "farmer", label: "형질 예측기 (개발 중)", icon: "📈" });
+
+    if (user.role === "researcher" || user.role === "admin") {
+      navItems.push(
+        { key: "matchmaker", label: "가상 교배 시뮬레이터", icon: "👑" },
+        { key: "researcher", label: "연구원 분석", icon: "🔬" }
+      );
+    }
+
+    if (user.role === "admin") {
+      navItems.push({ key: "admin", label: "시스템 관리", icon: "⚙️" });
+    }
+
+    // Always show guidebook manual to all users
+    navItems.push({ key: "manual", label: "사용 매뉴얼", icon: "📖" });
   }
-
-  navItems.push({ key: "farmer", label: "형질 예측기", icon: "📈" });
-
-  if (user.role === "researcher" || user.role === "admin") {
-    navItems.push(
-      { key: "matchmaker", label: "가상 교배 시뮬레이터", icon: "👑" },
-      { key: "researcher", label: "연구원 분석", icon: "🔬" }
-    );
-  }
-
-  if (user.role === "admin") {
-    navItems.push({ key: "admin", label: "시스템 관리", icon: "⚙️" });
-  }
-
-  // Always show guidebook manual to all users
-  navItems.push({ key: "manual", label: "사용 매뉴얼", icon: "📖" });
 
   return (
     <div style={{ ...styles.dashLayout, position: "relative" }}>
@@ -230,35 +240,41 @@ export default function DashboardScreen({
             alignItems: sidebarOpen ? "stretch" : "center",
           }}
         >
-          {navItems.map((item) => (
-            <button
-              key={item.key}
-              id={`nav-${item.key}`}
-              style={{
-                ...styles.navItem,
-                ...(view === item.key ? styles.navItemActive : {}),
-                justifyContent: sidebarOpen ? "flex-start" : "center",
-                padding: sidebarOpen ? "12px 14px" : "12px 0",
-                width: "100%",
-                transition: "all 0.2s",
-              }}
-              onClick={() => {
-                setView(item.key);
-                if (isMobile) setSidebarOpen(false);
-              }}
-              title={!sidebarOpen ? item.label : undefined}
-            >
-              <span
+          {navItems.map((item) => {
+            const isDisabled = item.key === "chemo" || item.key === "marker";
+            return (
+              <button
+                key={item.key}
+                id={`nav-${item.key}`}
+                disabled={isDisabled}
                 style={{
-                  ...styles.navIcon,
-                  marginRight: sidebarOpen ? "10px" : "0px",
+                  ...styles.navItem,
+                  ...(view === item.key ? styles.navItemActive : {}),
+                  justifyContent: sidebarOpen ? "flex-start" : "center",
+                  padding: sidebarOpen ? "12px 14px" : "12px 0",
+                  width: "100%",
+                  transition: "all 0.2s",
+                  ...(isDisabled ? { opacity: 0.4, cursor: "not-allowed" } : {})
                 }}
+                onClick={() => {
+                  if (isDisabled) return;
+                  setView(item.key);
+                  if (isMobile) setSidebarOpen(false);
+                }}
+                title={isDisabled ? "본 기능은 3년차(2027) 고도화 개발 예정 기능입니다" : (!sidebarOpen ? item.label : undefined)}
               >
-                {item.icon}
-              </span>
-              {sidebarOpen && <span style={{ animation: "fade 0.2s ease" }}>{item.label}</span>}
-            </button>
-          ))}
+                <span
+                  style={{
+                    ...styles.navIcon,
+                    marginRight: sidebarOpen ? "10px" : "0px",
+                  }}
+                >
+                  {item.icon}
+                </span>
+                {sidebarOpen && <span style={{ animation: "fade 0.2s ease" }}>{item.label}</span>}
+              </button>
+            );
+          })}
         </nav>
 
         <div

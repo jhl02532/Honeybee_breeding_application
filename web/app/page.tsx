@@ -60,10 +60,10 @@ export default function Page() {
     setLoading(false);
   }, []);
 
-  // Client-side Route Guard for non-logged-in users
+  // Client-side Route Guard for non-logged-in users (allow browser guest view)
   useEffect(() => {
     if (loading) return;
-    if (!user) {
+    if (!user && showDashboard && initialDashboardView !== "browser") {
       setShowDashboard(false);
       const params = new URLSearchParams(window.location.search);
       if (params.toString() !== "") {
@@ -71,7 +71,7 @@ export default function Page() {
         window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
-  }, [user, loading]);
+  }, [user, loading, showDashboard, initialDashboardView]);
 
   // Monitor scroll to update active navigation item
   useEffect(() => {
@@ -142,11 +142,20 @@ export default function Page() {
     );
   }
 
-  // Private Mode -> Render Dashboard Screen only if explicitly launched (showDashboard === true)
-  if (user && showDashboard) {
+  // Private Mode / Guest Mode -> Render Dashboard Screen
+  if (showDashboard) {
+    const guestUser = {
+      id: 0,
+      username: "Guest",
+      farm_name: "게스트 방문자",
+      role: "guest",
+      full_name: "게스트",
+      phone: "",
+      experience_years: 0
+    };
     return (
       <DashboardScreen 
-        user={user} 
+        user={user || guestUser} 
         onLogout={handleLogout} 
         theme={theme} 
         onToggleTheme={handleToggleTheme} 
@@ -313,8 +322,26 @@ export default function Page() {
               </button>
             </div>
           ) : (
-            /* Unauthenticated inline form bar in header */
-            <AuthBar onAuth={handleLogin} />
+            /* Unauthenticated inline form bar in header with guest genome browser button */
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }} className="auth-profile-badge-wrapper">
+              <button
+                onClick={() => handleLaunch("browser")}
+                style={{
+                  padding: "6px 12px",
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                  borderRadius: "6px",
+                  border: "1px solid var(--color-gold)",
+                  background: "rgba(212,175,55,0.15)",
+                  color: "var(--color-gold)",
+                  cursor: "pointer",
+                }}
+                className="btn-outline-hover"
+              >
+                🧬 게놈 브라우저 바로가기
+              </button>
+              <AuthBar onAuth={handleLogin} />
+            </div>
           )}
         </div>
       </header>
@@ -406,22 +433,41 @@ export default function Page() {
             기후변화와 월동 폐사 위기를 극복하기 위해 서양벌(Apis mellifera) 및 토종벌(Apis cerana)의 유전체-표현형 데이터를 통합한 AI 기반 디지털 정밀 육종 솔루션
           </p>
 
-          <div style={{ display: "flex", justifyContent: "center", width: "100%", marginTop: "10px" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", width: "100%", marginTop: "10px" }}>
             {!user ? (
-              <div 
-                style={{ 
-                  padding: "14px 24px", 
-                  borderRadius: "10px", 
-                  background: "rgba(255, 255, 255, 0.05)", 
-                  border: "1px solid rgba(255, 255, 255, 0.1)",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
-                }}
-                className="pulse-glow-tip"
-              >
-                <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>
-                  💡 우측 상단에서 로그인 후 플랫폼 대시보드 서비스를 이용하실 수 있습니다. ↗
-                </span>
-              </div>
+              <>
+                <div 
+                  style={{ 
+                    padding: "14px 24px", 
+                    borderRadius: "10px", 
+                    background: "rgba(255, 255, 255, 0.05)", 
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+                  }}
+                  className="pulse-glow-tip"
+                >
+                  <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>
+                    💡 우측 상단에서 로그인 후 플랫폼 대시보드 서비스를 이용하실 수 있습니다. ↗
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleLaunch("browser")}
+                  style={{
+                    padding: "12px 24px",
+                    fontSize: "15px",
+                    fontWeight: "bold",
+                    borderRadius: "10px",
+                    border: "none",
+                    background: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
+                    color: "#ffffff",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)"
+                  }}
+                  className="btn-hover-effect"
+                >
+                  🧬 범유전체 게놈 브라우저 바로가기 (비회원 공개) ➔
+                </button>
+              </>
             ) : (
               <button
                 onClick={() => setShowDashboard(true)}
@@ -557,7 +603,7 @@ export default function Page() {
             </p>
           </div>
 
-          <div style={styles.featureCard} className="feature-card-hover" onClick={() => { if (!user) setInitialDashboardView("overview"); setShowDashboard(true); }}>
+          <div style={{ ...styles.featureCard }} className="feature-card-hover" onClick={() => { handleLaunch("browser"); }}>
             <div style={styles.featureIcon}>🧬</div>
             <h3 style={styles.featureTitle}>2. 우수 유전자 원스톱 진단 서비스</h3>
             <p style={styles.featureDesc}>
@@ -565,7 +611,7 @@ export default function Page() {
             </p>
           </div>
 
-          <div style={styles.featureCard} className="feature-card-hover" onClick={() => { if (!user) setInitialDashboardView("overview"); setShowDashboard(true); }}>
+          <div style={{ ...styles.featureCard, opacity: 0.4, cursor: "not-allowed" }} className="feature-card-hover" title="본 기능은 3년차(2027) 고도화 개발 예정 기능입니다">
             <div style={styles.featureIcon}>🏷️</div>
             <h3 style={styles.featureTitle}>3. 분자 마커 디자이너</h3>
             <p style={styles.featureDesc}>
