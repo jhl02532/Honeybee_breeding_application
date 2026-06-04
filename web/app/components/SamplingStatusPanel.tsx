@@ -391,24 +391,9 @@ export default function SamplingStatusPanel() {
                           key={geo.rsmKey}
                           geography={geo}
                           style={{
-                            default: {
-                              fill: "rgba(251, 191, 36, 0.025)",
-                              stroke: "rgba(255, 255, 255, 0.15)",
-                              strokeWidth: 1.2,
-                              outline: "none"
-                            },
-                            hover: {
-                              fill: "rgba(251, 191, 36, 0.08)",
-                              stroke: "rgba(251, 191, 36, 0.35)",
-                              strokeWidth: 1.2,
-                              outline: "none"
-                            },
-                            pressed: {
-                              fill: "rgba(251, 191, 36, 0.12)",
-                              stroke: "rgba(251, 191, 36, 0.5)",
-                              strokeWidth: 1.2,
-                              outline: "none"
-                            }
+                            default: { fill: "#F3F4F6", stroke: "#4B5563", strokeWidth: 1.5, outline: "none" },
+                            hover: { fill: "#E5E7EB", stroke: "#111827", strokeWidth: 2.0, outline: "none" },
+                            pressed: { fill: "#D1D5DB", stroke: "#111827", outline: "none" }
                           }}
                         />
                       ))
@@ -459,24 +444,9 @@ export default function SamplingStatusPanel() {
                           key={geo.rsmKey}
                           geography={geo}
                           style={{
-                            default: {
-                              fill: "rgba(59, 130, 246, 0.03)",
-                              stroke: "rgba(255, 255, 255, 0.12)",
-                              strokeWidth: 0.5,
-                              outline: "none"
-                            },
-                            hover: {
-                              fill: "rgba(251, 191, 36, 0.08)",
-                              stroke: "rgba(251, 191, 36, 0.35)",
-                              strokeWidth: 0.5,
-                              outline: "none"
-                            },
-                            pressed: {
-                              fill: "rgba(251, 191, 36, 0.12)",
-                              stroke: "rgba(251, 191, 36, 0.5)",
-                              strokeWidth: 0.5,
-                              outline: "none"
-                            }
+                            default: { fill: "#F3F4F6", stroke: "#4B5563", strokeWidth: 1.5, outline: "none" },
+                            hover: { fill: "#E5E7EB", stroke: "#111827", strokeWidth: 2.0, outline: "none" },
+                            pressed: { fill: "#D1D5DB", stroke: "#111827", outline: "none" }
                           }}
                         />
                       ))

@@ -437,7 +437,7 @@ export default function Page() {
         {/* Big Launcher Grid (appears below the columns if user is logged in) */}
         {user && (
           <div style={{ position: "relative", zIndex: 3, marginTop: "40px", width: "100%", maxWidth: "1000px", textAlign: "left" }} className="animate-fade">
-            <h3 style={{ fontSize: "13px", fontWeight: 700, textTransform: "uppercase", color: "var(--color-gold)", letterSpacing: "1px", marginBottom: "16px" }}>
+            <h3 className="gold-overlay" style={{ fontSize: "13px", fontWeight: 700, textTransform: "uppercase", color: "var(--color-gold)", letterSpacing: "1px", marginBottom: "16px" }}>
               🚀 플랫폼 서비스 바로가기 런처
             </h3>
             
@@ -453,22 +453,22 @@ export default function Page() {
                 <>
                   <div 
                     onClick={() => handleLaunch("apiaries")}
-                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid var(--color-gold)", padding: "20px", background: "rgba(11, 17, 32, 0.9)", backdropFilter: "blur(8px)" }}
-                    className="feature-card-hover"
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid var(--color-gold)", padding: "20px" }}
+                    className="feature-card-hover launcher-card"
                   >
                     <span style={{ fontSize: "28px" }}>🏡</span>
-                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0, color: "#FFFFFF !important" }}>스마트 양봉장·봉군 관리</h4>
-                    <p style={{ fontSize: "11px", color: "#FFFFFF !important", opacity: 0.8, margin: 0 }}>양봉장 위치 등록 및 각 벌통 내부 상태 관제 모듈로 진입</p>
+                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>스마트 양봉장·봉군 관리</h4>
+                    <p style={{ fontSize: "11px", margin: 0 }}>양봉장 위치 등록 및 각 벌통 내부 상태 관제 모듈로 진입</p>
                   </div>
 
                   <div 
                     onClick={() => handleLaunch("records")}
-                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #f97316", padding: "20px", background: "rgba(11, 17, 32, 0.9)", backdropFilter: "blur(8px)" }}
-                    className="feature-card-hover"
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #f97316", padding: "20px" }}
+                    className="feature-card-hover launcher-card"
                   >
                     <span style={{ fontSize: "28px" }}>📋</span>
-                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0, color: "#FFFFFF !important" }}>스마트폰 1분 내검 기록기</h4>
-                    <p style={{ fontSize: "11px", color: "#FFFFFF !important", opacity: 0.8, margin: 0 }}>야외 작업 시 장갑 터치가 용이한 모바일 표현형 내검 기록 모듈</p>
+                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>스마트폰 1분 내검 기록기</h4>
+                    <p style={{ fontSize: "11px", margin: 0 }}>야외 작업 시 장갑 터치가 용이한 모바일 표현형 내검 기록 모듈</p>
                   </div>
                 </>
               )}
@@ -478,22 +478,22 @@ export default function Page() {
                 <>
                   <div 
                     onClick={() => handleLaunch("browser")}
-                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #3b82f6", padding: "20px", background: "rgba(11, 17, 32, 0.9)", backdropFilter: "blur(8px)" }}
-                    className="feature-card-hover"
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #3b82f6", padding: "20px" }}
+                    className="feature-card-hover launcher-card"
                   >
                     <span style={{ fontSize: "28px" }}>🧬</span>
-                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0, color: "#FFFFFF !important" }}>K-BEE-ID 디지털 육종 분석</h4>
-                    <p style={{ fontSize: "11px", color: "#FFFFFF !important", opacity: 0.8, margin: 0 }}>범유전체 브라우저, 유전체 변이 트랙 탐색 분석 센터로 진입</p>
+                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>K-BEE-ID 디지털 육종 분석</h4>
+                    <p style={{ fontSize: "11px", margin: 0 }}>범유전체 브라우저, 유전체 변이 트랙 탐색 분석 센터로 진입</p>
                   </div>
 
                   <div 
                     onClick={() => handleLaunch("researcher")}
-                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #c084fc", padding: "20px", background: "rgba(11, 17, 32, 0.9)", backdropFilter: "blur(8px)" }}
-                    className="feature-card-hover"
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #c084fc", padding: "20px" }}
+                    className="feature-card-hover launcher-card"
                   >
                     <span style={{ fontSize: "28px" }}>🔬</span>
-                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0, color: "#FFFFFF !important" }}>연구원 통합 분석 센터</h4>
-                    <p style={{ fontSize: "11px", color: "#FFFFFF !important", opacity: 0.8, margin: 0 }}>전국 시딩 농가 스탯 관제 및 현미경 형태 측정 기록 관리</p>
+                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>연구원 통합 분석 센터</h4>
+                    <p style={{ fontSize: "11px", margin: 0 }}>전국 시딩 농가 스탯 관제 및 현미경 형태 측정 기록 관리</p>
                   </div>
                 </>
               )}
