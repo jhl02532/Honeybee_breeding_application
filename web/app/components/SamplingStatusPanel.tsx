@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 import { useRouter } from "next/navigation";
 import { authFetch } from "../utils";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
@@ -8,6 +8,111 @@ import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps
 // standard GeoJSON / TopoJSON endpoints for high-resolution rendering
 const KOREA_GEOJSON_URL = "https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-provinces-2018-geo.json";
 const WORLD_TOPOJSON_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+
+// --- React.memo Map Background to prevent expensive D3 outline re-renders ---
+const MapBackground: React.FC<{ geojsonUrl: string }> = ({ geojsonUrl }) => {
+  return (
+    <Geographies geography={geojsonUrl}>
+      {({ geographies }) =>
+        geographies.map((geo) => (
+          <Geography
+            key={geo.rsmKey}
+            geography={geo}
+            style={{
+              default: { fill: "#F3F4F6", stroke: "#4B5563", strokeWidth: 1.5, outline: "none" },
+              hover: { fill: "#E5E7EB", stroke: "#111827", strokeWidth: 2.0, outline: "none" },
+              pressed: { fill: "#D1D5DB", stroke: "#111827", outline: "none" }
+            }}
+          />
+        ))
+      }
+    </Geographies>
+  );
+};
+const MemoizedMapBackground = React.memo(
+  MapBackground,
+  (prevProps, nextProps) => prevProps.geojsonUrl === nextProps.geojsonUrl
+);
+
+// --- Reducer state updates for thread/render safe unified filters ---
+type FilterState = {
+  mode: "domestic" | "global";
+  speciesFilter: string;
+  sourceFilter: string;
+  regionFilter: string | null;
+  countryFilter: string | null;
+  countrySearch: string;
+};
+
+type FilterAction =
+  | { type: "SET_MODE"; payload: "domestic" | "global" }
+  | { type: "SET_SPECIES"; payload: string }
+  | { type: "SET_SOURCE"; payload: string }
+  | { type: "SET_REGION"; payload: string | null }
+  | { type: "SET_COUNTRY_FILTER"; payload: string | null }
+  | { type: "SET_COUNTRY_SEARCH"; payload: string }
+  | { type: "RESET_FILTERS" };
+
+const initialFilterState: FilterState = {
+  mode: "domestic",
+  speciesFilter: "all",
+  sourceFilter: "all",
+  regionFilter: "all",
+  countryFilter: null,
+  countrySearch: ""
+};
+
+function filterReducer(state: FilterState, action: FilterAction): FilterState {
+  switch (action.type) {
+    case "SET_MODE":
+      if (action.payload === "domestic") {
+        return {
+          ...state,
+          mode: "domestic",
+          regionFilter: "all",
+          countryFilter: null,
+          countrySearch: ""
+        };
+      } else {
+        return {
+          ...state,
+          mode: "global",
+          regionFilter: null,
+          countryFilter: "all",
+          countrySearch: ""
+        };
+      }
+    case "SET_SPECIES":
+      return { ...state, speciesFilter: action.payload };
+    case "SET_SOURCE":
+      return { ...state, sourceFilter: action.payload };
+    case "SET_REGION":
+      return { ...state, regionFilter: action.payload };
+    case "SET_COUNTRY_FILTER":
+      return { ...state, countryFilter: action.payload };
+    case "SET_COUNTRY_SEARCH":
+      return { ...state, countrySearch: action.payload };
+    case "RESET_FILTERS":
+      if (state.mode === "domestic") {
+        return {
+          ...state,
+          speciesFilter: "all",
+          sourceFilter: "all",
+          regionFilter: "all"
+        };
+      } else {
+        return {
+          ...state,
+          speciesFilter: "all",
+          sourceFilter: "all",
+          countryFilter: "all",
+          countrySearch: ""
+        };
+      }
+    default:
+      return state;
+  }
+}
 
 export default function SamplingStatusPanel() {
   const router = useRouter();
@@ -17,27 +122,9 @@ export default function SamplingStatusPanel() {
   const [error, setError] = useState<string>("");
   const [hoveredSample, setHoveredSample] = useState<string | null>(null);
 
-  // Filter States
-  const [mode, setMode] = useState<"domestic" | "global">("domestic");
-  const [speciesFilter, setSpeciesFilter] = useState<string>("all");
-  const [sourceFilter, setSourceFilter] = useState<string>("all");
-  const [regionFilter, setRegionFilter] = useState<string | null>("all");
-  const [countryFilter, setCountryFilter] = useState<string | null>(null);
-  const [countrySearch, setCountrySearch] = useState<string>("");
-
-  // State Cascading Manager
-  const handleSetMode = (newMode: "domestic" | "global") => {
-    setMode(newMode);
-    if (newMode === "domestic") {
-      setCountryFilter(null);
-      setCountrySearch("");
-      setRegionFilter("all");
-    } else {
-      setRegionFilter(null);
-      setCountryFilter("all");
-      setCountrySearch("");
-    }
-  };
+  // Filter States (Unified Reducer)
+  const [filterState, dispatch] = useReducer(filterReducer, initialFilterState);
+  const { mode, speciesFilter, sourceFilter, regionFilter, countryFilter, countrySearch } = filterState;
 
   // Load All Datasets on Mount to enable fast, zero-latency client-side filtering
   useEffect(() => {
@@ -388,21 +475,7 @@ export default function SamplingStatusPanel() {
                   }}
                   style={{ width: "100%", height: "450px" }}
                 >
-                  <Geographies geography={KOREA_GEOJSON_URL}>
-                    {({ geographies }) =>
-                      geographies.map((geo) => (
-                        <Geography
-                          key={geo.rsmKey}
-                          geography={geo}
-                          style={{
-                            default: { fill: "#F3F4F6", stroke: "#4B5563", strokeWidth: 1.5, outline: "none" },
-                            hover: { fill: "#E5E7EB", stroke: "#111827", strokeWidth: 2.0, outline: "none" },
-                            pressed: { fill: "#D1D5DB", stroke: "#111827", outline: "none" }
-                          }}
-                        />
-                      ))
-                    }
-                  </Geographies>
+                  <MemoizedMapBackground geojsonUrl={KOREA_GEOJSON_URL} />
 
                   {/* Korea Markers */}
                   {finalFilteredRows.map((row, idx) => {
@@ -441,21 +514,7 @@ export default function SamplingStatusPanel() {
                   }}
                   style={{ width: "100%", height: "450px" }}
                 >
-                  <Geographies geography={WORLD_TOPOJSON_URL}>
-                    {({ geographies }) =>
-                      geographies.map((geo) => (
-                        <Geography
-                          key={geo.rsmKey}
-                          geography={geo}
-                          style={{
-                            default: { fill: "#F3F4F6", stroke: "#4B5563", strokeWidth: 1.5, outline: "none" },
-                            hover: { fill: "#E5E7EB", stroke: "#111827", strokeWidth: 2.0, outline: "none" },
-                            pressed: { fill: "#D1D5DB", stroke: "#111827", outline: "none" }
-                          }}
-                        />
-                      ))
-                    }
-                  </Geographies>
+                  <MemoizedMapBackground geojsonUrl={WORLD_TOPOJSON_URL} />
 
                   {/* World Markers */}
                   {finalFilteredRows.map((row, idx) => {
@@ -541,7 +600,7 @@ export default function SamplingStatusPanel() {
               <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", color: "var(--text-muted)", marginBottom: "8px" }}>관제 지도 스위칭</label>
               <div style={{ display: "flex", background: "var(--bg-app)", border: "1px solid var(--border-color)", padding: "4px", borderRadius: "10px" }}>
                 <button
-                  onClick={() => handleSetMode("domestic")}
+                  onClick={() => dispatch({ type: "SET_MODE", payload: "domestic" })}
                   style={{
                     flex: 1,
                     padding: "8px 12px",
@@ -558,7 +617,7 @@ export default function SamplingStatusPanel() {
                   🇰🇷 국내 자원 관제
                 </button>
                 <button
-                  onClick={() => handleSetMode("global")}
+                  onClick={() => dispatch({ type: "SET_MODE", payload: "global" })}
                   style={{
                     flex: 1,
                     padding: "8px 12px",
@@ -588,7 +647,7 @@ export default function SamplingStatusPanel() {
                 ].map((item) => (
                   <button
                     key={item.value}
-                    onClick={() => setSpeciesFilter(item.value)}
+                    onClick={() => dispatch({ type: "SET_SPECIES", payload: item.value })}
                     style={{
                       flex: 1,
                       padding: "8px 10px",
@@ -614,7 +673,7 @@ export default function SamplingStatusPanel() {
               <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", color: "var(--text-muted)", marginBottom: "8px" }}>📊 데이터 출처 (Source Type)</label>
               <select
                 value={sourceFilter}
-                onChange={(e) => setSourceFilter(e.target.value)}
+                onChange={(e) => dispatch({ type: "SET_SOURCE", payload: e.target.value })}
                 style={{
                   width: "100%",
                   padding: "10px 14px",
@@ -641,7 +700,7 @@ export default function SamplingStatusPanel() {
                 <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", color: "var(--text-muted)", marginBottom: "8px" }}>📍 국내 권역 (Region)</label>
                 <select
                   value={regionFilter || "all"}
-                  onChange={(e) => setRegionFilter(e.target.value)}
+                  onChange={(e) => dispatch({ type: "SET_REGION", payload: e.target.value })}
                   style={{
                     width: "100%",
                     padding: "10px 14px",
@@ -669,7 +728,7 @@ export default function SamplingStatusPanel() {
                     type="text"
                     placeholder="국가명 입력 검색..."
                     value={countrySearch}
-                    onChange={(e) => setCountrySearch(e.target.value)}
+                    onChange={(e) => dispatch({ type: "SET_COUNTRY_SEARCH", payload: e.target.value })}
                     style={{
                       width: "100%",
                       padding: "10px 14px",
@@ -685,7 +744,7 @@ export default function SamplingStatusPanel() {
                 <div>
                   <select
                     value={countryFilter || "all"}
-                    onChange={(e) => setCountryFilter(e.target.value)}
+                    onChange={(e) => dispatch({ type: "SET_COUNTRY_FILTER", payload: e.target.value })}
                     style={{
                       width: "100%",
                       padding: "10px 14px",
@@ -710,16 +769,7 @@ export default function SamplingStatusPanel() {
             {/* Reset Filters Button */}
             {(speciesFilter !== "all" || sourceFilter !== "all" || (mode === "domestic" && regionFilter !== "all") || (mode === "global" && (countryFilter !== "all" || countrySearch !== ""))) && (
               <button
-                onClick={() => {
-                  setSpeciesFilter("all");
-                  setSourceFilter("all");
-                  if (mode === "domestic") {
-                    setRegionFilter("all");
-                  } else {
-                    setCountryFilter("all");
-                    setCountrySearch("");
-                  }
-                }}
+                onClick={() => dispatch({ type: "RESET_FILTERS" })}
                 style={{
                   width: "100%",
                   padding: "12px",

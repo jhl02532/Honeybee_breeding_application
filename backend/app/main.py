@@ -116,11 +116,13 @@ def startup_event():
         print(f"Failed to sync schema columns on startup: {str(e)}")
     crud.seed_database_if_empty(db)
 
-    # Pre-load sampling TSV master databases to memory cache
+    # Pre-load sampling TSV master databases to memory cache using thread-safe DataManager Singleton
     try:
-        from .routers.researcher import load_global_dfs
-        load_global_dfs()
-        print("Successfully loaded beekeeping TSV dataset to memory cache.")
+        from .routers.researcher import BeekeepingDataManager
+        manager = BeekeepingDataManager()
+        manager.load_data()
+        app.state.wgs_cache = manager
+        print("Successfully loaded beekeeping TSV dataset to app.state.wgs_cache.")
     except Exception as e:
         print(f"Failed to load beekeeping TSV dataset to memory cache: {str(e)}")
 

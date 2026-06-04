@@ -1,6 +1,8 @@
 import csv
 import io
 import os
+import threading
+import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -210,86 +212,105 @@ def export_global_csv(
     )
 
 
-GLOBAL_MASTER_DF = None
+class BeekeepingDataManager:
+    _instance = None
+    _lock = threading.Lock()
 
-def load_global_dfs():
-    global GLOBAL_MASTER_DF
-    if GLOBAL_MASTER_DF is not None:
-        return
-    import pandas as pd
-    
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    pore_c_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_pore_c.tsv")
-    ac_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_ac.tsv")
-    am_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_am.tsv")
-    global_path = os.path.join(BASE_DIR, "..", "data", "sampling", "wgs_world_data.tsv")
+    def __new__(cls, *args, **kwargs):
+        with cls._lock:
+            if not cls._instance:
+                cls._instance = super(BeekeepingDataManager, cls).__new__(cls, *args, **kwargs)
+                cls._instance._initialized = False
+        return cls._instance
 
-    # 1. Load domestic files
-    df_pore_c = pd.read_csv(pore_c_path, sep="\t") if os.path.exists(pore_c_path) else pd.DataFrame()
-    df_ac = pd.read_csv(ac_path, sep="\t") if os.path.exists(ac_path) else pd.DataFrame()
-    df_am = pd.read_csv(am_path, sep="\t") if os.path.exists(am_path) else pd.DataFrame()
+    def __init__(self):
+        if self._initialized:
+            return
+        self._lock = threading.Lock()
+        self._domestic_df = None
+        self._global_df = None
+        self._initialized = True
 
-    # Normalize column names strip whitespace
-    for df in [df_pore_c, df_ac, df_am]:
-        if not df.empty:
-            df.columns = df.columns.str.strip()
+    def load_data(self):
+        with self._lock:
+            if self._domestic_df is not None and self._global_df is not None:
+                return
 
-    # Normalize species
-    if not df_pore_c.empty and "종" in df_pore_c.columns:
-        def normalize_species(val):
-            val_str = str(val).lower()
-            if "cerana" in val_str or "토종" in val_str or "동양" in val_str:
-                return "Apis cerana"
-            return "Apis mellifera"
-        df_pore_c["종"] = df_pore_c["종"].apply(normalize_species)
-    
-    if not df_ac.empty:
-        df_ac["종"] = "Apis cerana"
-    if not df_am.empty:
-        df_am["종"] = "Apis mellifera"
+            BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+            pore_c_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_pore_c.tsv")
+            ac_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_ac.tsv")
+            am_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_am.tsv")
+            global_path = os.path.join(BASE_DIR, "..", "data", "sampling", "wgs_world_data.tsv")
 
-    # Track Pore-C sample IDs (for subset flag is_pore_c = True)
-    pore_c_ids = set()
-    if not df_pore_c.empty and "시료 ID" in df_pore_c.columns:
-        pore_c_ids = set(df_pore_c["시료 ID"].dropna().astype(str).str.strip().str.upper().unique())
+            df_pore_c = pd.read_csv(pore_c_path, sep="\t") if os.path.exists(pore_c_path) else pd.DataFrame()
+            df_ac = pd.read_csv(ac_path, sep="\t") if os.path.exists(ac_path) else pd.DataFrame()
+            df_am = pd.read_csv(am_path, sep="\t") if os.path.exists(am_path) else pd.DataFrame()
 
-    # Combine domestic DataFrames
-    dfs_to_concat = [df for df in [df_pore_c, df_ac, df_am] if not df.empty]
-    if dfs_to_concat:
-        domestic_df = pd.concat(dfs_to_concat, ignore_index=True)
-    else:
-        domestic_df = pd.DataFrame(columns=["채집일자", "시료전달일자", "권역", "주소 (상세)", "농가(대표자)", "시료 ID", "계통", "종", "lat", "lng"])
+            # Normalize column names strip whitespace
+            for df in [df_pore_c, df_ac, df_am]:
+                if not df.empty:
+                    df.columns = df.columns.str.strip()
 
-    # Strict Deduplication on "시료 ID" (case-insensitive)
-    if "시료 ID" in domestic_df.columns:
-        domestic_df["시료 ID"] = domestic_df["시료 ID"].astype(str).str.strip().str.upper()
-        domestic_df = domestic_df.drop_duplicates(subset=["시료 ID"], keep="first")
-    
-    # Add dynamic flags
-    if "시료 ID" in domestic_df.columns:
-        domestic_df["is_pore_c"] = domestic_df["시료 ID"].apply(lambda x: str(x) in pore_c_ids if pd.notna(x) else False)
-    else:
-        domestic_df["is_pore_c"] = False
+            # Normalize species
+            if not df_pore_c.empty and "종" in df_pore_c.columns:
+                def normalize_species(val):
+                    val_str = str(val).lower()
+                    if "cerana" in val_str or "토종" in val_str or "동양" in val_str:
+                        return "Apis cerana"
+                    return "Apis mellifera"
+                df_pore_c["종"] = df_pore_c["종"].apply(normalize_species)
+            
+            if not df_ac.empty:
+                df_ac["종"] = "Apis cerana"
+            if not df_am.empty:
+                df_am["종"] = "Apis mellifera"
 
-    domestic_df["수집구분"] = "프로젝트 자체 생산"
+            # Track Pore-C sample IDs (for subset flag is_pore_c = True)
+            pore_c_ids = set()
+            if not df_pore_c.empty and "시료 ID" in df_pore_c.columns:
+                pore_c_ids = set(df_pore_c["시료 ID"].dropna().astype(str).str.strip().str.upper().unique())
 
-    # 2. Global mode
-    if os.path.exists(global_path):
-        global_df = pd.read_csv(global_path, sep="\t")
-        global_df.columns = global_df.columns.str.strip()
-    else:
-        global_df = pd.DataFrame(columns=["Country", "Region", "Species", "Count", "lat", "lng"])
-    
-    global_df["is_pore_c"] = False
-    global_df["수집구분"] = "공공 데이터 수집"
+            # Combine domestic DataFrames
+            dfs_to_concat = [df for df in [df_pore_c, df_ac, df_am] if not df.empty]
+            if dfs_to_concat:
+                domestic_df = pd.concat(dfs_to_concat, ignore_index=True)
+            else:
+                domestic_df = pd.DataFrame(columns=["채집일자", "시료전달일자", "권역", "주소 (상세)", "농가(대표자)", "시료 ID", "계통", "종", "lat", "lng"])
 
-    GLOBAL_MASTER_DF = {
-        "domestic": domestic_df,
-        "global": global_df
-    }
+            # Strict Deduplication on "시료 ID" (case-insensitive)
+            if "시료 ID" in domestic_df.columns:
+                domestic_df["시료 ID"] = domestic_df["시료 ID"].astype(str).str.strip().str.upper()
+                domestic_df = domestic_df.drop_duplicates(subset=["시료 ID"], keep="first")
+            
+            # Add dynamic flags
+            if "시료 ID" in domestic_df.columns:
+                domestic_df["is_pore_c"] = domestic_df["시료 ID"].apply(lambda x: str(x) in pore_c_ids if pd.notna(x) else False)
+            else:
+                domestic_df["is_pore_c"] = False
+
+            domestic_df["수집구분"] = "프로젝트 자체 생산"
+
+            # Load global mode
+            if os.path.exists(global_path):
+                global_df = pd.read_csv(global_path, sep="\t")
+                global_df.columns = global_df.columns.str.strip()
+            else:
+                global_df = pd.DataFrame(columns=["Country", "Region", "Species", "Count", "lat", "lng"])
+            
+            global_df["is_pore_c"] = False
+            global_df["수집구분"] = "공공 데이터 수집"
+
+            self._domestic_df = domestic_df
+            self._global_df = global_df
+
+    def get_data(self, mode="domestic"):
+        with self._lock:
+            if self._domestic_df is None or self._global_df is None:
+                self.load_data()
+            return self._domestic_df.copy() if mode == "domestic" else self._global_df.copy()
 
 
-@router.get("/sampling-status")
+@router.get("/sampling-status", response_model=schemas.SamplingStatusResponse, response_model_by_alias=True)
 def get_sampling_status(
     request: Request,
     mode: Optional[str] = None,  # domestic 또는 global
@@ -298,8 +319,12 @@ def get_sampling_status(
     region: Optional[str] = None,      # 국내 권역 용
     country: Optional[str] = None      # 해외 국가 용
 ):
-    """가입자 전체에 오프라인 파일 로드 없이 전량 메모리에서 0.01초 내 집계하는 고속 유전자원 수집 현황 API"""
-    load_global_dfs()
+    """가입자 전체에 오프라인 파일 로드 없이 thread-safe 캐시 및 Pydantic 검증으로 0.01초 내 집계하는 고속 유전자원 수집 API"""
+    manager = getattr(request.app.state, "wgs_cache", None)
+    if manager is None:
+        manager = BeekeepingDataManager()
+        request.app.state.wgs_cache = manager
+        manager.load_data()
 
     try:
         # mode 기본값 설정
@@ -307,7 +332,7 @@ def get_sampling_status(
             mode = "domestic"
 
         # Copy dataframe from cache to prevent mutations
-        df = GLOBAL_MASTER_DF[mode].copy()
+        df = manager.get_data(mode)
 
         # Apply Filters
         if species and species != "선택 안 함":
@@ -331,17 +356,14 @@ def get_sampling_status(
             if col in df.columns:
                 df = df[df[col] == country]
 
-        # Privacy Leak Check: Drop personal data columns to prevent leakage
-        cols_to_drop = [c for c in ["농가(대표자)", "농가주", "연락처", "주소 (상세)", "주소", "대표자"] if c in df.columns]
+        # Privacy Leak Check: Exclude sensitive fields at the query source projection layer
+        cols_to_drop = [c for c in ["농가(대표자)", "농가주", "연락처", "주소 (상세)", "주소", "대표자", "대표", "전화번호"] if c in df.columns]
         if cols_to_drop:
             df = df.drop(columns=cols_to_drop)
 
-        # JSON Crash Prevention
-        df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
-        # Restore boolean/numeric types for appropriate properties
-        if "is_pore_c" in df.columns:
-            df["is_pore_c"] = df["is_pore_c"].isin(["True", "true", "1"])
-            
+        # Convert NaN values to None (so JSON serializes it as null instead of NaN)
+        df = df.where(pd.notnull(df), None)
+
         result_records = df.to_dict(orient="records")
 
         return {
@@ -410,7 +432,7 @@ def get_phylogeny_data():
     }
 
 
-@router.get("/wgs-world-data")
+@router.get("/wgs-world-data", response_model=schemas.WGSWorldDataResponse)
 def get_wgs_world_data():
     """WGS 세계지도 시각화를 위한 정제된 TSV 데이터 조회"""
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -423,7 +445,7 @@ def get_wgs_world_data():
     try:
         import pandas as pd
         df = pd.read_csv(filepath, sep="\t")
-        df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
+        df = df.where(pd.notnull(df), None)
         data = df.to_dict(orient="records")
         return {
             "status": "success",

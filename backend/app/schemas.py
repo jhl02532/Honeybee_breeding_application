@@ -1,6 +1,6 @@
 from enum import Enum
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from pydantic import BaseModel, Field, field_validator
+from typing import List, Optional, Any
 
 # --- Authentication Schemas ---
 class UserRole(str, Enum):
@@ -207,4 +207,78 @@ class ResearcherStats(BaseModel):
     weak_colonies: int
     dead_colonies: int
     queen_types: int
+
+
+# --- Beekeeping Sampling Status Schemas ---
+class SamplingRecord(BaseModel):
+    채집일자: Optional[str] = None
+    시료전달일자: Optional[str] = None
+    권역: Optional[str] = None
+    시료_ID: Optional[str] = Field(None, alias="시료 ID")
+    계통: Optional[str] = None
+    종: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    is_pore_c: bool = False
+    수집구분: Optional[str] = None
+    
+    # Global WGS fields
+    Country: Optional[str] = None
+    Region: Optional[str] = None
+    Species: Optional[str] = None
+    Count: Optional[int] = None
+
+    class Config:
+        populate_by_name = True
+
+    @field_validator("lat", "lng", mode="before")
+    @classmethod
+    def validate_float_nan(cls, v: Any) -> Optional[float]:
+        import math
+        if v is None:
+            return None
+        try:
+            val = float(v)
+            if math.isnan(val) or math.isinf(val):
+                return None
+            return val
+        except (ValueError, TypeError):
+            return None
+
+    @field_validator("Count", mode="before")
+    @classmethod
+    def validate_int_nan(cls, v: Any) -> Optional[int]:
+        import math
+        if v is None:
+            return None
+        try:
+            val = float(v)
+            if math.isnan(val) or math.isinf(val):
+                return None
+            return int(val)
+        except (ValueError, TypeError):
+            return None
+
+    @field_validator("채집일자", "시료전달일자", "권역", "시료_ID", "계통", "종", "수집구분", "Country", "Region", "Species", mode="before")
+    @classmethod
+    def validate_string_nan(cls, v: Any) -> Optional[str]:
+        if v is None or (isinstance(v, float) and v != v):
+            return None
+        val_str = str(v).strip()
+        if val_str.lower() in ["nan", "none", "null", ""]:
+            return None
+        return val_str
+
+
+class SamplingStatusResponse(BaseModel):
+    status: str
+    mode: str
+    total_count: int
+    data: List[SamplingRecord]
+
+
+class WGSWorldDataResponse(BaseModel):
+    status: str
+    data: List[SamplingRecord]
+
 

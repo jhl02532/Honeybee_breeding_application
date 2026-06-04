@@ -42,6 +42,7 @@ export default function PhylogenyPanel() {
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const dragStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const distanceCacheRef = useRef<Map<string, { closestRefName: string; minDistance: number }>>(new Map());
 
   // User Sample Simulation State
   const [isSimulating, setIsSimulating] = useState<boolean>(false);
@@ -89,35 +90,41 @@ export default function PhylogenyPanel() {
     fetchPhylogeny();
   }, []);
 
-  // Simple Newick String Parser
+  // Stack-based Newick String Parser (non-recursive to prevent browser call-stack overflows)
   const parseNewick = (newickStr: string): TreeNode => {
-    let ancestors: any[] = [];
-    let tree: any = {};
-    let tokens = newickStr.split(/\s*(;|\(|\)|,|:)\s*/);
+    const stack: TreeNode[] = [];
+    let current: TreeNode = { children: [] };
+    const tokens = newickStr.split(/\s*(;|\(|\)|,|:)\s*/);
+    
     for (let i = 0; i < tokens.length; i++) {
-      let token = tokens[i];
+      const token = tokens[i];
       if (token === undefined || token === "" || token === ";") continue;
+      
       if (token === "(") {
-        let subtree: any = { children: [] };
-        if (!tree.children) tree.children = [];
-        tree.children.push(subtree);
-        ancestors.push(tree);
-        tree = subtree;
+        const newNode: TreeNode = { children: [] };
+        if (!current.children) current.children = [];
+        current.children.push(newNode);
+        stack.push(current);
+        current = newNode;
       } else if (token === ",") {
-        let parent = ancestors[ancestors.length - 1];
-        let subtree: any = { children: [] };
-        parent.children.push(subtree);
-        tree = subtree;
+        const parent = stack[stack.length - 1];
+        const newNode: TreeNode = { children: [] };
+        parent.children!.push(newNode);
+        current = newNode;
       } else if (token === ")") {
-        tree = ancestors.pop();
+        current = stack.pop() || current;
       } else if (token === ":") {
-        let val = tokens[++i];
-        tree.length = parseFloat(val);
+        const val = tokens[++i];
+        current.length = parseFloat(val);
       } else {
-        tree.name = token.replace(/['"]/g, "");
+        current.name = token.replace(/['"]/g, "");
       }
     }
-    return tree;
+    
+    if (current.children && current.children.length > 0) {
+      return current.children[0];
+    }
+    return current;
   };
 
   // Traversal to inject the user's sample adjacent to the closest reference node
@@ -303,43 +310,53 @@ export default function PhylogenyPanel() {
         if (p >= 100) {
           clearInterval(interval);
           
-          // Execute Hamming distance calculation against database barcodes
+          // Execute Hamming distance calculation against database barcodes with memoization
           const userBarcode = `${snp1} ${snp2} ${snp3} ${snp4} ${snp5}`;
           let minDistance = 999;
           let closestRefName = "";
 
-          // Select reference database strains based on active tree node leaves
-          const currentTreeNodes: string[] = [];
-          const currentTreeStr = treeData ? treeData[activeTreeKey] || "" : "";
-          const matches = currentTreeStr.match(/[A-Za-z0-9_-]+/g) || [];
-          matches.forEach(m => {
-            if (m && !["Apis_mellifera_outgroup", "LC640350", "LC640349", "LC640351", "LC640352", "LC640346", "LC640345", "LC640347", "LC640348", "OR936096", "MW309837"].includes(m)) {
-              currentTreeNodes.push(m);
-            }
-          });
+          const cacheKey = `${snp1}_${snp2}_${snp3}_${snp4}_${snp5}_${activeTreeKey}`;
+          if (distanceCacheRef.current.has(cacheKey)) {
+            const cached = distanceCacheRef.current.get(cacheKey)!;
+            closestRefName = cached.closestRefName;
+            minDistance = cached.minDistance;
+          } else {
+            // Select reference database strains based on active tree node leaves
+            const currentTreeNodes: string[] = [];
+            const currentTreeStr = treeData ? treeData[activeTreeKey] || "" : "";
+            const matches = currentTreeStr.match(/[A-Za-z0-9_-]+/g) || [];
+            matches.forEach(m => {
+              if (m && !["Apis_mellifera_outgroup", "LC640350", "LC640349", "LC640351", "LC640352", "LC640346", "LC640345", "LC640347", "LC640348", "OR936096", "MW309837"].includes(m)) {
+                currentTreeNodes.push(m);
+              }
+            });
 
-          metadata.forEach((ref) => {
-            if (!currentTreeNodes.includes(ref.Project_ID)) return;
-            const refBarcode = ref.Barcode || "A T G A T T A G C G";
-            
-            // Compare the 5 locus variants (at corresponding positions in barcode indices 0, 2, 4, 6, 8)
-            const refParts = refBarcode.split(" ");
-            const userParts = userBarcode.split(" ");
-            
-            let mismatches = 0;
-            for (let i = 0; i < 5; i++) {
-              if (refParts[i] !== userParts[i]) mismatches += 1;
+            metadata.forEach((ref) => {
+              if (!currentTreeNodes.includes(ref.Project_ID)) return;
+              const refBarcode = ref.Barcode || "A T G A T T A G C G";
+              
+              // Compare the 5 locus variants (at corresponding positions in barcode indices 0, 2, 4, 6, 8)
+              const refParts = refBarcode.split(" ");
+              const userParts = userBarcode.split(" ");
+              
+              let mismatches = 0;
+              for (let i = 0; i < 5; i++) {
+                if (refParts[i] !== userParts[i]) mismatches += 1;
+              }
+
+              if (mismatches < minDistance) {
+                minDistance = mismatches;
+                closestRefName = ref.Project_ID;
+              }
+            });
+
+            // In case no closest match was found, pick a default reference strain
+            if (!closestRefName && currentTreeNodes.length > 0) {
+              closestRefName = currentTreeNodes[0];
             }
 
-            if (mismatches < minDistance) {
-              minDistance = mismatches;
-              closestRefName = ref.Project_ID;
-            }
-          });
-
-          // In case no closest match was found, pick a default reference strain
-          if (!closestRefName && currentTreeNodes.length > 0) {
-            closestRefName = currentTreeNodes[0];
+            // Cache the calculated result
+            distanceCacheRef.current.set(cacheKey, { closestRefName, minDistance });
           }
 
           setNearestNodeName(closestRefName);
