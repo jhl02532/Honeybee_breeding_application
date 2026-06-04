@@ -2,6 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { authFetch } from "../utils";
+import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
+
+// standard GeoJSON / TopoJSON endpoints for high-resolution rendering
+const KOREA_GEOJSON_URL = "https://raw.githubusercontent.com/southkorea/southkorea-maps/master/kostat/2018/json/skorea-provinces-2018-geo.json";
+const WORLD_TOPOJSON_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 export default function SamplingStatusPanel() {
   const [data, setData] = useState<any>(null); // Domestic sheets data
@@ -17,26 +22,6 @@ export default function SamplingStatusPanel() {
   const [regionFilter, setRegionFilter] = useState<string | null>("all");
   const [countryFilter, setCountryFilter] = useState<string | null>(null);
   const [countrySearch, setCountrySearch] = useState<string>("");
-
-  // Coordinates Mapping for South Korea SVG (300x420 canvas)
-  const getXY = (latVal: number, lngVal: number) => {
-    const centerLat = 36.0;
-    const centerLng = 127.75;
-    const latScale = 65.0;
-    const lngScale = latScale * 0.81;
-    const canvasCenterX = 150;
-    const canvasCenterY = 200;
-    const x = canvasCenterX + (lngVal - centerLng) * lngScale;
-    const y = canvasCenterY - (latVal - centerLat) * latScale; // SVG coordinates go downwards
-    return { x, y };
-  };
-
-  // Coordinates Mapping for World SVG (500x300 canvas)
-  const getWorldXY = (latVal: number, lngVal: number) => {
-    const x = ((lngVal + 180) / 360) * 500;
-    const y = ((90 - latVal) / 180) * 300;
-    return { x, y };
-  };
 
   // State Cascading Manager
   const handleSetMode = (newMode: "domestic" | "global") => {
@@ -240,18 +225,11 @@ export default function SamplingStatusPanel() {
           to { opacity: 1; transform: translateY(0); }
         }
         .map-marker {
-          transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), fill 0.2s ease;
+          transition: r 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), fill 0.2s ease;
+          cursor: pointer;
         }
         .map-marker:hover {
-          transform: scale(1.6);
-          filter: drop-shadow(0 0 4px var(--color-gold));
-        }
-        .continent-path {
-          transition: fill 0.3s ease, stroke 0.3s ease;
-        }
-        .continent-path:hover {
-          fill: rgba(251, 191, 36, 0.08) !important;
-          stroke: rgba(251, 191, 36, 0.35) !important;
+          r: 7.5 !important;
         }
         .summary-card {
           transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.3s ease, box-shadow 0.3s ease;
@@ -312,7 +290,7 @@ export default function SamplingStatusPanel() {
       {/* 🗺️ 영역 2 & 3: 국내 / 해외 동적 지도 스위칭 및 필터 사이드바 */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
         
-        {/* Left Side: Map Visualizer (Korea vs World SVG Maps) */}
+        {/* Left Side: Map Visualizer (GeoJSON standard drawing using react-simple-maps) */}
         <div style={{
           flex: "1 1 400px",
           display: "flex",
@@ -333,14 +311,14 @@ export default function SamplingStatusPanel() {
           }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>
-                {mode === "domestic" ? "🇰🇷 대한민국 유전자원 분포도" : "🌐 글로벌 WGS 수집 분포도"}
+                {mode === "domestic" ? "🇰🇷 대한민국 행정구역도 (GeoJSON)" : "🌐 글로벌 WGS 국가도 (TopoJSON)"}
               </span>
               <div style={{ display: "flex", gap: "10px", fontSize: "11px", color: "var(--text-muted)" }}>
                 <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                  <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--color-gold)" }} /> 자체생산
+                  <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#D4AF37" }} /> 자체생산
                 </span>
                 <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                  <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#60a5fa" }} /> 공공수집
+                  <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#4A90E2" }} /> 공공수집
                 </span>
               </div>
             </div>
@@ -355,138 +333,146 @@ export default function SamplingStatusPanel() {
               borderRadius: "12px",
               border: "1px solid rgba(255,255,255,0.05)",
               overflow: "hidden",
-              padding: "20px 0"
+              padding: "10px 0"
             }}>
               {mode === "domestic" ? (
-                // South Korea SVG Map
-                <svg
-                  width="100%"
-                  height="450px"
-                  viewBox="0 0 300 420"
-                  style={{ overflow: "visible" }}
+                // South Korea Precision GeoJSON Map
+                <ComposableMap
+                  width={500}
+                  height={450}
+                  projection="geoMercator"
+                  projectionConfig={{
+                    center: [127.5, 36.0],
+                    scale: 5500
+                  }}
+                  style={{ width: "100%", height: "450px" }}
                 >
-                  <g stroke="rgba(255,255,255,0.02)" strokeWidth="0.5">
-                    <line x1="0" y1="100" x2="300" y2="100" />
-                    <line x1="0" y1="200" x2="300" y2="200" />
-                    <line x1="0" y1="300" x2="300" y2="300" />
-                    <line x1="100" y1="0" x2="100" y2="420" />
-                    <line x1="200" y1="0" x2="200" y2="420" />
-                  </g>
+                  <Geographies geography={KOREA_GEOJSON_URL}>
+                    {({ geographies }) =>
+                      geographies.map((geo) => (
+                        <Geography
+                          key={geo.rsmKey}
+                          geography={geo}
+                          style={{
+                            default: {
+                              fill: "rgba(251, 191, 36, 0.025)",
+                              stroke: "rgba(255, 255, 255, 0.15)",
+                              strokeWidth: 1.2,
+                              outline: "none"
+                            },
+                            hover: {
+                              fill: "rgba(251, 191, 36, 0.08)",
+                              stroke: "rgba(251, 191, 36, 0.35)",
+                              strokeWidth: 1.2,
+                              outline: "none"
+                            },
+                            pressed: {
+                              fill: "rgba(251, 191, 36, 0.12)",
+                              stroke: "rgba(251, 191, 36, 0.5)",
+                              strokeWidth: 1.2,
+                              outline: "none"
+                            }
+                          }}
+                        />
+                      ))
+                    }
+                  </Geographies>
 
-                  {/* Korea Province Boundaries Outline */}
-                  <g stroke="rgba(255, 255, 255, 0.15)" strokeWidth="1.2" fill="rgba(251, 191, 36, 0.025)">
-                    {/* 서울/경기/인천 */}
-                    <path className="continent-path" d="M 80,60 L 140,55 L 150,90 L 130,120 L 75,100 Z" fill="rgba(251, 191, 36, 0.04)" />
-                    {/* 강원 */}
-                    <path className="continent-path" d="M 140,55 L 210,40 L 250,95 L 230,150 L 150,90 Z" />
-                    {/* 충청 */}
-                    <path className="continent-path" d="M 130,120 L 150,90 L 230,150 L 200,200 L 160,190 L 130,160 Z" />
-                    {/* 전라 */}
-                    <path className="continent-path" d="M 75,100 L 130,120 L 130,160 L 150,210 L 80,180 Z" />
-                    {/* 경상 */}
-                    <path className="continent-path" d="M 80,180 L 150,210 L 160,190 L 180,240 L 120,270 L 85,250 Z" />
-                    {/* 제주 */}
-                    <path className="continent-path" d="M 70,370 A 22,12 0 1,0 114,370 A 22,12 0 1,0 70,370 Z" />
-                    {/* 울릉도/독도 */}
-                    <circle cx="280" cy="110" r="3.5" />
-                    <circle cx="295" cy="115" r="1.5" />
-                  </g>
-
-                  {/* Province Labels */}
-                  <g fill="var(--text-muted)" fontSize="9px" fontWeight="bold" opacity="0.6">
-                    <text x="100" y="80">수도권</text>
-                    <text x="180" y="85">강원</text>
-                    <text x="160" y="145">충청</text>
-                    <text x="105" y="185">전라</text>
-                    <text x="195" y="195">경상</text>
-                    <text x="80" y="375">제주</text>
-                  </g>
-
-                  {/* Geocoded Markers */}
+                  {/* Korea Markers */}
                   {finalFilteredRows.map((row, idx) => {
                     if (isNaN(row.lat) || isNaN(row.lng)) return null;
-                    const { x, y } = getXY(row.lat, row.lng);
-                    if (x < -20 || x > 320 || y < -20 || y > 440) return null;
 
                     const count = parseInt(row.Count) || 1;
                     const sourceText = row.source === "project" ? "자체생산" : "공공수집";
                     const tooltipText = `[${sourceText}] ${row.Region || "-"} (${row.Species}) - ${count}개체`;
 
                     return (
-                      <g
+                      <Marker
                         key={`marker-dom-${idx}`}
-                        transform={`translate(${x}, ${y})`}
-                        onMouseEnter={() => setHoveredSample(tooltipText)}
-                        onMouseLeave={() => setHoveredSample(null)}
-                        style={{ cursor: "pointer" }}
+                        coordinates={[row.lng, row.lat]}
                       >
-                        <circle r="7.5" fill={row.source === "project" ? "var(--color-gold)" : "#60a5fa"} opacity="0.25" className="animate-pulse" />
-                        <circle r="4.5" fill={row.source === "project" ? "var(--color-gold)" : "#60a5fa"} stroke="#ffffff" strokeWidth="1" className="map-marker" />
-                      </g>
+                        <circle
+                          r="4"
+                          fill={row.source === "project" ? "#D4AF37" : "#4A90E2"}
+                          stroke="#ffffff"
+                          strokeWidth="1"
+                          className="map-marker"
+                          onMouseEnter={() => setHoveredSample(tooltipText)}
+                          onMouseLeave={() => setHoveredSample(null)}
+                        />
+                      </Marker>
                     );
                   })}
-                </svg>
+                </ComposableMap>
               ) : (
-                // World SVG Map (Cylindrical Equidistant Projection)
-                <svg
-                  width="100%"
-                  height="450px"
-                  viewBox="0 0 500 300"
-                  style={{ overflow: "visible" }}
+                // World Standard TopoJSON Map
+                <ComposableMap
+                  width={500}
+                  height={300}
+                  projection="geoEquirectangular"
+                  projectionConfig={{
+                    scale: 80
+                  }}
+                  style={{ width: "100%", height: "450px" }}
                 >
-                  <g stroke="rgba(255,255,255,0.015)" strokeWidth="0.5">
-                    <line x1="0" y1="50" x2="500" y2="50" />
-                    <line x1="0" y1="100" x2="500" y2="100" />
-                    <line x1="0" y1="150" x2="500" y2="150" />
-                    <line x1="0" y1="200" x2="500" y2="200" />
-                    <line x1="0" y1="250" x2="500" y2="250" />
-                    <line x1="83" y1="0" x2="83" y2="300" />
-                    <line x1="166" y1="0" x2="166" y2="300" />
-                    <line x1="250" y1="0" x2="250" y2="300" />
-                    <line x1="333" y1="0" x2="333" y2="300" />
-                    <line x1="416" y1="0" x2="416" y2="300" />
-                  </g>
-
-                  {/* Continents */}
-                  <g stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1.2" fill="rgba(59, 130, 246, 0.035)">
-                    {/* Greenland */}
-                    <path className="continent-path" d="M 148,16 L 233,16 L 194,50 Z" />
-                    {/* North America */}
-                    <path className="continent-path" d="M 16,41 L 166,41 L 145,91 L 138,108 L 118,125 L 83,91 Z" />
-                    {/* South America */}
-                    <path className="continent-path" d="M 145,133 L 201,158 L 152,241 L 138,158 Z" />
-                    {/* Africa */}
-                    <path className="continent-path" d="M 229,100 L 294,100 L 320,133 L 277,206 L 263,141 Z" />
-                    {/* Eurasia */}
-                    <path className="continent-path" d="M 236,50 L 277,33 L 486,33 L 472,58 L 444,90 L 416,100 L 358,133 L 312,125 L 243,83 Z" />
-                    {/* Australia */}
-                    <path className="continent-path" d="M 409,183 L 451,175 L 458,208 L 409,208 Z" />
-                  </g>
+                  <Geographies geography={WORLD_TOPOJSON_URL}>
+                    {({ geographies }) =>
+                      geographies.map((geo) => (
+                        <Geography
+                          key={geo.rsmKey}
+                          geography={geo}
+                          style={{
+                            default: {
+                              fill: "rgba(59, 130, 246, 0.03)",
+                              stroke: "rgba(255, 255, 255, 0.12)",
+                              strokeWidth: 0.5,
+                              outline: "none"
+                            },
+                            hover: {
+                              fill: "rgba(251, 191, 36, 0.08)",
+                              stroke: "rgba(251, 191, 36, 0.35)",
+                              strokeWidth: 0.5,
+                              outline: "none"
+                            },
+                            pressed: {
+                              fill: "rgba(251, 191, 36, 0.12)",
+                              stroke: "rgba(251, 191, 36, 0.5)",
+                              strokeWidth: 0.5,
+                              outline: "none"
+                            }
+                          }}
+                        />
+                      ))
+                    }
+                  </Geographies>
 
                   {/* World Markers */}
                   {finalFilteredRows.map((row, idx) => {
                     if (isNaN(row.lat) || isNaN(row.lng)) return null;
-                    const { x, y } = getWorldXY(row.lat, row.lng);
 
                     const count = parseInt(row.Count) || 1;
-                    const bubbleRadius = Math.max(3.5, Math.min(15, 3.5 + Math.sqrt(count) * 0.4));
+                    const markerRadius = Math.max(3.5, Math.min(12, 3.5 + Math.sqrt(count) * 0.4));
                     const sourceText = row.source === "project" ? "자체생산" : "공공수집";
                     const tooltipText = `[${sourceText}] ${row.Country} / ${row.Region || "-"} (${row.Species}) - ${count}개체`;
 
                     return (
-                      <g
+                      <Marker
                         key={`marker-gl-${idx}`}
-                        transform={`translate(${x}, ${y})`}
-                        onMouseEnter={() => setHoveredSample(tooltipText)}
-                        onMouseLeave={() => setHoveredSample(null)}
-                        style={{ cursor: "pointer" }}
+                        coordinates={[row.lng, row.lat]}
                       >
-                        <circle r={bubbleRadius + 3} fill={row.source === "project" ? "var(--color-gold)" : "#60a5fa"} opacity="0.2" className="animate-pulse" />
-                        <circle r={bubbleRadius} fill={row.source === "project" ? "var(--color-gold)" : "#60a5fa"} stroke="#ffffff" strokeWidth="0.8" className="map-marker" />
-                      </g>
+                        <circle
+                          r={markerRadius}
+                          fill={row.source === "project" ? "#D4AF37" : "#4A90E2"}
+                          stroke="#ffffff"
+                          strokeWidth="0.8"
+                          className="map-marker"
+                          onMouseEnter={() => setHoveredSample(tooltipText)}
+                          onMouseLeave={() => setHoveredSample(null)}
+                        />
+                      </Marker>
                     );
                   })}
-                </svg>
+                </ComposableMap>
               )}
 
               {/* Hover Tooltip overlay */}
