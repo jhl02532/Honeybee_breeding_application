@@ -8,12 +8,52 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from sqlalchemy import text
 from .database import engine, Base, get_db
 from . import crud
 from .routers import auth, apiaries, colonies, traits, stats, sync, researcher, admin
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+
+def sync_schema_columns(db):
+    """실제 상용 DB(PostgreSQL 등)에 모델 변경 사항(컬럼 추가 등)을 동적으로 반영하는 경량화 마이그레이션 가드"""
+    is_postgres = "postgresql" in str(db.bind.url)
+    
+    if is_postgres:
+        statements = [
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS farm_name VARCHAR(100);",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(100);",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS experience_years INTEGER;",
+            "ALTER TABLE apiaries ADD COLUMN IF NOT EXISTS owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE;",
+            "ALTER TABLE colonies ADD COLUMN IF NOT EXISTS mother_colony_id INTEGER REFERENCES colonies(id) ON DELETE SET NULL;",
+            "ALTER TABLE trait_records ADD COLUMN IF NOT EXISTS vsh_rate DOUBLE PRECISION DEFAULT 0.0;",
+            "ALTER TABLE trait_records ADD COLUMN IF NOT EXISTS hygienic_rate DOUBLE PRECISION DEFAULT 0.0;"
+        ]
+    else:
+        statements = [
+            "ALTER TABLE users ADD COLUMN farm_name VARCHAR(100);",
+            "ALTER TABLE users ADD COLUMN full_name VARCHAR(100);",
+            "ALTER TABLE users ADD COLUMN phone VARCHAR(50);",
+            "ALTER TABLE users ADD COLUMN experience_years INTEGER;",
+            "ALTER TABLE apiaries ADD COLUMN owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE;",
+            "ALTER TABLE colonies ADD COLUMN mother_colony_id INTEGER REFERENCES colonies(id) ON DELETE SET NULL;",
+            "ALTER TABLE trait_records ADD COLUMN vsh_rate FLOAT DEFAULT 0.0;",
+            "ALTER TABLE trait_records ADD COLUMN hygienic_rate FLOAT DEFAULT 0.0;"
+        ]
+        
+    for stmt in statements:
+        try:
+            db.execute(text(stmt))
+            db.commit()
+        except Exception as e:
+            db.rollback()
+            err_msg = str(e).lower()
+            if "duplicate" in err_msg or "already exists" in err_msg:
+                pass
+            else:
+                print(f"[Schema Migration Warning] Failed to run statement '{stmt}': {e}")
 
 app = FastAPI(
     title="MelittaBreed Central Beekeeping API",
@@ -61,6 +101,11 @@ app.add_middleware(RateLimitMiddleware, limit=120, window=60)
 @app.on_event("startup")
 def startup_event():
     db = next(get_db())
+    try:
+        sync_schema_columns(db)
+        print("Schema columns synced successfully.")
+    except Exception as e:
+        print(f"Failed to sync schema columns on startup: {str(e)}")
     crud.seed_database_if_empty(db)
 
     # On-memory caching of the beekeeping sampling spreadsheet
