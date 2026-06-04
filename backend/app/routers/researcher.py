@@ -215,79 +215,97 @@ def get_sampling_status(
     request: Request,
     mode: Optional[str] = None,  # domestic 또는 global
     species: Optional[str] = None,
-    source_type: Optional[str] = None, # 프로젝트생산 또는 공공데이터
+    source_type: Optional[str] = None, # 프로젝트 자체 생산, 공공 데이터 수집 또는 Pore-C 핵심 집단 (50개체)
     region: Optional[str] = None,      # 국내 권역 용
     country: Optional[str] = None      # 해외 국가 용
 ):
-    """가입자 전체에 열린 유전자원 수집 현황 (기존 시트 일괄 파싱 & 이원화 필터 API 동시 지원)"""
+    """가입자 전체에 열린 유전자원 수집 현황 (시료 ID 기반 중복 제거 & 통합 마스터 DF 빌드)"""
     import pandas as pd
     
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DOMESTIC_TSV = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_pore_c.tsv")
-    GLOBAL_TSV = os.path.join(BASE_DIR, "..", "data", "sampling", "wgs_world_data.tsv")
+    pore_c_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_pore_c.tsv")
+    ac_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_ac.tsv")
+    am_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_am.tsv")
+    global_path = os.path.join(BASE_DIR, "..", "data", "sampling", "wgs_world_data.tsv")
 
-    # 1. 쿼리 파라미터가 아예 없는 경우: 기존 Next.js 랜딩페이지의 3개 시트 일괄 조회 지원
-    if not request.query_params:
-        sampling_dir = os.path.join(BASE_DIR, "..", "data", "sampling")
-        files_map = {
-            "Pore-C_sample": "sampling_pore_c.tsv",
-            "육종 샘플링_Ac": "sampling_ac.tsv",
-            "육종 샘플링 Am": "sampling_am.tsv"
-        }
-        try:
-            all_sheet_data = {}
-            for sheet_key, filename in files_map.items():
-                filepath = os.path.join(sampling_dir, filename)
-                if os.path.exists(filepath):
-                    df = pd.read_csv(filepath, sep="\t")
-                    # Drop personal data columns to prevent privacy leaks
-                    cols_to_drop = [c for c in ["농가(대표자)", "농가주", "연락처", "주소 (상세)", "주소", "대표자"] if c in df.columns]
-                    if cols_to_drop:
-                        df = df.drop(columns=cols_to_drop)
-                    # FastAPI JSON 크래시 방지: 모든 날짜형(DateTime) 및 결측치(NaN)를 안전하게 문자열화
-                    df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
-                    all_sheet_data[sheet_key] = df.to_dict(orient="records")
-                else:
-                    all_sheet_data[sheet_key] = []
-            return {
-                "status": "success",
-                "metadata": {
-                    "available_sheets": list(files_map.keys()),
-                    "total_sheets": len(files_map)
-                },
-                "data": all_sheet_data
-            }
-        except Exception as e:
-            import traceback
-            error_detail = f"TSV 직렬화 분석 중 내부 오류 발생: {str(e)}\n{traceback.format_exc()}"
-            print(error_detail)
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=error_detail
-            )
-
-    # 2. 쿼리 파라미터가 있는 경우: 신규 요구사항인 이원화 필터 및 예외 방어 로직 적용
     try:
         # mode 기본값 설정
         if not mode:
             mode = "domestic"
+
+        if mode == "domestic":
+            # 1. Load domestic files
+            df_pore_c = pd.read_csv(pore_c_path, sep="\t") if os.path.exists(pore_c_path) else pd.DataFrame()
+            df_ac = pd.read_csv(ac_path, sep="\t") if os.path.exists(ac_path) else pd.DataFrame()
+            df_am = pd.read_csv(am_path, sep="\t") if os.path.exists(am_path) else pd.DataFrame()
+
+            # Normalize column names just in case they have spaces
+            for df in [df_pore_c, df_ac, df_am]:
+                if not df.empty:
+                    df.columns = df.columns.str.strip()
+
+            # Normalize species
+            if not df_pore_c.empty and "종" in df_pore_c.columns:
+                def normalize_species(val):
+                    val_str = str(val).lower()
+                    if "cerana" in val_str or "토종" in val_str or "동양" in val_str:
+                        return "Apis cerana"
+                    return "Apis mellifera"
+                df_pore_c["종"] = df_pore_c["종"].apply(normalize_species)
             
-        target_path = DOMESTIC_TSV if mode == "domestic" else GLOBAL_TSV
-        
-        if not os.path.exists(target_path):
-            raise FileNotFoundError(f"Missing resource file at {target_path}")
+            if not df_ac.empty:
+                df_ac["종"] = "Apis cerana"
+            if not df_am.empty:
+                df_am["종"] = "Apis mellifera"
+
+            # Track Pore-C sample IDs (for subset flag is_pore_c = True)
+            pore_c_ids = set()
+            if not df_pore_c.empty and "시료 ID" in df_pore_c.columns:
+                pore_c_ids = set(df_pore_c["시료 ID"].dropna().astype(str).unique())
+
+            # Combine domestic DataFrames
+            dfs_to_concat = [df for df in [df_pore_c, df_ac, df_am] if not df.empty]
+            if dfs_to_concat:
+                master_df = pd.concat(dfs_to_concat, ignore_index=True)
+            else:
+                master_df = pd.DataFrame(columns=["채집일자", "시료전달일자", "권역", "주소 (상세)", "농가(대표자)", "시료 ID", "계통", "종", "lat", "lng"])
+
+            # Strict Deduplication on "시료 ID"
+            if "시료 ID" in master_df.columns:
+                master_df = master_df.drop_duplicates(subset=["시료 ID"], keep="first")
             
-        with open(target_path, "r", encoding="utf-8") as f:
-            df = pd.read_csv(f, sep="\t") # 탭 구분자 명시로 파싱 에러 원천 차단
+            # Add dynamic flags
+            if "시료 ID" in master_df.columns:
+                master_df["is_pore_c"] = master_df["시료 ID"].apply(lambda x: str(x) in pore_c_ids if pd.notna(x) else False)
+            else:
+                master_df["is_pore_c"] = False
+
+            master_df["수집구분"] = "프로젝트 자체 생산"
+            df = master_df
+
+        else:
+            # global mode
+            if os.path.exists(global_path):
+                df = pd.read_csv(global_path, sep="\t")
+                df.columns = df.columns.str.strip()
+            else:
+                df = pd.DataFrame(columns=["Country", "Region", "Species", "Count", "lat", "lng"])
             
-        # Dynamic Query Parameter 가드 처리 (None 유입 시 필터 Bypass)
+            df["is_pore_c"] = False
+            df["수집구분"] = "공공 데이터 수집"
+
+        # Apply Filters
         if species and species != "선택 안 함":
             col = "종" if "종" in df.columns else "Species"
             if col in df.columns:
                 df = df[df[col] == species]
                 
         if source_type and source_type != "선택 안 함":
-            if "수집구분" in df.columns:
+            if source_type in ["Pore-C 핵심 집단 (50개체)", "pore_c", "Pore-C용 샘플(50개체)"]:
+                if "is_pore_c" in df.columns:
+                    # Filter for boolean or string representation
+                    df = df[df["is_pore_c"].astype(str).str.lower().isin(["true", "1"])]
+            elif "수집구분" in df.columns:
                 df = df[df["수집구분"] == source_type]
             
         if mode == "domestic" and region and region != "전체":
@@ -298,11 +316,20 @@ def get_sampling_status(
             col = "국가" if "국가" in df.columns else "Country"
             if col in df.columns:
                 df = df[df[col] == country]
-            
-        # 데이터 클렌징 후 JSON 직렬화
+
+        # Privacy Leak Check: Drop personal data columns to prevent leakage
+        cols_to_drop = [c for c in ["농가(대표자)", "농가주", "연락처", "주소 (상세)", "주소", "대표자"] if c in df.columns]
+        if cols_to_drop:
+            df = df.drop(columns=cols_to_drop)
+
+        # JSON Crash Prevention
         df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
+        # Restore boolean/numeric types for appropriate properties
+        if "is_pore_c" in df.columns:
+            df["is_pore_c"] = df["is_pore_c"].isin(["True", "true", "1"])
+            
         result_records = df.to_dict(orient="records")
-        
+
         return {
             "status": "success",
             "mode": mode,
@@ -311,7 +338,8 @@ def get_sampling_status(
         }
 
     except Exception as e:
-        # 에러 원인을 프론트엔드 콘솔에 노출하여 디버깅 추적성 확보
+        import traceback
+        print(f"Error in get_sampling_status: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"필터 파이프라인 연산 중 런타임 크래시 발생: {str(e)}"

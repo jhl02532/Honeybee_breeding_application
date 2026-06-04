@@ -58,7 +58,7 @@ export default function SamplingStatusPanel() {
         }
         const globalJson = await globalRes.json();
 
-        setData(domesticJson.data || {});
+        setData(domesticJson.data || []);
         setWgsData(globalJson.data || []);
       } catch (err: any) {
         setError(err.message || "서버 통신 중 오류가 발생했습니다.");
@@ -73,18 +73,17 @@ export default function SamplingStatusPanel() {
 
   // Extract and normalize Project-produced Domestic Rows
   const projectRows: any[] = [];
-  if (data) {
-    Object.keys(data).forEach((sheetName) => {
-      (data[sheetName] || []).forEach((row: any) => {
-        projectRows.push({
-          ...row,
-          source: "project",
-          lat: parseFloat(row.lat),
-          lng: parseFloat(row.lng),
-          Species: String(row.종 || row.Species || "").toLowerCase().includes("cerana") ? "Apis cerana" : "Apis mellifera",
-          Region: row.권역 || row.Region || "",
-          Country: "South Korea"
-        });
+  if (Array.isArray(data)) {
+    data.forEach((row: any) => {
+      projectRows.push({
+        ...row,
+        source: "project",
+        lat: parseFloat(row.lat),
+        lng: parseFloat(row.lng),
+        Species: String(row.종 || row.Species || "").toLowerCase().includes("cerana") ? "Apis cerana" : "Apis mellifera",
+        Region: row.권역 || row.Region || "",
+        Country: "South Korea",
+        is_pore_c: !!row.is_pore_c
       });
     });
   }
@@ -116,6 +115,8 @@ export default function SamplingStatusPanel() {
       baseRows = pRows;
     } else if (sourceFilter === "public") {
       baseRows = pubRows;
+    } else if (sourceFilter === "pore_c") {
+      baseRows = pRows.filter((r) => r.is_pore_c === true);
     } else {
       baseRows = [...pRows, ...pubRows];
     }
@@ -128,6 +129,8 @@ export default function SamplingStatusPanel() {
       baseRows = pRows;
     } else if (sourceFilter === "public") {
       baseRows = pubRows;
+    } else if (sourceFilter === "pore_c") {
+      baseRows = pRows.filter((r) => r.is_pore_c === true);
     } else {
       baseRows = [...pRows, ...pubRows];
     }
@@ -155,10 +158,25 @@ export default function SamplingStatusPanel() {
   });
 
   // ── Real-time Statistical Counts for Summary Cards ──
+  // Compute from rows that are filtered by source/region/mode but NOT species filter
+  const rowsFilteredByRegionAndSource = baseRows.filter((row) => {
+    if (mode === "domestic") {
+      if (!regionFilter || regionFilter === "all") return true;
+      const reg = String(row.Region || "").toLowerCase();
+      const filterReg = String(regionFilter).toLowerCase();
+      return reg.includes(filterReg) || filterReg.includes(reg);
+    } else {
+      // global mode country filters
+      const matchesSearch = !countrySearch || String(row.Country || "").toLowerCase().includes(countrySearch.toLowerCase());
+      const matchesDropdown = !countryFilter || countryFilter === "all" || String(row.Country || "").toLowerCase() === countryFilter.toLowerCase();
+      return matchesSearch && matchesDropdown;
+    }
+  });
+
   let ceranaCount = 0;
   let melliferaCount = 0;
 
-  finalFilteredRows.forEach((row) => {
+  rowsFilteredByRegionAndSource.forEach((row) => {
     const count = parseInt(row.Count) || 1;
     if (row.Species === "Apis cerana") {
       ceranaCount += count;
@@ -393,7 +411,7 @@ export default function SamplingStatusPanel() {
                       >
                         <circle
                           r="4"
-                          fill={row.source === "project" ? "#D4AF37" : "#4A90E2"}
+                          fill={row.is_pore_c ? "var(--color-gold)" : (row.source === "project" ? "#D4AF37" : "#4A90E2")}
                           stroke="#ffffff"
                           strokeWidth="1"
                           className="map-marker"
@@ -462,7 +480,7 @@ export default function SamplingStatusPanel() {
                       >
                         <circle
                           r={markerRadius}
-                          fill={row.source === "project" ? "#D4AF37" : "#4A90E2"}
+                          fill={row.is_pore_c ? "var(--color-gold)" : (row.source === "project" ? "#D4AF37" : "#4A90E2")}
                           stroke="#ffffff"
                           strokeWidth="0.8"
                           className="map-marker"
@@ -601,33 +619,26 @@ export default function SamplingStatusPanel() {
             {/* Filter 2: Data Source Division */}
             <div>
               <label style={{ display: "block", fontSize: "12px", fontWeight: "bold", color: "var(--text-muted)", marginBottom: "8px" }}>📊 데이터 출처 (Source Type)</label>
-              <div style={{ display: "flex", gap: "8px" }}>
-                {[
-                  { value: "all", label: "전체" },
-                  { value: "project", label: "자체 생산" },
-                  { value: "public", label: "공공 데이터" }
-                ].map((item) => (
-                  <button
-                    key={item.value}
-                    onClick={() => setSourceFilter(item.value)}
-                    style={{
-                      flex: 1,
-                      padding: "8px 10px",
-                      borderRadius: "8px",
-                      border: "1px solid",
-                      borderColor: sourceFilter === item.value ? "var(--color-gold)" : "var(--border-color)",
-                      background: sourceFilter === item.value ? "var(--color-gold-glow)" : "var(--bg-app)",
-                      color: sourceFilter === item.value ? "var(--color-gold)" : "var(--text-muted)",
-                      fontSize: "12px",
-                      fontWeight: sourceFilter === item.value ? "bold" : "normal",
-                      cursor: "pointer",
-                      transition: "all 0.2s"
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
+              <select
+                value={sourceFilter}
+                onChange={(e) => setSourceFilter(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border-color)",
+                  background: "var(--bg-app)",
+                  color: "var(--text-main)",
+                  fontSize: "13px",
+                  outline: "none",
+                  cursor: "pointer"
+                }}
+              >
+                <option value="all">전체</option>
+                <option value="project">프로젝트 자체 생산</option>
+                <option value="public">공공 데이터 수집</option>
+                <option value="pore_c">Pore-C 핵심 집단 (50개체)</option>
+              </select>
             </div>
 
             {/* Filter 3: Region/Country Filter */}
