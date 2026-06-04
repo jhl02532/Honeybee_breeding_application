@@ -12,12 +12,24 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   const homeRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const manualRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Read theme preference from localStorage on mount
+    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+    const initialTheme = savedTheme || "light";
+    setTheme(initialTheme);
+    document.documentElement.setAttribute("data-theme", initialTheme);
+    if (initialTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+
     const stored = getStoredUser();
     const token = getToken();
     if (stored && token) {
@@ -25,6 +37,18 @@ export default function Page() {
     }
     setLoading(false);
   }, []);
+
+  const handleToggleTheme = () => {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    setTheme(nextTheme);
+    localStorage.setItem("theme", nextTheme);
+    document.documentElement.setAttribute("data-theme", nextTheme);
+    if (nextTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
 
   // Monitor scroll to update active navigation item
   useEffect(() => {
@@ -71,7 +95,7 @@ export default function Page() {
 
   // Private Mode (Logged In) -> Show Dashboard View
   if (user) {
-    return <DashboardScreen user={user} onLogout={handleLogout} />;
+    return <DashboardScreen user={user} onLogout={handleLogout} theme={theme} onToggleTheme={handleToggleTheme} />;
   }
 
   // Public Mode (Not Logged In) -> Show Premium Landing View
@@ -117,6 +141,26 @@ export default function Page() {
         </nav>
 
         <div style={styles.landingHeaderRight}>
+          <button
+            onClick={handleToggleTheme}
+            style={{
+              background: "rgba(0,0,0,0.05)",
+              border: "1px solid var(--border-color)",
+              color: "var(--text-main)",
+              borderRadius: "8px",
+              width: "36px",
+              height: "36px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              fontSize: "16px",
+              transition: "all 0.2s",
+            }}
+            title={theme === "light" ? "다크 모드로 전환" : "라이트 모드로 전환"}
+          >
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
           <button
             onClick={() => setShowLoginModal(true)}
             className="btn-outline-hover"

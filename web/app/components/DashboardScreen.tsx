@@ -34,9 +34,11 @@ type DashView =
 interface DashboardScreenProps {
   user: User;
   onLogout: () => void;
+  theme?: "light" | "dark";
+  onToggleTheme?: () => void;
 }
 
-export default function DashboardScreen({ user, onLogout }: DashboardScreenProps) {
+export default function DashboardScreen({ user, onLogout, theme = "light", onToggleTheme }: DashboardScreenProps) {
   const [view, setView] = useState<DashView>("overview");
   const [species, setSpecies] = useState<"mellifera" | "cerana">("mellifera");
   const [stats, setStats] = useState<DashStats | null>(null);
@@ -355,6 +357,30 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
 
           {/* Right Side: User Profile Badges & Logout Button */}
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            {/* Theme Toggle Button */}
+            {onToggleTheme && (
+              <button
+                onClick={onToggleTheme}
+                style={{
+                  background: "rgba(0,0,0,0.05)",
+                  border: "1px solid var(--border-color)",
+                  color: "var(--text-main)",
+                  borderRadius: "8px",
+                  width: "36px",
+                  height: "36px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                  transition: "all 0.2s",
+                }}
+                title={theme === "light" ? "다크 모드로 전환" : "라이트 모드로 전환"}
+              >
+                {theme === "light" ? "🌙" : "☀️"}
+              </button>
+            )}
+
             {/* User Badge */}
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }} className="mobile-nav-hide">
               <div style={{

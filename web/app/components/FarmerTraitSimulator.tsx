@@ -337,7 +337,7 @@ export default function FarmerTraitSimulator({ apiaries }: FarmerTraitSimulatorP
                 viewBox={`0 0 ${radarWidth} ${radarHeight}`}
                 className="block overflow-visible"
               >
-                {/* 1. Grid level diamonds */}
+                 {/* 1. Grid level diamonds */}
                 {gridLevels.map((lvl) => {
                   const size = lvl * scale;
                   const x0 = cx;
@@ -354,7 +354,7 @@ export default function FarmerTraitSimulator({ apiaries }: FarmerTraitSimulatorP
                       key={lvl}
                       points={`${x0},${y0} ${x1},${y1} ${x2},${y2} ${x3},${y3}`}
                       fill="none"
-                      stroke="rgba(255,255,255,0.06)"
+                      stroke="var(--border-color)"
                       strokeWidth="1"
                       className="print:stroke-slate-200"
                     />
@@ -362,37 +362,37 @@ export default function FarmerTraitSimulator({ apiaries }: FarmerTraitSimulatorP
                 })}
 
                 {/* 2. Grid axial lines */}
-                <line x1={cx} y1={cy - 100} x2={cx} y2={cy + 100} stroke="rgba(255,255,255,0.06)" className="print:stroke-slate-200" />
-                <line x1={cx - 100} y1={cy} x2={cx + 100} y2={cy} stroke="rgba(255,255,255,0.06)" className="print:stroke-slate-200" />
+                <line x1={cx} y1={cy - 100} x2={cx} y2={cy + 100} stroke="var(--border-color)" className="print:stroke-slate-200" />
+                <line x1={cx - 100} y1={cy} x2={cx + 100} y2={cy} stroke="var(--border-color)" className="print:stroke-slate-200" />
 
                 {/* 3. Radial labels */}
-                <text x={cx} y={cy - 102} fill="#94a3b8" className="print:fill-slate-800" fontSize="8" fontWeight="bold" textAnchor="middle">
+                <text x={cx} y={cy - 102} fill="var(--text-muted)" className="print:fill-slate-800" fontSize="8" fontWeight="bold" textAnchor="middle">
                   수밀력 ({honeyScore})
                 </text>
-                <text x={cx + 105} y={cy + 3} fill="#94a3b8" className="print:fill-slate-800" fontSize="8" fontWeight="bold" textAnchor="start">
+                <text x={cx + 105} y={cy + 3} fill="var(--text-muted)" className="print:fill-slate-800" fontSize="8" fontWeight="bold" textAnchor="start">
                   질병저항성 ({diseaseScore})
                 </text>
-                <text x={cx} y={cy + 110} fill="#94a3b8" className="print:fill-slate-800" fontSize="8" fontWeight="bold" textAnchor="middle">
+                <text x={cx} y={cy + 110} fill="var(--text-muted)" className="print:fill-slate-800" fontSize="8" fontWeight="bold" textAnchor="middle">
                   온순성 ({gentleScore})
                 </text>
-                <text x={cx - 105} y={cy + 3} fill="#94a3b8" className="print:fill-slate-800" fontSize="8" fontWeight="bold" textAnchor="end">
+                <text x={cx - 105} y={cy + 3} fill="var(--text-muted)" className="print:fill-slate-800" fontSize="8" fontWeight="bold" textAnchor="end">
                   번식력 ({fecundityScore})
                 </text>
 
                 {/* 4. Score polygon data */}
                 <polygon
                   points={getPoints()}
-                  fill="rgba(245, 158, 11, 0.15)"
-                  stroke="#f59e0b"
+                  fill="var(--color-gold-glow)"
+                  stroke="var(--color-gold)"
                   strokeWidth="2"
                   className="print:fill-amber-500/10 print:stroke-amber-600"
                 />
 
                 {/* Vertices dot highlights */}
-                <circle cx={cx} cy={cy - honeyScore * scale} r="3" fill="#f59e0b" />
-                <circle cx={cx + diseaseScore * scale} cy={cy} r="3" fill="#f59e0b" />
-                <circle cx={cx} cy={cy + gentleScore * scale} r="3" fill="#f59e0b" />
-                <circle cx={cx - fecundityScore * scale} cy={cy} r="3" fill="#f59e0b" />
+                <circle cx={cx} cy={cy - honeyScore * scale} r="3" fill="var(--color-gold)" />
+                <circle cx={cx + diseaseScore * scale} cy={cy} r="3" fill="var(--color-gold)" />
+                <circle cx={cx} cy={cy + gentleScore * scale} r="3" fill="var(--color-gold)" />
+                <circle cx={cx - fecundityScore * scale} cy={cy} r="3" fill="var(--color-gold)" />
               </svg>
             </div>
 

@@ -6,62 +6,52 @@
 
 
 :root {
-  /* Color Palette - Warm Honey Gold + Dark Elegance */
-  --gold-50: #fffbeb;
-  --gold-100: #fef3c7;
-  --gold-200: #fde68a;
-  --gold-300: #fcd34d;
-  --gold-400: #fbbf24;
-  --gold-500: #f59e0b;
-  --gold-600: #d97706;
-  --gold-700: #b45309;
-  --gold-800: #92400e;
-  --gold-900: #78350f;
-
-  --dark-50: #f9fafb;
-  --dark-100: #f3f4f6;
-  --dark-200: #e5e7eb;
-  --dark-300: #d1d5db;
-  --dark-400: #9ca3af;
-  --dark-500: #6b7280;
-  --dark-600: #4b5563;
-  --dark-700: #374151;
-  --dark-800: #1f2937;
-  --dark-850: #18202f;
-  --dark-900: #111827;
-  --dark-950: #0b1120;
-
-  --green-400: #4ade80;
-  --green-500: #22c55e;
-  --red-400: #f87171;
-  --red-500: #ef4444;
-  --orange-400: #fb923c;
-  --blue-400: #60a5fa;
-  --blue-500: #3b82f6;
-  --purple-400: #c084fc;
-
-  /* Typography */
+  /* Common structural/typography/radius variables */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-
-  /* Spacing & Radius */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-full: 50%;
-
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 14px rgba(0,0,0,0.4);
-  --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
-  --shadow-glow: 0 0 20px rgba(245, 158, 11, 0.15);
-
-  /* Glass */
-  --glass-bg: rgba(31, 41, 55, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
   --glass-blur: blur(20px);
 
-  /* Genomic Curation Color Tokens */
+  /* Light Theme Specific Colors (Default) */
+  --bg-app: #F8F9FA;
+  --bg-surface: #FFFFFF;
+  --text-main: #1A1A1A;
+  --text-muted: #666666;
+  --border-color: #E5E7EB;
+  
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.08);
+
+  --color-gold: #d97706; /* Mid contrast gold for white background */
+  --color-gold-hover: #b45309;
+  --color-gold-glow: rgba(217, 119, 6, 0.15);
+  --color-gene: #0284c7; /* Sky blue */
+  --color-gene-glow: rgba(2, 132, 199, 0.15);
+  --color-qtl: #7c3aed; /* Violet */
+  --color-qtl-glow: rgba(124, 58, 237, 0.15);
+  --color-variant: #e11d48; /* Rose */
+  --color-variant-glow: rgba(225, 29, 72, 0.15);
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 24px rgba(0,0,0,0.12);
+  --shadow-glow: 0 0 15px rgba(217, 119, 6, 0.08);
+}
+
+[data-theme="dark"], .dark {
+  /* Dark Theme Specific Colors */
+  --bg-app: #0b1120;
+  --bg-surface: rgba(31, 41, 55, 0.6);
+  --text-main: #f3f4f6;
+  --text-muted: #9ca3af;
+  --border-color: rgba(255, 255, 255, 0.06);
+
+  --glass-bg: rgba(31, 41, 55, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
   --color-gold: #f59e0b;
   --color-gold-hover: #fbbf24;
   --color-gold-glow: rgba(245, 158, 11, 0.3);
@@ -71,6 +61,11 @@
   --color-qtl-glow: rgba(192, 132, 252, 0.25);
   --color-variant: #f43f5e;
   --color-variant-glow: rgba(244, 63, 94, 0.3);
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 14px rgba(0,0,0,0.4);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 20px rgba(245, 158, 11, 0.15);
 }
 
 *, *::before, *::after {
@@ -85,12 +80,13 @@ html {
 
 body {
   font-family: var(--font-family);
-  background: var(--dark-950);
-  color: var(--dark-100);
+  background: var(--bg-app);
+  color: var(--text-main);
   min-height: 100vh;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* === SCROLLBAR === */
@@ -98,14 +94,64 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--dark-900);
+  background: var(--bg-app);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--dark-600);
+  background: var(--text-muted);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--gold-500);
+  background: var(--color-gold);
+}
+
+/* === LIGHT THEME OVERRIDES FOR DARK TAILWIND UTILITY CLASSES === */
+html:not(.dark) .bg-slate-900\/60,
+html:not(.dark) .bg-slate-900\/50,
+html:not(.dark) .bg-slate-900\/40,
+html:not(.dark) .bg-slate-900\/30,
+html:not(.dark) .bg-slate-950\/70,
+html:not(.dark) .bg-slate-950\/40,
+html:not(.dark) .bg-slate-950\/30 {
+  background-color: var(--bg-surface) !important;
+  backdrop-filter: none !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+
+html:not(.dark) .border-slate-800,
+html:not(.dark) .border-slate-800\/80,
+html:not(.dark) .border-slate-900 {
+  border-color: var(--border-color) !important;
+}
+
+html:not(.dark) .text-slate-200,
+html:not(.dark) .text-slate-300 {
+  color: var(--text-main) !important;
+}
+
+html:not(.dark) .text-slate-400 {
+  color: var(--text-muted) !important;
+}
+
+html:not(.dark) .text-slate-500 {
+  color: var(--text-muted) !important;
+  opacity: 0.8;
+}
+
+html:not(.dark) .text-amber-400 {
+  color: var(--color-gold) !important;
+}
+
+html:not(.dark) input,
+html:not(.dark) select,
+html:not(.dark) textarea {
+  background-color: #ffffff !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+html:not(.dark) select option {
+  background-color: #ffffff !important;
+  color: var(--text-main) !important;
 }
 
 /* === ANIMATIONS === */
