@@ -12,6 +12,27 @@ function RecordFormContent() {
   const querySampleId = searchParams.get("sample_id") || "";
   const queryColonyId = searchParams.get("colony_id") || "";
 
+  // Null Guard for sample_id parameter to prevent rendering or crash on missing/empty query
+  if (!querySampleId) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen bg-slate-50 p-4">
+        <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-md text-center">
+          <span className="text-4xl">⚠️</span>
+          <h2 className="text-xl font-bold text-slate-900 mt-4">잘못된 접근입니다</h2>
+          <p className="text-sm text-slate-500 mt-2">
+            지정된 시료 ID(Sample ID)가 없거나 비어 있습니다. 유전자원 수집 현황 관제 지도 또는 목록에서 시료를 선택하고 진입해 주세요.
+          </p>
+          <button
+            onClick={() => router.push("/")}
+            className="w-full mt-6 py-3 px-6 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-sm font-bold transition shadow-md shadow-amber-500/10 cursor-pointer"
+          >
+            🏠 홈 화면으로 돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [apiaries, setApiaries] = useState<Apiary[]>([]);

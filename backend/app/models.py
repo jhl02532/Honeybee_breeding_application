@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Float
+from sqlalchemy import Column, ForeignKey, Integer, String, Float, Boolean
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -16,6 +16,7 @@ class User(Base):
     full_name = Column(String(100), nullable=True)
     phone = Column(String(50), nullable=True)
     experience_years = Column(Integer, nullable=True)
+    queen_species = Column(String(50), nullable=True, index=True)
 
     apiaries = relationship("Apiary", back_populates="owner_user", cascade="all, delete-orphan")
 
@@ -45,6 +46,9 @@ class Colony(Base):
     status = Column(String, default="Active")  # Active, Weak, Dead
     queen_tag = Column(String, default="Unknown")
     mother_colony_id = Column(Integer, ForeignKey("colonies.id", ondelete="SET NULL"), nullable=True, index=True)
+    sample_id = Column(String(100), nullable=True, index=True)
+    is_pore_c = Column(Boolean, default=False, index=True)
+    queen_species = Column(String(50), nullable=True, index=True)
 
     apiary = relationship("Apiary", back_populates="colonies")
     records = relationship("TraitRecord", back_populates="colony", cascade="all, delete-orphan")

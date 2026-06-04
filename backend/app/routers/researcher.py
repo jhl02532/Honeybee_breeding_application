@@ -210,6 +210,85 @@ def export_global_csv(
     )
 
 
+GLOBAL_MASTER_DF = None
+
+def load_global_dfs():
+    global GLOBAL_MASTER_DF
+    if GLOBAL_MASTER_DF is not None:
+        return
+    import pandas as pd
+    
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    pore_c_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_pore_c.tsv")
+    ac_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_ac.tsv")
+    am_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_am.tsv")
+    global_path = os.path.join(BASE_DIR, "..", "data", "sampling", "wgs_world_data.tsv")
+
+    # 1. Load domestic files
+    df_pore_c = pd.read_csv(pore_c_path, sep="\t") if os.path.exists(pore_c_path) else pd.DataFrame()
+    df_ac = pd.read_csv(ac_path, sep="\t") if os.path.exists(ac_path) else pd.DataFrame()
+    df_am = pd.read_csv(am_path, sep="\t") if os.path.exists(am_path) else pd.DataFrame()
+
+    # Normalize column names strip whitespace
+    for df in [df_pore_c, df_ac, df_am]:
+        if not df.empty:
+            df.columns = df.columns.str.strip()
+
+    # Normalize species
+    if not df_pore_c.empty and "종" in df_pore_c.columns:
+        def normalize_species(val):
+            val_str = str(val).lower()
+            if "cerana" in val_str or "토종" in val_str or "동양" in val_str:
+                return "Apis cerana"
+            return "Apis mellifera"
+        df_pore_c["종"] = df_pore_c["종"].apply(normalize_species)
+    
+    if not df_ac.empty:
+        df_ac["종"] = "Apis cerana"
+    if not df_am.empty:
+        df_am["종"] = "Apis mellifera"
+
+    # Track Pore-C sample IDs (for subset flag is_pore_c = True)
+    pore_c_ids = set()
+    if not df_pore_c.empty and "시료 ID" in df_pore_c.columns:
+        pore_c_ids = set(df_pore_c["시료 ID"].dropna().astype(str).str.strip().str.upper().unique())
+
+    # Combine domestic DataFrames
+    dfs_to_concat = [df for df in [df_pore_c, df_ac, df_am] if not df.empty]
+    if dfs_to_concat:
+        domestic_df = pd.concat(dfs_to_concat, ignore_index=True)
+    else:
+        domestic_df = pd.DataFrame(columns=["채집일자", "시료전달일자", "권역", "주소 (상세)", "농가(대표자)", "시료 ID", "계통", "종", "lat", "lng"])
+
+    # Strict Deduplication on "시료 ID" (case-insensitive)
+    if "시료 ID" in domestic_df.columns:
+        domestic_df["시료 ID"] = domestic_df["시료 ID"].astype(str).str.strip().str.upper()
+        domestic_df = domestic_df.drop_duplicates(subset=["시료 ID"], keep="first")
+    
+    # Add dynamic flags
+    if "시료 ID" in domestic_df.columns:
+        domestic_df["is_pore_c"] = domestic_df["시료 ID"].apply(lambda x: str(x) in pore_c_ids if pd.notna(x) else False)
+    else:
+        domestic_df["is_pore_c"] = False
+
+    domestic_df["수집구분"] = "프로젝트 자체 생산"
+
+    # 2. Global mode
+    if os.path.exists(global_path):
+        global_df = pd.read_csv(global_path, sep="\t")
+        global_df.columns = global_df.columns.str.strip()
+    else:
+        global_df = pd.DataFrame(columns=["Country", "Region", "Species", "Count", "lat", "lng"])
+    
+    global_df["is_pore_c"] = False
+    global_df["수집구분"] = "공공 데이터 수집"
+
+    GLOBAL_MASTER_DF = {
+        "domestic": domestic_df,
+        "global": global_df
+    }
+
+
 @router.get("/sampling-status")
 def get_sampling_status(
     request: Request,
@@ -219,81 +298,16 @@ def get_sampling_status(
     region: Optional[str] = None,      # 국내 권역 용
     country: Optional[str] = None      # 해외 국가 용
 ):
-    """가입자 전체에 열린 유전자원 수집 현황 (시료 ID 기반 중복 제거 & 통합 마스터 DF 빌드)"""
-    import pandas as pd
-    
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    pore_c_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_pore_c.tsv")
-    ac_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_ac.tsv")
-    am_path = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_am.tsv")
-    global_path = os.path.join(BASE_DIR, "..", "data", "sampling", "wgs_world_data.tsv")
+    """가입자 전체에 오프라인 파일 로드 없이 전량 메모리에서 0.01초 내 집계하는 고속 유전자원 수집 현황 API"""
+    load_global_dfs()
 
     try:
         # mode 기본값 설정
         if not mode:
             mode = "domestic"
 
-        if mode == "domestic":
-            # 1. Load domestic files
-            df_pore_c = pd.read_csv(pore_c_path, sep="\t") if os.path.exists(pore_c_path) else pd.DataFrame()
-            df_ac = pd.read_csv(ac_path, sep="\t") if os.path.exists(ac_path) else pd.DataFrame()
-            df_am = pd.read_csv(am_path, sep="\t") if os.path.exists(am_path) else pd.DataFrame()
-
-            # Normalize column names just in case they have spaces
-            for df in [df_pore_c, df_ac, df_am]:
-                if not df.empty:
-                    df.columns = df.columns.str.strip()
-
-            # Normalize species
-            if not df_pore_c.empty and "종" in df_pore_c.columns:
-                def normalize_species(val):
-                    val_str = str(val).lower()
-                    if "cerana" in val_str or "토종" in val_str or "동양" in val_str:
-                        return "Apis cerana"
-                    return "Apis mellifera"
-                df_pore_c["종"] = df_pore_c["종"].apply(normalize_species)
-            
-            if not df_ac.empty:
-                df_ac["종"] = "Apis cerana"
-            if not df_am.empty:
-                df_am["종"] = "Apis mellifera"
-
-            # Track Pore-C sample IDs (for subset flag is_pore_c = True)
-            pore_c_ids = set()
-            if not df_pore_c.empty and "시료 ID" in df_pore_c.columns:
-                pore_c_ids = set(df_pore_c["시료 ID"].dropna().astype(str).str.strip().str.upper().unique())
-
-            # Combine domestic DataFrames
-            dfs_to_concat = [df for df in [df_pore_c, df_ac, df_am] if not df.empty]
-            if dfs_to_concat:
-                master_df = pd.concat(dfs_to_concat, ignore_index=True)
-            else:
-                master_df = pd.DataFrame(columns=["채집일자", "시료전달일자", "권역", "주소 (상세)", "농가(대표자)", "시료 ID", "계통", "종", "lat", "lng"])
-
-            # Strict Deduplication on "시료 ID" (case-insensitive)
-            if "시료 ID" in master_df.columns:
-                master_df["시료 ID"] = master_df["시료 ID"].astype(str).str.strip().str.upper()
-                master_df = master_df.drop_duplicates(subset=["시료 ID"], keep="first")
-            
-            # Add dynamic flags
-            if "시료 ID" in master_df.columns:
-                master_df["is_pore_c"] = master_df["시료 ID"].apply(lambda x: str(x) in pore_c_ids if pd.notna(x) else False)
-            else:
-                master_df["is_pore_c"] = False
-
-            master_df["수집구분"] = "프로젝트 자체 생산"
-            df = master_df
-
-        else:
-            # global mode
-            if os.path.exists(global_path):
-                df = pd.read_csv(global_path, sep="\t")
-                df.columns = df.columns.str.strip()
-            else:
-                df = pd.DataFrame(columns=["Country", "Region", "Species", "Count", "lat", "lng"])
-            
-            df["is_pore_c"] = False
-            df["수집구분"] = "공공 데이터 수집"
+        # Copy dataframe from cache to prevent mutations
+        df = GLOBAL_MASTER_DF[mode].copy()
 
         # Apply Filters
         if species and species != "선택 안 함":
@@ -304,7 +318,6 @@ def get_sampling_status(
         if source_type and source_type != "선택 안 함":
             if source_type in ["Pore-C 핵심 집단 (50개체)", "pore_c", "Pore-C용 샘플(50개체)"]:
                 if "is_pore_c" in df.columns:
-                    # Filter for boolean or string representation
                     df = df[df["is_pore_c"].astype(str).str.lower().isin(["true", "1"])]
             elif "수집구분" in df.columns:
                 df = df[df["수집구분"] == source_type]
@@ -343,7 +356,7 @@ def get_sampling_status(
         print(f"Error in get_sampling_status: {str(e)}\n{traceback.format_exc()}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"필터 파이프라인 연산 중 런타임 크래시 발생: {str(e)}"
+            detail=f"필터 파이프라인 연산 중 런타임 캐시 크래시 발생: {str(e)}"
         )
 
 

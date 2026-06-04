@@ -26,8 +26,12 @@ def sync_schema_columns(db):
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(100);",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS experience_years INTEGER;",
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS queen_species VARCHAR(50);",
             "ALTER TABLE apiaries ADD COLUMN IF NOT EXISTS owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE;",
             "ALTER TABLE colonies ADD COLUMN IF NOT EXISTS mother_colony_id INTEGER REFERENCES colonies(id) ON DELETE SET NULL;",
+            "ALTER TABLE colonies ADD COLUMN IF NOT EXISTS sample_id VARCHAR(100);",
+            "ALTER TABLE colonies ADD COLUMN IF NOT EXISTS is_pore_c BOOLEAN DEFAULT FALSE;",
+            "ALTER TABLE colonies ADD COLUMN IF NOT EXISTS queen_species VARCHAR(50);",
             "ALTER TABLE trait_records ADD COLUMN IF NOT EXISTS vsh_rate DOUBLE PRECISION DEFAULT 0.0;",
             "ALTER TABLE trait_records ADD COLUMN IF NOT EXISTS hygienic_rate DOUBLE PRECISION DEFAULT 0.0;"
         ]
@@ -37,8 +41,12 @@ def sync_schema_columns(db):
             "ALTER TABLE users ADD COLUMN full_name VARCHAR(100);",
             "ALTER TABLE users ADD COLUMN phone VARCHAR(50);",
             "ALTER TABLE users ADD COLUMN experience_years INTEGER;",
+            "ALTER TABLE users ADD COLUMN queen_species VARCHAR(50);",
             "ALTER TABLE apiaries ADD COLUMN owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE;",
             "ALTER TABLE colonies ADD COLUMN mother_colony_id INTEGER REFERENCES colonies(id) ON DELETE SET NULL;",
+            "ALTER TABLE colonies ADD COLUMN sample_id VARCHAR(100);",
+            "ALTER TABLE colonies ADD COLUMN is_pore_c BOOLEAN DEFAULT FALSE;",
+            "ALTER TABLE colonies ADD COLUMN queen_species VARCHAR(50);",
             "ALTER TABLE trait_records ADD COLUMN vsh_rate FLOAT DEFAULT 0.0;",
             "ALTER TABLE trait_records ADD COLUMN hygienic_rate FLOAT DEFAULT 0.0;"
         ]
@@ -107,6 +115,14 @@ def startup_event():
     except Exception as e:
         print(f"Failed to sync schema columns on startup: {str(e)}")
     crud.seed_database_if_empty(db)
+
+    # Pre-load sampling TSV master databases to memory cache
+    try:
+        from .routers.researcher import load_global_dfs
+        load_global_dfs()
+        print("Successfully loaded beekeeping TSV dataset to memory cache.")
+    except Exception as e:
+        print(f"Failed to load beekeeping TSV dataset to memory cache: {str(e)}")
 
     # On-memory caching of the beekeeping sampling spreadsheet
     excel_path = os.path.join(os.path.dirname(__file__), "data", "샘플링최종.xlsx")

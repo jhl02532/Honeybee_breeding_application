@@ -71,7 +71,6 @@ export default function DashboardScreen({
   // Modal states
   const [showApiaryModal, setShowApiaryModal] = useState(false);
   const [showColonyModal, setShowColonyModal] = useState(false);
-  const [showRecordModal, setShowRecordModal] = useState(false);
 
   // Responsive Collapsible Sidebar states
   const [sidebarOpen, setSidebarOpen] = useState(true);

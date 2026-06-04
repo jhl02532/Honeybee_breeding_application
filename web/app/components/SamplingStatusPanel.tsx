@@ -71,153 +71,155 @@ export default function SamplingStatusPanel() {
     loadAllData();
   }, []);
 
-  // ── Unified Data Filtering Pipeline ──
-
-  // Extract and normalize Project-produced Domestic Rows
-  const projectRows: any[] = [];
-  if (Array.isArray(data)) {
-    data.forEach((row: any) => {
-      projectRows.push({
-        ...row,
-        source: "project",
-        lat: parseFloat(row.lat),
-        lng: parseFloat(row.lng),
-        Species: String(row.종 || row.Species || "").toLowerCase().includes("cerana") ? "Apis cerana" : "Apis mellifera",
-        Region: row.권역 || row.Region || "",
-        Country: "South Korea",
-        is_pore_c: !!row.is_pore_c
-      });
-    });
-  } else if (data && typeof data === "object") {
-    // Robust fallback for old backend format
-    Object.keys(data).forEach((sheetName) => {
-      const rows = data[sheetName];
-      if (Array.isArray(rows)) {
-        rows.forEach((row: any) => {
-          projectRows.push({
-            ...row,
-            source: "project",
-            lat: parseFloat(row.lat),
-            lng: parseFloat(row.lng),
-            Species: String(row.종 || row.Species || "").toLowerCase().includes("cerana") ? "Apis cerana" : "Apis mellifera",
-            Region: row.권역 || row.Region || "",
-            Country: "South Korea",
-            is_pore_c: sheetName.includes("pore_c") || !!row.is_pore_c
-          });
+  // ── Unified Data Filtering Pipeline (Memoized) ──
+  const { finalFilteredRows, ceranaCount, melliferaCount, uniqueRegions, uniqueCountries } = React.useMemo(() => {
+    // Extract and normalize Project-produced Domestic Rows
+    const projectRows: any[] = [];
+    if (Array.isArray(data)) {
+      data.forEach((row: any) => {
+        projectRows.push({
+          ...row,
+          source: "project",
+          lat: parseFloat(row.lat),
+          lng: parseFloat(row.lng),
+          Species: String(row.종 || row.Species || "").toLowerCase().includes("cerana") ? "Apis cerana" : "Apis mellifera",
+          Region: row.권역 || row.Region || "",
+          Country: "South Korea",
+          is_pore_c: !!row.is_pore_c
         });
+      });
+    } else if (data && typeof data === "object") {
+      // Robust fallback for old backend format
+      Object.keys(data).forEach((sheetName) => {
+        const rows = data[sheetName];
+        if (Array.isArray(rows)) {
+          rows.forEach((row: any) => {
+            projectRows.push({
+              ...row,
+              source: "project",
+              lat: parseFloat(row.lat),
+              lng: parseFloat(row.lng),
+              Species: String(row.종 || row.Species || "").toLowerCase().includes("cerana") ? "Apis cerana" : "Apis mellifera",
+              Region: row.권역 || row.Region || "",
+              Country: "South Korea",
+              is_pore_c: sheetName.includes("pore_c") || !!row.is_pore_c
+            });
+          });
+        }
+      });
+    }
+
+    // Extract and normalize Public collected WGS Rows
+    const publicRows: any[] = [];
+    if (wgsData) {
+      wgsData.forEach((row: any) => {
+        publicRows.push({
+          ...row,
+          source: "public",
+          lat: parseFloat(row.lat),
+          lng: parseFloat(row.lng),
+          Count: parseInt(row.Count) || 1,
+          Species: String(row.Species || "").toLowerCase().includes("cerana") ? "Apis cerana" : "Apis mellifera",
+          Region: row.Region || "",
+          Country: row.Country || ""
+        });
+      });
+    }
+
+    // 1. Get base rows based on Active Mode and Source Type Filter
+    let baseRows: any[] = [];
+    if (mode === "domestic") {
+      const pRows = projectRows;
+      const pubRows = publicRows.filter((r) => r.Country === "South Korea" || r.Country === "Korea");
+
+      if (sourceFilter === "project") {
+        baseRows = pRows;
+      } else if (sourceFilter === "public") {
+        baseRows = pubRows;
+      } else if (sourceFilter === "pore_c") {
+        baseRows = pRows.filter((r) => r.is_pore_c === true);
+      } else {
+        baseRows = [...pRows, ...pubRows];
+      }
+    } else {
+      // global mode
+      const pRows = projectRows;
+      const pubRows = publicRows;
+
+      if (sourceFilter === "project") {
+        baseRows = pRows;
+      } else if (sourceFilter === "public") {
+        baseRows = pubRows;
+      } else if (sourceFilter === "pore_c") {
+        baseRows = pRows.filter((r) => r.is_pore_c === true);
+      } else {
+        baseRows = [...pRows, ...pubRows];
+      }
+    }
+
+    // 2. Filter by Species
+    const filteredBySpecies = baseRows.filter((row) => {
+      if (speciesFilter === "all") return true;
+      return row.Species === speciesFilter;
+    });
+
+    // 3. Filter by Region (Domestic) or Country (Global)
+    const finalFilteredRows = filteredBySpecies.filter((row) => {
+      if (mode === "domestic") {
+        if (!regionFilter || regionFilter === "all") return true;
+        const reg = String(row.Region || "").toLowerCase();
+        const filterReg = String(regionFilter).toLowerCase();
+        return reg.includes(filterReg) || filterReg.includes(reg);
+      } else {
+        // global mode country filters
+        const matchesSearch = !countrySearch || String(row.Country || "").toLowerCase().includes(countrySearch.toLowerCase());
+        const matchesDropdown = !countryFilter || countryFilter === "all" || String(row.Country || "").toLowerCase() === countryFilter.toLowerCase();
+        return matchesSearch && matchesDropdown;
       }
     });
-  }
 
-  // Extract and normalize Public collected WGS Rows
-  const publicRows: any[] = [];
-  if (wgsData) {
-    wgsData.forEach((row: any) => {
-      publicRows.push({
-        ...row,
-        source: "public",
-        lat: parseFloat(row.lat),
-        lng: parseFloat(row.lng),
-        Count: parseInt(row.Count) || 1,
-        Species: String(row.Species || "").toLowerCase().includes("cerana") ? "Apis cerana" : "Apis mellifera",
-        Region: row.Region || "",
-        Country: row.Country || ""
-      });
+    // 4. Real-time Statistical Counts for Summary Cards (excluding species filter)
+    const rowsFilteredByRegionAndSource = baseRows.filter((row) => {
+      if (mode === "domestic") {
+        if (!regionFilter || regionFilter === "all") return true;
+        const reg = String(row.Region || "").toLowerCase();
+        const filterReg = String(regionFilter).toLowerCase();
+        return reg.includes(filterReg) || filterReg.includes(reg);
+      } else {
+        // global mode country filters
+        const matchesSearch = !countrySearch || String(row.Country || "").toLowerCase().includes(countrySearch.toLowerCase());
+        const matchesDropdown = !countryFilter || countryFilter === "all" || String(row.Country || "").toLowerCase() === countryFilter.toLowerCase();
+        return matchesSearch && matchesDropdown;
+      }
     });
-  }
 
-  // 1. Get base rows based on Active Mode and Source Type Filter
-  let baseRows: any[] = [];
-  if (mode === "domestic") {
-    const pRows = projectRows;
-    const pubRows = publicRows.filter((r) => r.Country === "South Korea" || r.Country === "Korea");
+    let ceranaCount = 0;
+    let melliferaCount = 0;
 
-    if (sourceFilter === "project") {
-      baseRows = pRows;
-    } else if (sourceFilter === "public") {
-      baseRows = pubRows;
-    } else if (sourceFilter === "pore_c") {
-      baseRows = pRows.filter((r) => r.is_pore_c === true);
-    } else {
-      baseRows = [...pRows, ...pubRows];
-    }
-  } else {
-    // global mode
-    const pRows = projectRows;
-    const pubRows = publicRows;
+    rowsFilteredByRegionAndSource.forEach((row) => {
+      const count = parseInt(row.Count) || 1;
+      if (row.Species === "Apis cerana") {
+        ceranaCount += count;
+      } else {
+        melliferaCount += count;
+      }
+    });
 
-    if (sourceFilter === "project") {
-      baseRows = pRows;
-    } else if (sourceFilter === "public") {
-      baseRows = pubRows;
-    } else if (sourceFilter === "pore_c") {
-      baseRows = pRows.filter((r) => r.is_pore_c === true);
-    } else {
-      baseRows = [...pRows, ...pubRows];
-    }
-  }
+    // 5. Unique Options Extraction for dropdown elements
+    const uniqueRegions = Array.from(
+      new Set(
+        [...projectRows, ...publicRows.filter((r) => r.Country === "South Korea")]
+          .map((r) => String(r.Region || "").split(" ")[0].trim())
+          .filter(Boolean)
+      )
+    ).sort();
 
-  // 2. Filter by Species
-  const filteredBySpecies = baseRows.filter((row) => {
-    if (speciesFilter === "all") return true;
-    return row.Species === speciesFilter;
-  });
+    const uniqueCountries = Array.from(
+      new Set(publicRows.map((r) => r.Country).filter(Boolean))
+    ).sort() as string[];
 
-  // 3. Filter by Region (Domestic) or Country (Global)
-  const finalFilteredRows = filteredBySpecies.filter((row) => {
-    if (mode === "domestic") {
-      if (!regionFilter || regionFilter === "all") return true;
-      const reg = String(row.Region || "").toLowerCase();
-      const filterReg = String(regionFilter).toLowerCase();
-      return reg.includes(filterReg) || filterReg.includes(reg);
-    } else {
-      // global mode country filters
-      const matchesSearch = !countrySearch || String(row.Country || "").toLowerCase().includes(countrySearch.toLowerCase());
-      const matchesDropdown = !countryFilter || countryFilter === "all" || String(row.Country || "").toLowerCase() === countryFilter.toLowerCase();
-      return matchesSearch && matchesDropdown;
-    }
-  });
-
-  // ── Real-time Statistical Counts for Summary Cards ──
-  // Compute from rows that are filtered by source/region/mode but NOT species filter
-  const rowsFilteredByRegionAndSource = baseRows.filter((row) => {
-    if (mode === "domestic") {
-      if (!regionFilter || regionFilter === "all") return true;
-      const reg = String(row.Region || "").toLowerCase();
-      const filterReg = String(regionFilter).toLowerCase();
-      return reg.includes(filterReg) || filterReg.includes(reg);
-    } else {
-      // global mode country filters
-      const matchesSearch = !countrySearch || String(row.Country || "").toLowerCase().includes(countrySearch.toLowerCase());
-      const matchesDropdown = !countryFilter || countryFilter === "all" || String(row.Country || "").toLowerCase() === countryFilter.toLowerCase();
-      return matchesSearch && matchesDropdown;
-    }
-  });
-
-  let ceranaCount = 0;
-  let melliferaCount = 0;
-
-  rowsFilteredByRegionAndSource.forEach((row) => {
-    const count = parseInt(row.Count) || 1;
-    if (row.Species === "Apis cerana") {
-      ceranaCount += count;
-    } else {
-      melliferaCount += count;
-    }
-  });
-
-  // Unique Options Extraction for dropdown elements
-  const uniqueRegions = Array.from(
-    new Set(
-      [...projectRows, ...publicRows.filter((r) => r.Country === "South Korea")]
-        .map((r) => String(r.Region || "").split(" ")[0].trim())
-        .filter(Boolean)
-    )
-  ).sort();
-
-  const uniqueCountries = Array.from(
-    new Set(publicRows.map((r) => r.Country).filter(Boolean))
-  ).sort() as string[];
+    return { finalFilteredRows, ceranaCount, melliferaCount, uniqueRegions, uniqueCountries };
+  }, [data, wgsData, mode, speciesFilter, sourceFilter, regionFilter, countryFilter, countrySearch]);
 
   // Render Loader screen
   if (loading) {
@@ -736,75 +738,7 @@ export default function SamplingStatusPanel() {
             )}
           </div>
         </div>
-
       </div>
-
-      {/* 📋 영역 4: 유전자원 수집 현황 세부 목록 (Table) */}
-      <div style={{
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border-color)",
-        borderRadius: "16px",
-        padding: "24px",
-        boxShadow: "var(--shadow-md)",
-        marginTop: "12px"
-      }} className="no-print animate-fade">
-        <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--color-gold)", marginBottom: "16px" }}>
-          📋 상세 유전자원 수집 목록 ({finalFilteredRows.length}건)
-        </h3>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", textAlign: "left" }}>
-            <thead>
-              <tr style={{ borderBottom: "2px solid var(--border-color)", color: "var(--text-muted)" }}>
-                <th style={{ padding: "12px" }}>시료 ID</th>
-                <th style={{ padding: "12px" }}>수집구분</th>
-                <th style={{ padding: "12px" }}>종</th>
-                <th style={{ padding: "12px" }}>권역 / 국가</th>
-                <th style={{ padding: "12px" }}>상세 주소 (GPS)</th>
-                <th style={{ padding: "12px" }}>조치</th>
-              </tr>
-            </thead>
-            <tbody>
-              {finalFilteredRows.map((row, idx) => (
-                <tr key={idx} style={{ borderBottom: "1px solid var(--border-color)", color: "var(--text-main)" }}>
-                  <td style={{ padding: "12px", fontWeight: "bold" }}>{row["시료 ID"] || row.sample_id || "-"}</td>
-                  <td style={{ padding: "12px" }}>{row.source === "project" ? "자체생산" : "공공수집"}</td>
-                  <td style={{ padding: "12px" }}>{row.Species}</td>
-                  <td style={{ padding: "12px" }}>{row.Region || row.Country}</td>
-                  <td style={{ padding: "12px" }}>
-                    {row["주소 (상세)"] || row.Country || "-"}
-                    {row.lat && row.lng ? ` (${row.lat.toFixed(4)}, ${row.lng.toFixed(4)})` : ""}
-                  </td>
-                  <td style={{ padding: "12px" }}>
-                    {row.source === "project" && (row["시료 ID"] || row.sample_id) && (
-                      <button
-                        onClick={() => {
-                          const sId = row["시료 ID"] || row.sample_id;
-                          router.push(`/dashboard/record?sample_id=${sId}`);
-                        }}
-                        style={{
-                          padding: "6px 12px",
-                          borderRadius: "6px",
-                          border: "none",
-                          background: "var(--color-gold)",
-                          color: "#fff",
-                          fontWeight: "bold",
-                          fontSize: "11px",
-                          cursor: "pointer",
-                          transition: "background 0.2s"
-                        }}
-                        className="hover:bg-yellow-600"
-                      >
-                        📋 형질 기록 입력
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
     </div>
   );
 }
