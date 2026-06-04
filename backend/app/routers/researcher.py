@@ -282,14 +282,22 @@ def get_sampling_status(
             
         # Dynamic Query Parameter 가드 처리 (None 유입 시 필터 Bypass)
         if species and species != "선택 안 함":
-            df = df[df["종"] == species]
+            col = "종" if "종" in df.columns else "Species"
+            if col in df.columns:
+                df = df[df[col] == species]
+                
         if source_type and source_type != "선택 안 함":
-            df = df[df["수집구분"] == source_type]
+            if "수집구분" in df.columns:
+                df = df[df["수집구분"] == source_type]
             
         if mode == "domestic" and region and region != "전체":
-            df = df[df["권역"] == region]
+            col = "권역" if "권역" in df.columns else "Region"
+            if col in df.columns:
+                df = df[df[col] == region]
         elif mode == "global" and country and country != "전체":
-            df = df[df["국가"] == country]
+            col = "국가" if "국가" in df.columns else "Country"
+            if col in df.columns:
+                df = df[df[col] == country]
             
         # 데이터 클렌징 후 JSON 직렬화
         df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
