@@ -228,6 +228,17 @@ export default function Page() {
           <button
             style={{
               ...styles.landingNavLink,
+              color: "var(--color-gold)",
+              fontWeight: 700,
+            }}
+            onClick={() => handleLaunch("browser")}
+            className="landing-nav-link-hover"
+          >
+            🧬 게놈 브라우저
+          </button>
+          <button
+            style={{
+              ...styles.landingNavLink,
               ...(activeSection === "roadmap" ? styles.landingNavLinkActive : {}),
             }}
             onClick={() => scrollToSection(roadmapRef, "roadmap")}
