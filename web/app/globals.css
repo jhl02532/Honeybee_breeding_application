@@ -55,6 +55,17 @@
   --glass-bg: rgba(31, 41, 55, 0.6);
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-blur: blur(20px);
+
+  /* Genomic Curation Color Tokens */
+  --color-gold: #f59e0b;
+  --color-gold-hover: #fbbf24;
+  --color-gold-glow: rgba(245, 158, 11, 0.3);
+  --color-gene: #38bdf8;
+  --color-gene-glow: rgba(56, 189, 248, 0.25);
+  --color-qtl: #c084fc;
+  --color-qtl-glow: rgba(192, 132, 252, 0.25);
+  --color-variant: #f43f5e;
+  --color-variant-glow: rgba(244, 63, 94, 0.3);
 }
 
 *, *::before, *::after {
@@ -134,3 +145,87 @@ input[type=number]::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+/* === PRINT STYLES === */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  
+  /* Hide sidebar and app headers/navbars in print */
+  aside,
+  header,
+  .no-print {
+    display: none !important;
+  }
+  
+  #tab-content-farmer {
+    display: block !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .farmer-grid {
+    display: block !important;
+  }
+  
+  #farmer-certificate-panel {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: 2px solid #000000 !important;
+    border-radius: 8px !important;
+    padding: 3rem !important;
+    margin: 0 !important;
+    position: relative !important;
+    box-sizing: border-box !important;
+    min-height: 250mm !important;
+    page-break-inside: avoid !important;
+  }
+
+  #farmer-certificate-panel .panel-header {
+    border-bottom: 2px solid #000000 !important;
+    margin-bottom: 2rem !important;
+  }
+
+  #farmer-certificate-panel .panel-title {
+    color: #000000 !important;
+    font-size: 1.8rem !important;
+    text-align: center !important;
+    width: 100% !important;
+  }
+
+  #farmer-certificate-panel .panel-body {
+    background: #ffffff !important;
+  }
+  
+  h3, p, span, div, strong {
+    color: #000000 !important;
+  }
+
+  #farmer-report-text {
+    font-size: 1.1rem !important;
+    line-height: 1.6 !important;
+    color: #222222 !important;
+  }
+
+  .disclaimer-container {
+    position: absolute !important;
+    bottom: 3rem !important;
+    left: 3rem !important;
+    right: 3rem !important;
+    margin-top: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    border-top: 1px solid #000000 !important;
+    color: #000000 !important;
+    font-size: 0.8rem !important;
+    line-height: 1.4 !important;
+    padding-top: 0.75rem !important;
+  }
+}
+

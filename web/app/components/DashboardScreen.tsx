@@ -9,8 +9,27 @@ import RecordPanel from "./RecordPanel";
 import ResearcherPanel from "./ResearcherPanel";
 import ManualPanel from "./ManualPanel";
 import AdminPanel from "./AdminPanel";
+import GenomeBrowser from "./GenomeBrowser";
+import ComparativeSynteny from "./ComparativeSynteny";
+import ChemoreceptorExplorer from "./ChemoreceptorExplorer";
+import MarkerAssayDesigner from "./MarkerAssayDesigner";
+import FarmerTraitSimulator from "./FarmerTraitSimulator";
+import BreedingMatchmaker from "./BreedingMatchmaker";
 
-type DashView = "overview" | "apiaries" | "colonies" | "records" | "researcher" | "manual" | "admin";
+type DashView =
+  | "overview"
+  | "apiaries"
+  | "colonies"
+  | "records"
+  | "researcher"
+  | "manual"
+  | "admin"
+  | "browser"
+  | "synteny"
+  | "chemo"
+  | "marker"
+  | "farmer"
+  | "matchmaker";
 
 interface DashboardScreenProps {
   user: User;
@@ -19,6 +38,7 @@ interface DashboardScreenProps {
 
 export default function DashboardScreen({ user, onLogout }: DashboardScreenProps) {
   const [view, setView] = useState<DashView>("overview");
+  const [species, setSpecies] = useState<"mellifera" | "cerana">("mellifera");
   const [stats, setStats] = useState<DashStats | null>(null);
   const [apiaries, setApiaries] = useState<Apiary[]>([]);
   const [selectedApiary, setSelectedApiary] = useState<Apiary | null>(null);
@@ -70,6 +90,12 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
     { key: "apiaries", label: "양봉장 관리", icon: "🏡" },
     { key: "colonies", label: "봉군 관리", icon: "🐝" },
     { key: "records", label: "형질 기록", icon: "📋" },
+    { key: "browser", label: "게놈 브라우저", icon: "🧬" },
+    { key: "synteny", label: "비교 유전체 분석", icon: "🔀" },
+    { key: "chemo", label: "화학수용체 탐색기", icon: "👃" },
+    { key: "marker", label: "분자 마커 설계", icon: "🏷️" },
+    { key: "farmer", label: "형질 예측기", icon: "📈" },
+    { key: "matchmaker", label: "가상 교배 시뮬레이터", icon: "👑" },
   ];
 
   if (user.role === "researcher" || user.role === "admin") {
@@ -335,6 +361,24 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
               showModal={showRecordModal}
               setShowModal={setShowRecordModal}
             />
+          )}
+          {view === "browser" && (
+            <GenomeBrowser species={species} onSpeciesChange={setSpecies} />
+          )}
+          {view === "synteny" && (
+            <ComparativeSynteny />
+          )}
+          {view === "chemo" && (
+            <ChemoreceptorExplorer />
+          )}
+          {view === "marker" && (
+            <MarkerAssayDesigner />
+          )}
+          {view === "farmer" && (
+            <FarmerTraitSimulator apiaries={apiaries} />
+          )}
+          {view === "matchmaker" && (
+            <BreedingMatchmaker apiaries={apiaries} />
           )}
           {view === "researcher" && (
             <ResearcherPanel />

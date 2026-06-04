@@ -2,3 +2,9 @@
 *.log
 .system_generated/
 data/
+node_modules/
+.next/
+dist/
+web/node_modules/
+web/.next/
+
