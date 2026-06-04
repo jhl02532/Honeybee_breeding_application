@@ -1,0 +1,648 @@
+Country	Region	Species	Count	lat	lng
+Algeria	Ain Sefra	Apis mellifera	30	28.0339	1.6596
+Algeria	Ain Temouchent	Apis mellifera	2	28.0339	1.6596
+Algeria	Annaba	Apis mellifera	1	28.0339	1.6596
+Algeria	Bejaia	Apis mellifera	8	28.0339	1.6596
+Algeria	Biskra	Apis mellifera	2	28.0339	1.6596
+Algeria	Blida	Apis mellifera	6	28.0339	1.6596
+Algeria	Chlef	Apis mellifera	3	28.0339	1.6596
+Algeria	Djelfa	Apis mellifera	3	28.0339	1.6596
+Algeria	El Bayadh	Apis mellifera	15	28.0339	1.6596
+Algeria	Ghardaia	Apis mellifera	3	28.0339	1.6596
+Algeria	Mascara	Apis mellifera	9	28.0339	1.6596
+Algeria	Medea	Apis mellifera	25	28.0339	1.6596
+Algeria	Mostaganem	Apis mellifera	16	28.0339	1.6596
+Algeria	Oran	Apis mellifera	4	28.0339	1.6596
+Algeria	Relizane	Apis mellifera	11	28.0339	1.6596
+Algeria	Saida	Apis mellifera	2	28.0339	1.6596
+Algeria	Sidi Bel Abbes	Apis mellifera	5	28.0339	1.6596
+Algeria	Skikda	Apis mellifera	3	28.0339	1.6596
+Algeria	Tissemsilet	Apis mellifera	1	28.0339	1.6596
+Algeria	Tlemcen	Apis mellifera	2	28.0339	1.6596
+Argentina	Unknown	Apis mellifera	96	-38.4161	-63.6167
+Australia	Far North Queensland	Apis cerana	152	-25.2744	133.7751
+Australia	Torres Strait, Boigu	Apis cerana	1	-25.2744	133.7751
+Australia	Torres Strait, Dauan	Apis cerana	1	-25.2744	133.7751
+Australia	Torres Strait, Saibai	Apis cerana	1	-25.2744	133.7751
+Austria	Unknown	Apis mellifera	64	47.5162	14.5501
+Brazil	Unknown	Apis mellifera	60	-14.235	-51.9253
+China	Ankang, Shanxi, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Ankang, Shanxi, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Ankang, Shanxi, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Ankang, Shanxi, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Ankang, Shanxi, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Ankang, Shanxi, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Ankang, Shanxi, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Ankang, Shanxi, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Ankang, Shanxi, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Ankang, Shanxi, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Badong	Apis cerana	10	35.8617	104.1954
+China	Baisha, Hainan	Apis cerana	3	35.8617	104.1954
+China	Baishan, Jilin	Apis cerana	2	35.8617	104.1954
+China	Baoji, Shaanxi	Apis cerana	6	35.8617	104.1954
+China	Baoshan, Yunnan	Apis cerana	5	35.8617	104.1954
+China	Beijing	Apis cerana	3	39.9042	116.4074
+China	Beijing	Apis mellifera	60	39.9042	116.4074
+China	Bijie, Guizhou	Apis cerana	9	35.8617	104.1954
+China	Bomi, Tibet	Apis cerana	19	35.8617	104.1954
+China	Bomi, Tibet, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Bomi, Tibet, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Bomi, Tibet, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Bomi, Tibet, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Bomi, Tibet, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Bomi, Tibet, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Bomi, Tibet, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Bomi, Tibet, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Bomi, Tibet, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Bomi, Tibet, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Chuxiong, Yunnan	Apis cerana	2	35.8617	104.1954
+China	Dali, Yunnan	Apis cerana	5	35.8617	104.1954
+China	Dengfeng, Henan	Apis cerana	2	35.8617	104.1954
+China	Dingxi, Gansu	Apis cerana	1	35.8617	104.1954
+China	Diqing, Yunnan, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Diqing, Yunnan, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Diqing, Yunnan, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Diqing, Yunnan, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Diqing, Yunnan, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Diqing, Yunnan, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Diqing, Yunnan, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Diqing, Yunnan, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Diqing, Yunnan, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Diqing, Yunnan, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Dongning, Heilongjiang	Apis cerana	1	35.8617	104.1954
+China	Dunhua, Jilin	Apis cerana	2	35.8617	104.1954
+China	Fangchenggang, Guangxi	Apis cerana	2	35.8617	104.1954
+China	FuJian Province, LongYang City	Apis cerana	3	25.08	117.02
+China	GanSu Province, LongNan City	Apis cerana	3	33.4	104.9
+China	GanSu Province, QingYang City	Apis cerana	3	35.7	107.6
+China	Gansu, Tianshui	Apis cerana	10	35.8617	104.1954
+China	Gaoan, Jiangxi	Apis cerana	5	35.8617	104.1954
+China	Gaozhou, Guangdong	Apis cerana	4	35.8617	104.1954
+China	Guangdong	Apis cerana	1	35.8617	104.1954
+China	Guangxi, Chongzuo	Apis dorsata	7	35.8617	104.1954
+China	Guangxi, Nanning	Apis dorsata	2	35.8617	104.1954
+China	Guangzhou	Apis cerana cerana	10	35.8617	104.1954
+China	Guangzhou, Guangdong	Apis cerana	4	35.8617	104.1954
+China	Guide, Qinghai	Apis cerana	10	35.8617	104.1954
+China	Guiling, Guangxi	Apis cerana	1	35.8617	104.1954
+China	Guizhou	Apis cerana	121	26.8154	106.8748
+China	Guyuan, Ningxia	Apis cerana	3	35.8617	104.1954
+China	Guyuan, Ningxia, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Guyuan, Ningxia, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Guyuan, Ningxia, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Guyuan, Ningxia, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Guyuan, Ningxia, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Guyuan, Ningxia, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Guyuan, Ningxia, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Guyuan, Ningxia, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Guyuan, Ningxia, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Guyuan, Ningxia, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Haiko, Hainan	Apis cerana	4	35.8617	104.1954
+China	Haikou, Hainan, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Haikou, Hainan, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Haikou, Hainan, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Haikou, Hainan, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Haikou, Hainan, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Haikou, Hainan, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Haikou, Hainan, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Haikou, Hainan, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Haikou, Hainan, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Haikou, Hainan, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Hainan	Apis cerana	1	35.8617	104.1954
+China	Hainan Province, Haikou City	Apis cerana	3	20.0174	110.3312
+China	Hainan, Baoting	Apis dorsata	4	35.8617	104.1954
+China	Hainan, Qiongzhong	Apis dorsata	5	35.8617	104.1954
+China	HeBei Province, XingLong City	Apis cerana	3	40.41	117.5
+China	Hechi, Guangxi, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Hechi, Guangxi, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Hechi, Guangxi, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Hechi, Guangxi, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Hechi, Guangxi, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Hechi, Guangxi, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Hechi, Guangxi, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Hechi, Guangxi, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Hechi, Guangxi, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Hechi, Guangxi, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Heishui, Aba, Sichuan	Apis cerana	1	35.8617	104.1954
+China	Hezhou, Guangxi	Apis cerana	1	35.8617	104.1954
+China	Hianan	Apis cerana	1	35.8617	104.1954
+China	HongKong	Apis cerana	1	35.8617	104.1954
+China	Honhe, Yunnan	Apis cerana	3	35.8617	104.1954
+China	HuNan Province, ChangDe City	Apis cerana	3	29.03	111.68
+China	Huangshan, Anhui	Apis cerana	1	35.8617	104.1954
+China	Huizhou, Guangdong	Apis cerana	1	35.8617	104.1954
+China	Huludao, Liaoning	Apis cerana	5	35.8617	104.1954
+China	Inner Mongolie	Apis cerana	3	35.8617	104.1954
+China	JiangXi Province, YiChun City	Apis cerana	3	27.8	114.38
+China	Jiangsu Yangzhou	Apis cerana	2	35.8617	104.1954
+China	Jiangxi	Apis cerana	4	35.8617	104.1954
+China	Jilin Province, JilinCity	Apis cerana	3	43.8378	126.5494
+China	Jilin, Jilin	Apis cerana	3	35.8617	104.1954
+China	Jilong, Rikaze, Tibet	Apis cerana	6	35.8617	104.1954
+China	Jilong, Taiwan	Apis cerana	6	35.8617	104.1954
+China	Jincheng, Shanxi	Apis cerana	3	35.8617	104.1954
+China	Jinchuan, Aba, Sichuan	Apis cerana	6	35.8617	104.1954
+China	Jinhua, Zhejiang	Apis cerana	7	35.8617	104.1954
+China	Jinzhai	Apis cerana cerana	10	35.8617	104.1954
+China	Jiujiang, Jiangxi	Apis cerana	1	35.8617	104.1954
+China	Jiuzhai, Sichuan, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Jiuzhai, Sichuan, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Jiuzhai, Sichuan, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Jiuzhai, Sichuan, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Jiuzhai, Sichuan, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Jiuzhai, Sichuan, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Jiuzhai, Sichuan, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Jiuzhai, Sichuan, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Jiuzhai, Sichuan, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Jiuzhai, Sichuan, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Kunming	Apis cerana cerana	32	25.0422	102.71
+China	Lijiang, Yunnan	Apis cerana	1	35.8617	104.1954
+China	Linyi, Shandong	Apis cerana	4	35.8617	104.1954
+China	Lizi	Apis cerana	9	35.8617	104.1954
+China	Longnan, Gansu	Apis cerana	9	35.8617	104.1954
+China	Lushui, Yunnan	Apis cerana	5	35.8617	104.1954
+China	Maerkang, Aba, Sichuan	Apis cerana	18	35.8617	104.1954
+China	Maerkang, Sichuan, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Maerkang, Sichuan, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Maerkang, Sichuan, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Maerkang, Sichuan, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Maerkang, Sichuan, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Maerkang, Sichuan, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Maerkang, Sichuan, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Maerkang, Sichuan, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Maerkang, Sichuan, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Maerkang, Sichuan, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Mangkang	Apis cerana cerana	10	35.8617	104.1954
+China	Mengyin, Shandong, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Mengyin, Shandong, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Mengyin, Shandong, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Mengyin, Shandong, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Mengyin, Shandong, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Mengyin, Shandong, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Mengyin, Shandong, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Mengyin, Shandong, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Mengyin, Shandong, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Mengyin, Shandong, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Minxian, Gansu, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Minxian, Gansu, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Minxian, Gansu, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Minxian, Gansu, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Minxian, Gansu, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Minxian, Gansu, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Minxian, Gansu, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Minxian, Gansu, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Minxian, Gansu, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Minxian, Gansu, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Nanchang, Jiangxi	Apis cerana	4	35.8617	104.1954
+China	Nanning, Guangxi	Apis cerana	1	35.8617	104.1954
+China	Nanping, Fujian	Apis cerana	5	35.8617	104.1954
+China	Nayong, Guizhou, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Nayong, Guizhou, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Nayong, Guizhou, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Nayong, Guizhou, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Nayong, Guizhou, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Nayong, Guizhou, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Nayong, Guizhou, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Nayong, Guizhou, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Nayong, Guizhou, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Nayong, Guizhou, replicate 9	Apis cerana	1	35.8617	104.1954
+China	NingXia Province, GuYuan City	Apis cerana	3	36.0	106.28
+China	Pingwu, Sichuan	Apis cerana	5	35.8617	104.1954
+China	Puer, Yunnan	Apis cerana	5	35.8617	104.1954
+China	Qimen	Apis cerana cerana	10	35.8617	104.1954
+China	Qinghai	Apis cerana	1	35.8617	104.1954
+China	Qingyuan, Liaoning, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Qingyuan, Liaoning, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Qingyuan, Liaoning, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Qingyuan, Liaoning, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Qingyuan, Liaoning, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Qingyuan, Liaoning, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Qingyuan, Liaoning, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Qingyuan, Liaoning, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Qingyuan, Liaoning, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Qingyuan, Liaoning, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Sanya, Hainan	Apis cerana	5	35.8617	104.1954
+China	ShaanXi Province, BaoJi City	Apis cerana	3	34.35	107.15
+China	ShanDong Province, ZiBo City	Apis cerana	3	36.81	118.05
+China	ShanXi Province, XiAn City	Apis cerana	3	34.2658	108.9544
+China	Shanghai	Apis cerana	1	35.8617	104.1954
+China	Shangrao, Jiangxi	Apis cerana	2	35.8617	104.1954
+China	Shanqing	Apis cerana	9	35.8617	104.1954
+China	Shennongjia	Apis cerana	8	35.8617	104.1954
+China	Shennongjia	Apis cerana cerana	10	35.8617	104.1954
+China	Shennongjia, Hubei, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Shennongjia, Hubei, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Shennongjia, Hubei, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Shennongjia, Hubei, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Shennongjia, Hubei, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Shennongjia, Hubei, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Shennongjia, Hubei, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Shennongjia, Hubei, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Shennongjia, Hubei, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Shennongjia, Hubei, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Shennonjia, Hubei	Apis cerana	5	35.8617	104.1954
+China	Shijiazhuang, Hebei	Apis cerana	5	35.8617	104.1954
+China	Shiyan	Apis cerana	9	35.8617	104.1954
+China	Sichuan	Apis cerana	1	30.657	104.066
+China	Sichuan Kangding	Apis cerana	6	35.8617	104.1954
+China	Sichuan Province, Maerkang City	Apis cerana	12	31.9	102.2
+China	Sichuan,Muping	Apis cerana	1	30.657	104.066
+China	Suining, Sichuan, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Suining, Sichuan, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Suining, Sichuan, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Suining, Sichuan, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Suining, Sichuan, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Suining, Sichuan, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Suining, Sichuan, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Suining, Sichuan, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Suining, Sichuan, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Suining, Sichuan, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Suizhou	Apis cerana	9	35.8617	104.1954
+China	Suzhou	Apis cerana cerana	10	35.8617	104.1954
+China	Taishui, Gansu	Apis cerana	1	35.8617	104.1954
+China	Taiwan	Apis cerana	1	35.8617	104.1954
+China	Tianshui, Gansu	Apis cerana	2	35.8617	104.1954
+China	Tibet	Apis cerana	2	35.8617	104.1954
+China	Tibet, Linzhi	Apis laboriosa	4	35.8617	104.1954
+China	Tibet, Rikaze	Apis laboriosa	6	35.8617	104.1954
+China	Tongshan	Apis cerana	5	35.8617	104.1954
+China	Unknown	Apis mellifera	10	35.8617	104.1954
+China	Weixi, Diqing, Yunnan	Apis cerana	2	35.8617	104.1954
+China	Wenchang	Apis cerana cerana	10	35.8617	104.1954
+China	Wenchang, Hainan	Apis cerana	9	35.8617	104.1954
+China	Wufeng	Apis cerana	9	35.8617	104.1954
+China	Wulong, Chongqing	Apis cerana	1	35.8617	104.1954
+China	Xian, Shanxi, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Xian, Shanxi, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Xian, Shanxi, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Xian, Shanxi, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Xian, Shanxi, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Xian, Shanxi, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Xian, Shanxi, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Xian, Shanxi, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Xian, Shanxi, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Xian, Shanxi, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Xianyang, Shaanxi	Apis cerana	2	35.8617	104.1954
+China	Xinxiang, Henan	Apis cerana	3	35.8617	104.1954
+China	Xishaungbanna, Yunnan	Apis cerana	10	35.8617	104.1954
+China	Xishuangbanna, Yunnan, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Xishuangbanna, Yunnan, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Xishuangbanna, Yunnan, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Xishuangbanna, Yunnan, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Xishuangbanna, Yunnan, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Xishuangbanna, Yunnan, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Xishuangbanna, Yunnan, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Xishuangbanna, Yunnan, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Xishuangbanna, Yunnan, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Xishuangbanna, Yunnan, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Xunhua, Qinghai	Apis cerana	10	35.8617	104.1954
+China	Yadong, Rikaze, Tibet	Apis cerana	3	35.8617	104.1954
+China	Yanan, Shaanxi	Apis cerana	5	35.8617	104.1954
+China	Yanbian, Jilin	Apis cerana	3	35.8617	104.1954
+China	Yichun, Jiangxi	Apis cerana	1	35.8617	104.1954
+China	Yilan, Taiwan	Apis cerana	5	35.8617	104.1954
+China	Yingshan	Apis cerana	4	35.8617	104.1954
+China	Yongxing, Hainan	Apis cerana	5	35.8617	104.1954
+China	Yuanna	Apis cerana	1	35.8617	104.1954
+China	Yuannan	Apis cerana	6	35.8617	104.1954
+China	Yulin, Shanxi, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Yulin, Shanxi, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Yulin, Shanxi, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Yulin, Shanxi, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Yulin, Shanxi, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Yulin, Shanxi, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Yulin, Shanxi, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Yulin, Shanxi, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Yulin, Shanxi, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Yulin, Shanxi, replicate 9	Apis cerana	1	35.8617	104.1954
+China	YunNan Province, PuEr City	Apis cerana	3	22.79	100.97
+China	Yunnan	Apis cerana	12	35.8617	104.1954
+China	Yunnan, Baoshan	Apis laboriosa	6	35.8617	104.1954
+China	Yunnan, Deqin	Apis cerana	10	35.8617	104.1954
+China	Yunnan, Diqing	Apis laboriosa	4	35.8617	104.1954
+China	Yunnan, Hekou	Apis cerana	15	35.8617	104.1954
+China	Yunnan, Honghe	Apis laboriosa	9	35.8617	104.1954
+China	Yunnan, Kunming	Apis cerana	5	35.8617	104.1954
+China	Yunnan, Lijiang	Apis cerana	10	35.8617	104.1954
+China	Yunnan, Puer	Apis dorsata	3	35.8617	104.1954
+China	Yunnan, Xishuangbanna	Apis cerana	10	35.8617	104.1954
+China	Yunnan, Xishuangbanna	Apis dorsata	7	35.8617	104.1954
+China	Zhangzhou, Fujian, replicate 1	Apis cerana	1	35.8617	104.1954
+China	Zhangzhou, Fujian, replicate 10	Apis cerana	1	35.8617	104.1954
+China	Zhangzhou, Fujian, replicate 2	Apis cerana	1	35.8617	104.1954
+China	Zhangzhou, Fujian, replicate 3	Apis cerana	1	35.8617	104.1954
+China	Zhangzhou, Fujian, replicate 4	Apis cerana	1	35.8617	104.1954
+China	Zhangzhou, Fujian, replicate 5	Apis cerana	1	35.8617	104.1954
+China	Zhangzhou, Fujian, replicate 6	Apis cerana	1	35.8617	104.1954
+China	Zhangzhou, Fujian, replicate 7	Apis cerana	1	35.8617	104.1954
+China	Zhangzhou, Fujian, replicate 8	Apis cerana	1	35.8617	104.1954
+China	Zhangzhou, Fujian, replicate 9	Apis cerana	1	35.8617	104.1954
+China	Zibo, Shandong	Apis cerana	2	35.8617	104.1954
+Finland	Aland	Apis mellifera mellifera	80	60.1785	19.9156
+France	Ariege	Apis mellifera	50	43.0	1.5
+France	Benac	Apis mellifera	2	46.2276	2.2137
+France	Brittany	Apis mellifera	7	48.202	-2.9326
+France	Corsica	Apis mellifera	44	42.1512	9.0129
+France	Hautes Pyrenees	Apis mellifera	19	46.2276	2.2137
+France	Herault	Apis mellifera	7	46.2276	2.2137
+France	Isere	Apis mellifera	17	46.2276	2.2137
+France	Ouessant	Apis mellifera	11	48.4637	-5.0833
+France	Ouessant	Apis mellifera mellifera	30	48.4637	-5.0833
+France	Porquerolles	Apis mellifera	15	46.2276	2.2137
+France	Reunion	Apis mellifera	36	46.2276	2.2137
+France	Sarthe	Apis mellifera	17	46.2276	2.2137
+France	Savoie	Apis mellifera	31	46.2276	2.2137
+France	Sollies	Apis mellifera	14	46.2276	2.2137
+France	Tarn	Apis mellifera	75	43.9	2.2
+France	Unknown	Apis mellifera	1489	46.2276	2.2137
+France	Vaucluse	Apis mellifera	178	44.0	5.15
+Germany	Berlin	Apis mellifera carnica	12	51.1657	10.4515
+Germany	Hesse	Apis mellifera carnica	5	51.1657	10.4515
+Germany	Kirchhain	Apis mellifera carnica	7	51.1657	10.4515
+Germany	North Rhine-Westphalia	Apis mellifera	2	51.1657	10.4515
+Germany	Unknown	Apis mellifera	6	51.1657	10.4515
+India	Bangalore	Apis florea	4	20.5937	78.9629
+India	Jammu&Kashmir	Apis cerana	14	20.5937	78.9629
+India	Unknown	Apis andreniformis	1	20.5937	78.9629
+India	Unknown	Apis cerana	1	20.5937	78.9629
+India	Unknown	Apis florea	1	20.5937	78.9629
+Indonesia	Java, Cilacap	Apis cerana	10	-0.7893	113.9213
+Indonesia	Java, Purbalingga	Apis cerana	10	-0.7893	113.9213
+Indonesia	Unknown	Apis cerana	1	-0.7893	113.9213
+Ireland	Clare	Apis mellifera mellifera	8	53.4129	-8.2439
+Ireland	Cork	Apis mellifera mellifera	6	53.4129	-8.2439
+Ireland	County Kildare	Apis mellifera	1	53.4129	-8.2439
+Ireland	County Monaghan	Apis mellifera	1	53.4129	-8.2439
+Ireland	County Tipperary	Apis mellifera	1	53.4129	-8.2439
+Ireland	County Wicklow	Apis mellifera	1	53.4129	-8.2439
+Ireland	Donegal	Apis mellifera mellifera	46	54.6538	-8.1103
+Ireland	Dublin	Apis mellifera	1	53.4129	-8.2439
+Ireland	Dublin	Apis mellifera mellifera	2	53.4129	-8.2439
+Ireland	Galway	Apis mellifera	1	53.2707	-9.0568
+Ireland	Galway	Apis mellifera mellifera	52	53.2707	-9.0568
+Ireland	Galyway	Apis mellifera	1	53.4129	-8.2439
+Ireland	Kerry	Apis mellifera mellifera	4	53.4129	-8.2439
+Ireland	Laois	Apis mellifera mellifera	3	53.4129	-8.2439
+Ireland	Louth	Apis mellifera mellifera	17	53.4129	-8.2439
+Ireland	Offaly	Apis mellifera mellifera	5	53.4129	-8.2439
+Ireland	Roscommon	Apis mellifera mellifera	3	53.4129	-8.2439
+Ireland	Tipperary	Apis mellifera mellifera	10	53.4129	-8.2439
+Ireland	WestMeath	Apis mellifera mellifera	1	53.4129	-8.2439
+Italy	Bologna	Apis mellifera ligustica	5	41.8719	12.5674
+Italy	Unknown	Apis mellifera	50	41.8719	12.5674
+Italy	Unknown	Apis mellifera ligustica	216	41.8719	12.5674
+Japan	Akita, Yurihonjyo	Apis cerana japonica	1	36.2048	138.2529
+Japan	Aomori, Hirosaki	Apis cerana japonica	3	40.8244	140.7473
+Japan	Aomori, Mutsu	Apis cerana japonica	1	40.8244	140.7473
+Japan	Ehime, Toon	Apis cerana japonica	5	33.8416	132.7657
+Japan	Fukuoka, Kurume	Apis cerana japonica	2	33.6064	130.418
+Japan	Fukuoka, Onojyo	Apis cerana japonica	1	33.6064	130.418
+Japan	Fukushima, Fukushima	Apis cerana japonica	1	36.2048	138.2529
+Japan	Fukushima, Iwaki	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Bando	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Hokota	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Itako	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Joso	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Kasama	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Kashima	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Kasumi	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Naka	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Omitama	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Tokaimura	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Tsuchiura	Apis cerana japonica	1	36.2048	138.2529
+Japan	Ibaraki, Tsukubamirai	Apis cerana japonica	1	36.2048	138.2529
+Japan	Iwate, Morioka	Apis cerana japonica	4	36.2048	138.2529
+Japan	Kagoshima, Kirishima	Apis cerana japonica	9	31.5966	130.5578
+Japan	Kagoshima, Minamikyushu	Apis cerana japonica	3	31.5966	130.5578
+Japan	Kanagawa, Sagamihara	Apis cerana japonica	5	36.2048	138.2529
+Japan	Kanagawa, Yokohama	Apis cerana japonica	6	36.2048	138.2529
+Japan	Kanagawa, Yokosuka	Apis cerana japonica	3	36.2048	138.2529
+Japan	Kumamoto, Amakusa	Apis cerana japonica	1	36.2048	138.2529
+Japan	Kyoto, Kyoto	Apis cerana japonica	5	35.0116	135.7681
+Japan	Mie, Nabari	Apis cerana japonica	1	34.7303	136.5086
+Japan	Mie, Owase	Apis cerana japonica	1	34.7303	136.5086
+Japan	Mie, Suzuka	Apis cerana japonica	1	34.7303	136.5086
+Japan	Mie, Tsu	Apis cerana japonica	1	34.7303	136.5086
+Japan	Miyagi, Kakuda	Apis cerana japonica	1	36.2048	138.2529
+Japan	Nagano, Iida	Apis cerana japonica	1	36.6485	138.1948
+Japan	Nagano, Kamiinagun_Miyadamura	Apis cerana japonica	1	36.6485	138.1948
+Japan	Nagano, Kamiinagun_Tatsunomachi	Apis cerana japonica	1	36.6485	138.1948
+Japan	Nagano, Kamiminochigun_Ogawamura	Apis cerana japonica	1	36.6485	138.1948
+Japan	Nagano, Komagane	Apis cerana japonica	1	36.6485	138.1948
+Japan	Nagano, Matsumoto	Apis cerana japonica	1	36.6485	138.1948
+Japan	Nagano, Omachi	Apis cerana japonica	1	36.6485	138.1948
+Japan	Nagano, Saku	Apis cerana japonica	1	36.6485	138.1948
+Japan	Nagano, Shimoinagun_Takamorimachi	Apis cerana japonica	1	36.6485	138.1948
+Japan	Nagano, Suwagun_Haramura	Apis cerana japonica	1	36.6485	138.1948
+Japan	Nagano, Ueda	Apis cerana japonica	1	36.6485	138.1948
+Japan	Niigata, Minamikambaragun_Tagamimachi	Apis cerana japonica	5	37.9161	139.0364
+Japan	Niigata, Minamiuonuma	Apis cerana japonica	6	37.9161	139.0364
+Japan	Niigata, Niigata	Apis cerana japonica	1	37.9161	139.0364
+Japan	Oita, Yufu	Apis cerana japonica	1	36.2048	138.2529
+Japan	Okayama, Okayama	Apis cerana japonica	6	34.6551	133.9196
+Japan	Saga, Saga	Apis cerana japonica	1	36.2048	138.2529
+Japan	Shimane, Matsue	Apis cerana japonica	4	35.4722	133.0505
+Japan	Unknown	Apis cerana	65	36.2048	138.2529
+Japan	Yamagata, Yamagata	Apis cerana japonica	2	36.2048	138.2529
+Malaysia	Johor	Apis cerana	2	4.2105	101.9758
+Malaysia	Kuala Lumpur	Apis cerana	1	4.2105	101.9758
+Malaysia	Negeri Sembilan	Apis cerana	5	4.2105	101.9758
+Malaysia	Petaling Jaya, Selangor	Apis cerana	6	4.2105	101.9758
+Malaysia	Sabah	Apis cerana	14	4.2105	101.9758
+Malaysia	Unknown	Apis cerana	12	4.2105	101.9758
+New Zealand	Unknown	Apis mellifera	50	-40.9006	174.886
+Norway	Unknown	Apis mellifera	84	60.472	8.4689
+Portugal	Unknown	Apis mellifera	25	39.3999	-8.2245
+Portugal	West coast	Apis mellifera	25	39.3999	-8.2245
+Puerto Rico	Unknown	Apis mellifera	216	18.2208	-66.5901
+South Africa	Cape of Good Hope region	Apis mellifera capensis	71	-34.3568	18.4716
+South Africa	East Cape	Apis mellifera	4	-30.5595	22.9375
+South Africa	Freestate	Apis mellifera	1	-30.5595	22.9375
+South Africa	N. Cape	Apis mellifera	1	-30.5595	22.9375
+South Africa	N/NW Cape	Apis mellifera	1	-30.5595	22.9375
+South Africa	NW. Cape	Apis mellifera	3	-30.5595	22.9375
+South Africa	Stellenbosch	Apis mellifera capensis	2	-33.9321	18.8602
+South Africa	Stellenbosch	Apis mellifera capensis x Apis mellifera scutellata	50	-33.9321	18.8602
+South Africa	Stellenbosch	Apis mellifera scutellata	1	-33.9321	18.8602
+South Africa	Unknown	Apis mellifera	84	-30.5595	22.9375
+South Africa	Unknown	Apis mellifera capensis	28	-30.5595	22.9375
+South Africa	Unknown	Apis mellifera scutellata	29	-30.5595	22.9375
+South Africa	West Cape	Apis mellifera	1	-30.5595	22.9375
+South Korea	Hongseong, Chungcheongnam-do	Apis cerana	1	35.9078	127.7669
+South Korea	Jeonju, Jeollabuk-do	Apis cerana	2	35.9078	127.7669
+South Korea	Miryang, Gyeongsangnam-do	Apis cerana	1	35.9078	127.7669
+South Korea	Mungyeong, Gyeongsangbuk-do	Apis cerana	1	35.9078	127.7669
+South Korea	Seoul, Seoul	Apis cerana	1	35.9078	127.7669
+Spain	Central	Apis mellifera	32	40.4637	-3.7492
+Spain	Central Transect 1	Apis mellifera	10	40.4637	-3.7492
+Spain	Central Transect 9	Apis mellifera	10	40.4637	-3.7492
+Spain	Cordoba	Apis mellifera	2	40.4637	-3.7492
+Spain	East coast	Apis mellifera	22	40.4637	-3.7492
+Spain	Mediterranean Transect 1	Apis mellifera	10	40.4637	-3.7492
+Spain	Murcia	Apis mellifera	2	40.4637	-3.7492
+Spain	Unknown	Apis mellifera	120	40.4637	-3.7492
+Spain	West coast	Apis mellifera	6	40.4637	-3.7492
+Sweden	Gotland	Apis mellifera mellifera	78	57.5	18.5
+Sweden	Juoksengi	Apis mellifera carnica	1	60.1282	18.6435
+Sweden	Juoksengi	Apis mellifera ligustica	4	60.1282	18.6435
+Sweden	Juoksengi	Apis mellifera mellifera	5	60.1282	18.6435
+Sweden	Nordens Ark	Apis mellifera carnica	4	60.1282	18.6435
+Sweden	Nordens Ark	Apis mellifera ligustica	3	60.1282	18.6435
+Sweden	Nordens Ark	Apis mellifera mellifera	3	60.1282	18.6435
+Sweden	Uddervalla	Apis mellifera carnica	4	60.1282	18.6435
+Sweden	Uddervalla	Apis mellifera ligustica	5	60.1282	18.6435
+Sweden	Uddervalla	Apis mellifera mellifera	2	60.1282	18.6435
+Sweden	Unknown	Apis mellifera	260	60.1282	18.6435
+Switzerland	Twann	Apis mellifera mellifera	7	46.8182	8.2275
+Switzerland	Unknown	Apis mellifera	183	46.8182	8.2275
+Thailand	Bangkok, Bangkok	Apis cerana	4	15.87	100.9925
+Thailand	Chiang Mai	Apis cerana	1	15.87	100.9925
+Thailand	Doi Saket District	Apis cerana	3	15.87	100.9925
+Thailand	Phitsanulok	Apis cerana	7	15.87	100.9925
+Thailand	Saraphi District	Apis cerana	3	15.87	100.9925
+Turkey	Unknown	Apis mellifera	64	38.9637	35.2433
+USA	CA, Dixon, Noble Apiaries, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Dixon, Noble Apiaries, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Dixon, Noble Apiaries, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Glenn replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Glenn replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Humboldt Co., Blue lake, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Humboldt Co., Blue lake, replicate 1A	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Humboldt Co., Blue lake, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Humboldt Co., Blue lake, replicate 2A	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Humboldt Co., Blue lake, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Humboldt Co., Blue lake, replicate 3A	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Humboldt Co., Blue lake, replicate 4	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Humboldt Co., Blue lake, replicate 4A	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Humboldt Co., Blue lake, replicate 5	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Humboldt Co., Blue lake, replicate 5A	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Humboldt Co., Blue lake, replicate 6	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. Placeria Cyn. Residential area 25227 Running Horse Rd., replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. Placeria Cyn. Residential area 25227 Running Horse Rd., replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. Placeria Cyn. Residential area 25227 Running Horse Rd., replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. Placeria Cyn. about .5 miles past the nature center, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. Placeria Cyn. about .5 miles past the nature center, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. Placeria Cyn. about .5 miles past the nature center, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. Placerita Cyn. Nat. Area, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. Placerita Cyn. Nat. Area, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. Placerita Cyn. Nat. Area, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. Placerita Cyn. Nat. Area, replicate 4	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. Placerita Cyn. Nat. Area, replicate 5	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. San Pedro, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. San Pedro, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. San Pedro, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA, LA Co. San Pedro, replicate 4	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Los Angeles Co., Catalina Is. Avalon, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Los Angeles Co., Catalina Is. Avalon, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Los Angeles Co., Catalina Is. Avalon; 236 Catalina Ave, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Los Angeles Co., Catalina Is. Avalon; 236 Catalina Ave, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Los Angeles Co., Catalina Is. Avalon; 236 Catalina Ave, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Los Angeles Co., Catalina Is. Avalon; 236 Catalina Ave, replicate 4	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Los Angeles Co., Catalina Is. Avalon; 236 Catalina Ave, replicate 5	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co. 1000 Palms Oasis, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co. 1000 Palms Oasis, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co. 1000 Palms Oasis, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co. Riverside County Fire Station23, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co. San Jacinto Mnt. Idyllwild, Roadside corner Hwy 243 ad Marion Ridge Dr. next to Fire Station, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co. San Jacinto Mnt. Idyllwild, Roadside corner Hwy 243 ad Marion Ridge Dr. next to Fire Station, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co. San Jacinto Mnt. Idyllwild, Roadside corner Hwy 243 ad Marion Ridge Dr. next to Fire Station, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co. San Jacinto Mnt. Idyllwild, Roadside corner Hwy 243 ad Marion Ridge Dr. next to Fire Station, replicate 4	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co. San Jacinto Mnt. Idyllwild, Roadside corner Hwy 243 ad Marion Ridge Dr. next to Fire Station, replicate 5	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co. San Jacinto Mnt., replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co. San Jacinto Mnt., replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co., NEAR 1000 Palms Oasis, in Sky Valley at 77810 Las Montanas Rd, Plam Desert 92211, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Riverside Co., NEAR 1000 Palms Oasis, in Sky Valley at 77810 Las Montanas Rd, Plam Desert 92211, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Shasta County, Palo Cedro, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Solano Co. Stebbins Cold Cyn. Reserve 38 30'N 122 08'W 11 km W. Winters, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Solano Co. Stebbins Cold Cyn. Reserve 38 30'N 122 08'W 11 km W. Winters, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Solano Co. Stebbins Cold Cyn. Reserve 38 30'N 122 08'W 11 km W. Winters, replicate 2A	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Solano Co. Stebbins Cold Cyn. Reserve 38 30'N 122 08'W 11 km W. Winters, replicate 2B	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Solano Co. Stebbins Cold Cyn. Reserve 38 30'N 122 08'W 11 km W. Winters, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Solano Co. Stebbins Cold Cyn. Reserve 38 30'N 122 08'W 11 km W. Winters, replicate 4	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Solano Co. Stebbins Cold Cyn. Reserve 38 30'N 122 08'W 11 km W. Winters, replicate 5	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Stanislaus Co. PG&E Power plant, 5 miles N of Turlock Lake NW of LaGrange, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Stanislaus Co. PG&E Power plant, 5 miles N of Turlock Lake NW of LaGrange, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Stanislaus County, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Stanislaus County, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Stanislaus County, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Stanislaus County, replicate 4	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Stanislaus County, replicate 5	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Stanislaus County, replicate 6	Apis mellifera	1	37.0902	-95.7129
+USA	CA, UC Berkeley Campus	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Yolo County, University of California, Davis, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Yolo County, University of California, Davis, replicate 1 modern	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Yolo County, University of California, Davis, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Yolo County, University of California, Davis, replicate 2 modern	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Yolo County, University of California, Davis, replicate 3 modern	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Yolo County, University of California, Davis, replicate 4 modern	Apis mellifera	1	37.0902	-95.7129
+USA	CA, Yolo County, University of California, Davis, replicate 5 modern	Apis mellifera	1	37.0902	-95.7129
+USA	CA,Humboldt County, Union Street, Arcata, California, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA,Humboldt County, Union Street, Arcata, California, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA,Humboldt County, Union Street, Arcata, California, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA,Humboldt County, Union Street, Arcata, California, replicate 4	Apis mellifera	1	37.0902	-95.7129
+USA	CA,Humboldt County, Union Street, Arcata, California, replicate 5	Apis mellifera	1	37.0902	-95.7129
+USA	CA,Humboldt County, Union Street, Arcata, California, replicate 6	Apis mellifera	1	37.0902	-95.7129
+USA	CA,Stebbins Cold Cyn, Solano County, replicate 1	Apis mellifera	1	37.0902	-95.7129
+USA	CA,Stebbins Cold Cyn, Solano County, replicate 2	Apis mellifera	1	37.0902	-95.7129
+USA	CA,Stebbins Cold Cyn, Solano County, replicate 3	Apis mellifera	1	37.0902	-95.7129
+USA	CA,Stebbins Cold Cyn, Solano County, replicate 4	Apis mellifera	1	37.0902	-95.7129
+USA	CA,Stebbins Cold Cyn, Solano County, replicate 5	Apis mellifera	1	37.0902	-95.7129
+USA	California	Apis mellifera	100	36.7783	-119.4179
+USA	KY	Apis mellifera	104	37.8393	-84.27
+USA	Louisiana	Apis mellifera	96	31.2448	-92.145
+USA	Unknown	Apis mellifera	451	37.0902	-95.7129
+USA	Urbana, Illinois	Apis mellifera	391	40.1105	-88.2073
+USA	West Lafayette, IN	Apis mellifera	116	40.4259	-86.9081
+United Kingdom	England	Apis mellifera mellifera	3	55.3781	-3.436
+United Kingdom	England, Birmingham	Apis mellifera	2	55.3781	-3.436
+United Kingdom	England, Blackburn	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Bradford	Apis mellifera	2	55.3781	-3.436
+United Kingdom	England, Bridgewater somerset	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Canterbury	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Colchester	Apis mellifera	2	55.3781	-3.436
+United Kingdom	England, Cotswolds	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Darlington	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Derby	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Doncaster	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Guilford	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Henley on Thames	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Hereford	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Horsham	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Isle of Wight	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Keswick	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Leeds	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Liskeard	Apis mellifera	2	55.3781	-3.436
+United Kingdom	England, Lizard Penninsular	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Luton	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Newcastle upon Tyne	Apis mellifera	2	55.3781	-3.436
+United Kingdom	England, Newlyn	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, North of Lincon	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Northumberland	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Norwich	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Nottingham	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Oxford	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Plymouth	Apis mellifera	2	55.3781	-3.436
+United Kingdom	England, Rame Penninsular	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Reading	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Sheffield	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Shefield	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Sherborne	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Shropshire hills	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Tamar Valley	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Taunton	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Treluswell	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, Yeovil	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, York	Apis mellifera	1	55.3781	-3.436
+United Kingdom	England, stratford-upon-avon	Apis mellifera	1	55.3781	-3.436
+United Kingdom	Northern Ireland, Blefast	Apis mellifera	2	55.3781	-3.436
+United Kingdom	Scotland	Apis mellifera	28	55.3781	-3.436
+United Kingdom	Scotland, Aberdeen	Apis mellifera	1	55.3781	-3.436
+United Kingdom	Scotland, Alladale	Apis mellifera	1	55.3781	-3.436
+United Kingdom	Scotland, Dundee	Apis mellifera	1	55.3781	-3.436
+United Kingdom	Scotland, Edinburgh	Apis mellifera	1	55.3781	-3.436
+United Kingdom	Scotland, Inverness	Apis mellifera	1	55.3781	-3.436
+United Kingdom	Scotland, Island of Colonsay	Apis mellifera	1	55.3781	-3.436
+United Kingdom	Scotland, boarders	Apis mellifera	2	55.3781	-3.436
+United Kingdom	Wales, Abagaveny	Apis mellifera	1	55.3781	-3.436
+United Kingdom	Wales, Snodownia	Apis mellifera	1	55.3781	-3.436
+United Kingdom	Wales, north central wales	Apis mellifera	1	55.3781	-3.436

@@ -303,3 +303,32 @@ def get_phylogeny_data():
         "metadata": metadata
     }
 
+
+@router.get("/wgs-world-data")
+def get_wgs_world_data():
+    """WGS 세계지도 시각화를 위한 정제된 TSV 데이터 조회"""
+    filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "wgs_world_data.tsv")
+    if not os.path.exists(filepath):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="WGS 세계지도 데이터가 존재하지 않습니다."
+        )
+    try:
+        import pandas as pd
+        df = pd.read_csv(filepath, sep="\t")
+        df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
+        data = df.to_dict(orient="records")
+        return {
+            "status": "success",
+            "data": data
+        }
+    except Exception as e:
+        import traceback
+        error_detail = f"WGS 데이터 직렬화 분석 중 내부 오류 발생: {str(e)}\n{traceback.format_exc()}"
+        print(error_detail)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=error_detail
+        )
+
+
