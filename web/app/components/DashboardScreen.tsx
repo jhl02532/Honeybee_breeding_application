@@ -94,8 +94,9 @@ export default function DashboardScreen({
   const fetchDashboard = useCallback(async (farmerId?: string) => {
     if (user.role === "guest") return; // Guest has no data
     try {
+      const isPowerUser = user.role === "admin" || user.role === "researcher";
       const targetId = farmerId !== undefined ? farmerId : selectedFarmerId;
-      const query = targetId ? `?owner_id=${targetId}` : "";
+      const query = isPowerUser ? (targetId ? `?owner_id=${targetId}` : "") : (targetId ? `?owner_id=${targetId}` : "");
       const [statsRes, apiRes] = await Promise.all([
         authFetch(`/api/v1/stats/dashboard${query}`),
         authFetch(`/api/v1/apiaries${query}`),

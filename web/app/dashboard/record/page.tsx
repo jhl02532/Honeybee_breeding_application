@@ -9,29 +9,15 @@ function RecordFormContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const querySampleId = searchParams.get("sample_id") || "";
-  const queryColonyId = searchParams.get("colony_id") || "";
+  const [mounted, setMounted] = useState(false);
+  const [querySampleId, setQuerySampleId] = useState("");
+  const [queryColonyId, setQueryColonyId] = useState("");
 
-  // Null Guard for sample_id parameter to prevent rendering or crash on missing/empty query
-  if (!querySampleId) {
-    return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-slate-50 p-4">
-        <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-md text-center">
-          <span className="text-4xl">⚠️</span>
-          <h2 className="text-xl font-bold text-slate-900 mt-4">잘못된 접근입니다</h2>
-          <p className="text-sm text-slate-500 mt-2">
-            지정된 시료 ID(Sample ID)가 없거나 비어 있습니다. 유전자원 수집 현황 관제 지도 또는 목록에서 시료를 선택하고 진입해 주세요.
-          </p>
-          <button
-            onClick={() => router.push("/")}
-            className="w-full mt-6 py-3 px-6 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-sm font-bold transition shadow-md shadow-amber-500/10 cursor-pointer"
-          >
-            🏠 홈 화면으로 돌아가기
-          </button>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    setMounted(true);
+    setQuerySampleId(searchParams.get("sample_id") || "");
+    setQueryColonyId(searchParams.get("colony_id") || "");
+  }, [searchParams]);
 
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -41,14 +27,14 @@ function RecordFormContent() {
 
   // Form State
   const [form, setForm] = useState({
-    sample_id: querySampleId,
+    sample_id: "",
     species: "Apis mellifera",
     source_type: "프로젝트 자체 생산",
     address: "",
     latitude: "",
     longitude: "",
     date: new Date().toISOString().split("T")[0],
-    colony_id: queryColonyId,
+    colony_id: "",
     // Sliders
     honey_production: "50",
     vsh_rate: "50",
@@ -60,8 +46,19 @@ function RecordFormContent() {
     notes: ""
   });
 
+  // Hydrate form.sample_id and form.colony_id when query params are resolved
+  useEffect(() => {
+    if (querySampleId) {
+      setForm(f => ({ ...f, sample_id: querySampleId }));
+    }
+    if (queryColonyId) {
+      setForm(f => ({ ...f, colony_id: queryColonyId }));
+    }
+  }, [querySampleId, queryColonyId]);
+
   // Load User and Apiaries
   useEffect(() => {
+    if (!mounted) return;
     const stored = getStoredUser();
     if (!stored) {
       // Not logged in -> redirect to landing page
@@ -103,38 +100,58 @@ function RecordFormContent() {
     };
 
     loadData();
-  }, [queryColonyId, querySampleId]);
+  }, [mounted, queryColonyId, querySampleId]);
 
   // Load sample metadata if sample_id is provided from query params
   useEffect(() => {
-    if (querySampleId) {
-      const fetchSampleMeta = async () => {
-        try {
-          const res = await authFetch("/api/v1/researcher/sampling-status");
-          if (res.ok) {
-            const result = await res.json();
-            const rows = result.data || [];
-            const matchingRow = rows.find((r: any) => 
-              String(r["시료 ID"] || r.sample_id || "").toUpperCase() === querySampleId.toUpperCase()
-            );
-            if (matchingRow) {
-              setForm(f => ({
-                ...f,
-                species: matchingRow.Species || matchingRow["종"] || "Apis mellifera",
-                source_type: matchingRow["수집구분"] || "프로젝트 자체 생산",
-                address: matchingRow["주소 (상세)"] || matchingRow.address || "",
-                latitude: String(matchingRow.lat || ""),
-                longitude: String(matchingRow.lng || "")
-              }));
-            }
+    if (!mounted || !querySampleId) return;
+    const fetchSampleMeta = async () => {
+      try {
+        const res = await authFetch("/api/v1/researcher/sampling-status");
+        if (res.ok) {
+          const result = await res.json();
+          const rows = result.data || [];
+          const matchingRow = rows.find((r: any) => 
+            String(r["시료 ID"] || r.sample_id || "").toUpperCase() === querySampleId.toUpperCase()
+          );
+          if (matchingRow) {
+            setForm(f => ({
+              ...f,
+              species: matchingRow.Species || matchingRow["종"] || "Apis mellifera",
+              source_type: matchingRow["수집구분"] || "프로젝트 자체 생산",
+              address: matchingRow["주소 (상세)"] || matchingRow.address || "",
+              latitude: String(matchingRow.lat || ""),
+              longitude: String(matchingRow.lng || "")
+            }));
           }
-        } catch (err) {
-          console.error("Failed to load sample meta details", err);
         }
-      };
-      fetchSampleMeta();
-    }
-  }, [querySampleId]);
+      } catch (err) {
+        console.error("Failed to load sample meta details", err);
+      }
+    };
+    fetchSampleMeta();
+  }, [mounted, querySampleId]);
+
+  // Null Guard for sample_id parameter to prevent rendering or crash on missing/empty query
+  if (mounted && !querySampleId) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen bg-slate-50 p-4">
+        <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-md text-center">
+          <span className="text-4xl">⚠️</span>
+          <h2 className="text-xl font-bold text-slate-900 mt-4">잘못된 접근입니다</h2>
+          <p className="text-sm text-slate-500 mt-2">
+            지정된 시료 ID(Sample ID)가 없거나 비어 있습니다. 유전자원 수집 현황 관제 지도 또는 목록에서 시료를 선택하고 진입해 주세요.
+          </p>
+          <button
+            onClick={() => router.push("/")}
+            className="w-full mt-6 py-3 px-6 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-sm font-bold transition shadow-md shadow-amber-500/10 cursor-pointer"
+          >
+            🏠 홈 화면으로 돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const allColonies = apiaries.flatMap((a) => a.colonies);
 

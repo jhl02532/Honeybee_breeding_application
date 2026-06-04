@@ -20,6 +20,8 @@ def read_trait_records(
 ):
     if current_user.role == "farmer":
         owner_id = current_user.id
+    elif current_user.role in ["admin", "researcher"]:
+        owner_id = None
     return crud.get_trait_records(db, skip=skip, limit=limit, owner_id=owner_id)
 
 

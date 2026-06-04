@@ -19,4 +19,6 @@ def read_dashboard_statistics(
 ):
     if current_user.role == "farmer":
         owner_id = current_user.id
+    elif current_user.role in ["admin", "researcher"]:
+        owner_id = None
     return crud.get_dashboard_statistics(db, owner_id=owner_id)

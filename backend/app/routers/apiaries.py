@@ -21,6 +21,8 @@ def read_apiaries(
 ):
     if current_user.role == "farmer":
         owner_id = current_user.id
+    elif current_user.role in ["admin", "researcher"]:
+        owner_id = None
     return crud.get_apiaries(db, skip=skip, limit=limit, owner_id=owner_id)
 
 
