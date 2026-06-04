@@ -14,10 +14,13 @@ router = APIRouter(
 def read_trait_records(
     skip: int = 0,
     limit: int = 100,
+    owner_id: Optional[int] = None,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    return crud.get_trait_records(db, skip=skip, limit=limit, owner_id=current_user.id)
+    if current_user.role == "farmer":
+        owner_id = current_user.id
+    return crud.get_trait_records(db, skip=skip, limit=limit, owner_id=owner_id)
 
 
 @router.get("/api/v1/colonies/{colony_id}/traits", response_model=List[schemas.TraitRecord])
@@ -30,10 +33,11 @@ def read_records_by_colony(
     if not colony:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Colony not found")
     
-    # Secure ownership verification
-    apiary = crud.get_apiary(db, apiary_id=colony.apiary_id, owner_id=current_user.id)
+    apiary = crud.get_apiary(db, apiary_id=colony.apiary_id, owner_id=None)
     if not apiary:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Colony not found or not owned by user")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Apiary not found")
+    if current_user.role == "farmer" and apiary.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="해당 봉군의 형질 기록을 조회할 권한이 없습니다.")
         
     return crud.get_trait_records_by_colony(db, colony_id=colony_id)
 
@@ -48,10 +52,11 @@ def create_trait_record(
     if not colony:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Colony not found")
         
-    # Secure ownership verification
-    apiary = crud.get_apiary(db, apiary_id=colony.apiary_id, owner_id=current_user.id)
+    apiary = crud.get_apiary(db, apiary_id=colony.apiary_id, owner_id=None)
     if not apiary:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Colony not found or not owned by user")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Apiary not found")
+    if current_user.role == "farmer" and apiary.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="해당 봉군에 형질 기록을 생성할 권한이 없습니다.")
         
     return crud.create_trait_record(db=db, record=record)
 
@@ -62,7 +67,6 @@ def delete_trait_record(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    # Secure ownership verification
     record = db.query(models.TraitRecord).filter(models.TraitRecord.id == record_id).first()
     if not record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Record not found")
@@ -71,9 +75,11 @@ def delete_trait_record(
     if not colony:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Colony not found")
         
-    apiary = crud.get_apiary(db, apiary_id=colony.apiary_id, owner_id=current_user.id)
+    apiary = crud.get_apiary(db, apiary_id=colony.apiary_id, owner_id=None)
     if not apiary:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Record not found or not owned by user")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Apiary not found")
+    if current_user.role == "farmer" and apiary.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="해당 형질 기록을 삭제할 권한이 없습니다.")
         
     success = crud.delete_trait_record(db, record_id=record_id)
     if not success:

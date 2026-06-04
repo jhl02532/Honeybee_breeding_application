@@ -1,12 +1,18 @@
+from enum import Enum
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
 # --- Authentication Schemas ---
+class UserRole(str, Enum):
+    FARMER = "farmer"
+    RESEARCHER = "researcher"
+    ADMIN = "admin"
+
 class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=100)
     password: str = Field(..., min_length=4, max_length=100)
     farm_name: Optional[str] = None
-    role: Optional[str] = "farmer" # farmer, researcher, admin
+    role: UserRole
     initial_colony_count: Optional[int] = Field(default=0, ge=0, le=100)
     queen_types: Optional[List[str]] = []
 
@@ -18,7 +24,7 @@ class UserOut(BaseModel):
     id: int
     username: str
     farm_name: Optional[str] = None
-    role: str = "farmer"
+    role: UserRole
 
     class Config:
         from_attributes = True
@@ -86,7 +92,7 @@ class ApiaryBase(BaseModel):
     longitude: Optional[float] = None
 
 class ApiaryCreate(ApiaryBase):
-    pass
+    owner_id: Optional[int] = None
 
 class Apiary(ApiaryBase):
     id: int

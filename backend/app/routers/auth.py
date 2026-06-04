@@ -14,7 +14,7 @@ router = APIRouter(
 @router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     """회원 가입 - 유저 생성 후 JWT 토큰 발급"""
-    if user.role == "admin":
+    if user.role == schemas.UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="관리자 역할로는 가입할 수 없습니다."

@@ -44,6 +44,10 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
   const [selectedApiary, setSelectedApiary] = useState<Apiary | null>(null);
   const [selectedColony, setSelectedColony] = useState<Colony | null>(null);
 
+  // Researcher / Admin Farmer Selection State
+  const [selectedFarmerId, setSelectedFarmerId] = useState<string>("");
+  const [farmers, setFarmers] = useState<any[]>([]);
+
   // Modal states
   const [showApiaryModal, setShowApiaryModal] = useState(false);
   const [showColonyModal, setShowColonyModal] = useState(false);
@@ -68,38 +72,73 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const fetchDashboard = useCallback(async () => {
+  const fetchDashboard = useCallback(async (farmerId?: string) => {
     try {
+      const targetId = farmerId !== undefined ? farmerId : selectedFarmerId;
+      const query = targetId ? `?owner_id=${targetId}` : "";
       const [statsRes, apiRes] = await Promise.all([
-        authFetch("/api/v1/stats/dashboard"),
-        authFetch("/api/v1/apiaries"),
+        authFetch(`/api/v1/stats/dashboard${query}`),
+        authFetch(`/api/v1/apiaries${query}`),
       ]);
       if (statsRes.ok) setStats(await statsRes.json());
       if (apiRes.ok) setApiaries(await apiRes.json());
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     }
-  }, []);
+  }, [selectedFarmerId]);
 
   useEffect(() => {
     fetchDashboard();
   }, [fetchDashboard]);
+
+  // Load farmers registry if current user is researcher or admin
+  useEffect(() => {
+    if (user.role === "researcher" || user.role === "admin") {
+      const fetchFarmers = async () => {
+        try {
+          const res = await authFetch("/api/v1/researcher/farmers");
+          if (res.ok) {
+            setFarmers(await res.json());
+          }
+        } catch (err) {
+          console.error("Fetch farmers error:", err);
+        }
+      };
+      fetchFarmers();
+    }
+  }, [user.role]);
+
+  // Cascading reset handler when changing farmers
+  const handleFarmerChange = (farmerId: string) => {
+    setSelectedApiary(null);
+    setSelectedColony(null);
+    setSelectedFarmerId(farmerId);
+    fetchDashboard(farmerId);
+  };
 
   const navItems: { key: DashView; label: string; icon: string }[] = [
     { key: "overview", label: "대시보드", icon: "📊" },
     { key: "apiaries", label: "양봉장 관리", icon: "🏡" },
     { key: "colonies", label: "봉군 관리", icon: "🐝" },
     { key: "records", label: "형질 기록", icon: "📋" },
-    { key: "browser", label: "게놈 브라우저", icon: "🧬" },
-    { key: "synteny", label: "비교 유전체 분석", icon: "🔀" },
-    { key: "chemo", label: "화학수용체 탐색기", icon: "👃" },
-    { key: "marker", label: "분자 마커 설계", icon: "🏷️" },
-    { key: "farmer", label: "형질 예측기", icon: "📈" },
-    { key: "matchmaker", label: "가상 교배 시뮬레이터", icon: "👑" },
   ];
 
   if (user.role === "researcher" || user.role === "admin") {
-    navItems.push({ key: "researcher", label: "연구원 분석", icon: "🔬" });
+    navItems.push(
+      { key: "browser", label: "게놈 브라우저", icon: "🧬" },
+      { key: "synteny", label: "비교 유전체 분석", icon: "🔀" },
+      { key: "chemo", label: "화학수용체 탐색기", icon: "👃" },
+      { key: "marker", label: "분자 마커 설계", icon: "🏷️" }
+    );
+  }
+
+  navItems.push({ key: "farmer", label: "형질 예측기", icon: "📈" });
+
+  if (user.role === "researcher" || user.role === "admin") {
+    navItems.push(
+      { key: "matchmaker", label: "가상 교배 시뮬레이터", icon: "👑" },
+      { key: "researcher", label: "연구원 분석", icon: "🔬" }
+    );
   }
 
   if (user.role === "admin") {
@@ -336,6 +375,10 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
               }}
               showModal={showApiaryModal}
               setShowModal={setShowApiaryModal}
+              farmers={farmers}
+              selectedFarmerId={selectedFarmerId}
+              onFarmerChange={handleFarmerChange}
+              userRole={user.role}
             />
           )}
           {view === "colonies" && (
@@ -360,6 +403,10 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
               onRefresh={fetchDashboard}
               showModal={showRecordModal}
               setShowModal={setShowRecordModal}
+              farmers={farmers}
+              selectedFarmerId={selectedFarmerId}
+              onFarmerChange={handleFarmerChange}
+              userRole={user.role}
             />
           )}
           {view === "browser" && (
