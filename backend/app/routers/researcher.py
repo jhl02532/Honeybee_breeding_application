@@ -211,50 +211,102 @@ def export_global_csv(
 
 
 @router.get("/sampling-status")
-def get_sampling_status():
-    """가입자 전체에 열린 유전자원 수집 현황 (TSV 기반 초고속 경량화 파싱)"""
-    sampling_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "sampling")
+def get_sampling_status(
+    request: Request,
+    mode: Optional[str] = None,  # domestic 또는 global
+    species: Optional[str] = None,
+    source_type: Optional[str] = None, # 프로젝트생산 또는 공공데이터
+    region: Optional[str] = None,      # 국내 권역 용
+    country: Optional[str] = None      # 해외 국가 용
+):
+    """가입자 전체에 열린 유전자원 수집 현황 (기존 시트 일괄 파싱 & 이원화 필터 API 동시 지원)"""
+    import pandas as pd
     
-    files_map = {
-        "Pore-C_sample": "sampling_pore_c.tsv",
-        "육종 샘플링_Ac": "sampling_ac.tsv",
-        "육종 샘플링 Am": "sampling_am.tsv"
-    }
-    
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DOMESTIC_TSV = os.path.join(BASE_DIR, "..", "data", "sampling", "sampling_pore_c.tsv")
+    GLOBAL_TSV = os.path.join(BASE_DIR, "..", "data", "sampling", "wgs_world_data.tsv")
+
+    # 1. 쿼리 파라미터가 아예 없는 경우: 기존 Next.js 랜딩페이지의 3개 시트 일괄 조회 지원
+    if not request.query_params:
+        sampling_dir = os.path.join(BASE_DIR, "..", "data", "sampling")
+        files_map = {
+            "Pore-C_sample": "sampling_pore_c.tsv",
+            "육종 샘플링_Ac": "sampling_ac.tsv",
+            "육종 샘플링 Am": "sampling_am.tsv"
+        }
+        try:
+            all_sheet_data = {}
+            for sheet_key, filename in files_map.items():
+                filepath = os.path.join(sampling_dir, filename)
+                if os.path.exists(filepath):
+                    df = pd.read_csv(filepath, sep="\t")
+                    # Drop personal data columns to prevent privacy leaks
+                    cols_to_drop = [c for c in ["농가(대표자)", "농가주", "연락처", "주소 (상세)", "주소", "대표자"] if c in df.columns]
+                    if cols_to_drop:
+                        df = df.drop(columns=cols_to_drop)
+                    # FastAPI JSON 크래시 방지: 모든 날짜형(DateTime) 및 결측치(NaN)를 안전하게 문자열화
+                    df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
+                    all_sheet_data[sheet_key] = df.to_dict(orient="records")
+                else:
+                    all_sheet_data[sheet_key] = []
+            return {
+                "status": "success",
+                "metadata": {
+                    "available_sheets": list(files_map.keys()),
+                    "total_sheets": len(files_map)
+                },
+                "data": all_sheet_data
+            }
+        except Exception as e:
+            import traceback
+            error_detail = f"TSV 직렬화 분석 중 내부 오류 발생: {str(e)}\n{traceback.format_exc()}"
+            print(error_detail)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=error_detail
+            )
+
+    # 2. 쿼리 파라미터가 있는 경우: 신규 요구사항인 이원화 필터 및 예외 방어 로직 적용
     try:
-        import pandas as pd
-        all_sheet_data = {}
+        # mode 기본값 설정
+        if not mode:
+            mode = "domestic"
+            
+        target_path = DOMESTIC_TSV if mode == "domestic" else GLOBAL_TSV
         
-        for sheet_key, filename in files_map.items():
-            filepath = os.path.join(sampling_dir, filename)
-            if os.path.exists(filepath):
-                df = pd.read_csv(filepath, sep="\t")
-                # Drop personal data columns to prevent privacy leaks
-                cols_to_drop = [c for c in ["농가(대표자)", "농가주", "연락처", "주소 (상세)", "주소", "대표자"] if c in df.columns]
-                if cols_to_drop:
-                    df = df.drop(columns=cols_to_drop)
-                # 1. FastAPI JSON 크래시 방지: 모든 날짜형(DateTime) 및 결측치(NaN)를 안전하게 문자열화
-                df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
-                all_sheet_data[sheet_key] = df.to_dict(orient="records")
-            else:
-                all_sheet_data[sheet_key] = []
-                
+        if not os.path.exists(target_path):
+            raise FileNotFoundError(f"Missing resource file at {target_path}")
+            
+        with open(target_path, "r", encoding="utf-8") as f:
+            df = pd.read_csv(f, sep="\t") # 탭 구분자 명시로 파싱 에러 원천 차단
+            
+        # Dynamic Query Parameter 가드 처리 (None 유입 시 필터 Bypass)
+        if species and species != "선택 안 함":
+            df = df[df["종"] == species]
+        if source_type and source_type != "선택 안 함":
+            df = df[df["수집구분"] == source_type]
+            
+        if mode == "domestic" and region and region != "전체":
+            df = df[df["권역"] == region]
+        elif mode == "global" and country and country != "전체":
+            df = df[df["국가"] == country]
+            
+        # 데이터 클렌징 후 JSON 직렬화
+        df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
+        result_records = df.to_dict(orient="records")
+        
         return {
             "status": "success",
-            "metadata": {
-                "available_sheets": list(files_map.keys()),
-                "total_sheets": len(files_map)
-            },
-            "data": all_sheet_data
+            "mode": mode,
+            "total_count": len(result_records),
+            "data": result_records
         }
 
     except Exception as e:
-        import traceback
-        error_detail = f"TSV 직렬화 분석 중 내부 오류 발생: {str(e)}\n{traceback.format_exc()}"
-        print(error_detail)
+        # 에러 원인을 프론트엔드 콘솔에 노출하여 디버깅 추적성 확보
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=error_detail
+            detail=f"필터 파이프라인 연산 중 런타임 크래시 발생: {str(e)}"
         )
 
 
