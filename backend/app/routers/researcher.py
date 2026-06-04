@@ -307,7 +307,8 @@ def get_phylogeny_data():
 @router.get("/wgs-world-data")
 def get_wgs_world_data():
     """WGS 세계지도 시각화를 위한 정제된 TSV 데이터 조회"""
-    filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "wgs_world_data.tsv")
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    filepath = os.path.join(BASE_DIR, "..", "data", "sampling", "wgs_world_data.tsv")
     if not os.path.exists(filepath):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -1,8 +1,10 @@
 import pandas as pd
 import os
 
-CSV_PATH = '/Users/jeonghyeonlee/Desktop/Ongoing/2026/2026_육종과제/data/Honeybee_genome_map/data/master_metadata.csv'
-OUTPUT_PATH = '/Users/jeonghyeonlee/Desktop/Ongoing/2026/2026_육종과제/data/Honeybee_genome_map/backend/app/data/wgs_world_data.tsv'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CSV_PATH = os.path.join(BASE_DIR, "..", "..", "..", "data", "master_metadata.csv")
+OUTPUT_PATH = os.path.join(BASE_DIR, "sampling", "wgs_world_data.tsv")
+
 
 # Define standard coordinates lookup table
 COUNTRY_COORDS = {
