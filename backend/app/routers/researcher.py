@@ -1,6 +1,7 @@
 import csv
 import io
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+import os
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
@@ -207,3 +208,103 @@ def export_global_csv(
             "Content-Disposition": f"attachment; filename=MelittaBreed_Researcher_MasterData.csv"
         }
     )
+
+
+@router.get("/sampling-status")
+def get_sampling_status(current_user: models.User = Depends(get_current_user)):
+    """가입자 전체에 열린 유전자원 수집 현황 (안전한 동적 시트 파싱 및 스트링 직렬화 적용)"""
+    EXCEL_PATH = "/Users/jeonghyeonlee/Desktop/Ongoing/2026/2026_육종과제/02_샘플링/샘플링최종.xlsx"
+    fallback_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "샘플링최종.xlsx")
+    
+    selected_path = EXCEL_PATH
+    if not os.path.exists(selected_path):
+        selected_path = fallback_path
+        
+    if not os.path.exists(selected_path):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="샘플링 엑셀 파일을 지정된 경로에서 찾을 수 없습니다."
+        )
+        
+    try:
+        import pandas as pd
+        # 파일 권한 분리 및 에러 방지를 위한 처리
+        with open(selected_path, "rb") as f:
+            xls = pd.ExcelFile(f, engine="openpyxl")
+            all_sheet_data = {}
+            
+            # 하드코딩 대신 파일에 존재하는 모든 시트를 동적으로 안전하게 순회
+            for sheet_name in xls.sheet_names:
+                df = pd.read_excel(xls, sheet_name=sheet_name)
+                
+                # 1. FastAPI JSON 크래시 방지: 모든 날짜형(DateTime) 및 결측치(NaN)를 안전하게 문자열화
+                df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
+                
+                # 2. 공백이나 특수문자가 섞인 시트 이름도 안전하게 딕셔너리에 적재
+                all_sheet_data[sheet_name] = df.to_dict(orient="records")
+                
+        return {
+            "status": "success",
+            "metadata": {
+                "available_sheets": xls.sheet_names,
+                "total_sheets": len(xls.sheet_names)
+            },
+            "data": all_sheet_data
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"엑셀 직렬화 분석 중 내부 오류 발생: {str(e)}"
+        )
+
+
+
+@router.get("/phylogeny-data")
+def get_phylogeny_data(current_user: models.User = Depends(get_current_user)):
+    """mtDNA 계통수 Newick 파일 및 TSV 메타데이터를 상대경로로 읽어 일괄 조회"""
+    mt_dna_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "mtDNA")
+    
+    trees = {}
+    tree_files = {
+        "korean_with_mellifera": "korean_with_mellifera_tree_rooted.treefile",
+        "korean_only": "korean_only_tree_rooted.treefile",
+        "balanced": "balanced_mtDNA_tree.treefile"
+    }
+    
+    for key, fname in tree_files.items():
+        path = os.path.join(mt_dna_dir, fname)
+        try:
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    trees[key] = f.read().strip()
+            else:
+                # Try unrooted fallback if rooted file is missing
+                unrooted_fname = fname.replace("_rooted", "")
+                unrooted_path = os.path.join(mt_dna_dir, unrooted_fname)
+                if os.path.exists(unrooted_path):
+                    with open(unrooted_path, "r", encoding="utf-8") as f:
+                        trees[key] = f.read().strip()
+                else:
+                    trees[key] = ""
+        except Exception as e:
+            print(f"Error reading tree file {fname}: {str(e)}")
+            trees[key] = ""
+            
+    # Read metadata TSV
+    metadata = []
+    tsv_path = os.path.join(mt_dna_dir, "mtDNA_metadata.tsv")
+    try:
+        if os.path.exists(tsv_path):
+            with open(tsv_path, "r", encoding="utf-8") as f:
+                reader = csv.DictReader(f, delimiter="\t")
+                for row in reader:
+                    metadata.append(dict(row))
+    except Exception as e:
+        print(f"Error reading TSV metadata: {str(e)}")
+        
+    return {
+        "trees": trees,
+        "metadata": metadata
+    }
+

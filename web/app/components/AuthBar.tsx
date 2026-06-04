@@ -7,12 +7,8 @@ interface AuthBarProps {
 }
 
 export default function AuthBar({ onAuth }: AuthBarProps) {
-  const [mode, setMode] = useState<"login" | "register">("login");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [farmName, setFarmName] = useState("");
-  const [role, setRole] = useState("farmer"); // farmer, researcher
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -20,30 +16,10 @@ export default function AuthBar({ onAuth }: AuthBarProps) {
     e.preventDefault();
     setError("");
 
-    if (mode === "register") {
-      if (password !== confirmPassword) {
-        setError("비밀번호가 일치하지 않습니다.");
-        return;
-      }
-    }
-
     setBusy(true);
     try {
-      const path = mode === "login" ? "/api/v1/auth/login/json" : "/api/v1/auth/register";
-      const body: any = { username, password };
-
-      if (mode === "register") {
-        body.role = role;
-        body.farm_name = farmName || (username + " 양봉농가");
-        // default settings for seeded colonies to prevent validation failure on backend
-        if (role === "farmer") {
-          body.initial_colony_count = 5;
-          body.queen_types = ["이탈리안", "이탈리안", "이탈리안", "이탈리안", "이탈리안"];
-        } else {
-          body.initial_colony_count = 0;
-          body.queen_types = [];
-        }
-      }
+      const path = "/api/v1/auth/login/json";
+      const body = { username, password };
 
       const res = await fetch(`${BASE}${path}`, {
         method: "POST",
@@ -114,49 +90,6 @@ export default function AuthBar({ onAuth }: AuthBarProps) {
           className="auth-bar-input"
         />
 
-        {/* Register-only Fields */}
-        {mode === "register" && (
-          <>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="비밀번호 확인"
-              required
-              style={{
-                padding: "6px 10px",
-                fontSize: "12px",
-                borderRadius: "6px",
-                border: "1px solid var(--border-color)",
-                background: "var(--bg-surface)",
-                color: "var(--text-main)",
-                outline: "none",
-                width: "100px",
-              }}
-              className="auth-bar-input"
-            />
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              style={{
-                padding: "6px 10px",
-                fontSize: "12px",
-                borderRadius: "6px",
-                border: "1px solid var(--border-color)",
-                background: "var(--bg-surface)",
-                color: "var(--text-main)",
-                outline: "none",
-                cursor: "pointer",
-                height: "28px",
-              }}
-              className="auth-bar-select"
-            >
-              <option value="farmer">농가</option>
-              <option value="researcher">연구원</option>
-            </select>
-          </>
-        )}
-
         {/* Submit Button */}
         <button
           type="submit"
@@ -177,15 +110,14 @@ export default function AuthBar({ onAuth }: AuthBarProps) {
           }}
           className="auth-bar-btn"
         >
-          {busy ? "..." : mode === "login" ? "로그인" : "가입"}
+          {busy ? "..." : "로그인"}
         </button>
 
         {/* Mode Toggle Link */}
         <button
           type="button"
           onClick={() => {
-            setMode(mode === "login" ? "register" : "login");
-            setError("");
+            window.location.href = "/register";
           }}
           style={{
             background: "none",
@@ -200,7 +132,7 @@ export default function AuthBar({ onAuth }: AuthBarProps) {
           }}
           className="auth-bar-toggle-link"
         >
-          {mode === "login" ? "회원가입" : "로그인으로"}
+          회원가입
         </button>
       </form>
 

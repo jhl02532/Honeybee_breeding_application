@@ -292,100 +292,161 @@ export default function Page() {
       </header>
 
       {/* Section 1: Hero Area */}
-      <div ref={homeRef} style={styles.landingHero} className="mobile-hero-padding">
-        <h1 style={styles.heroTitle} className="mobile-hero-title">
-          이상기온 대응 꿀벌 육종 유전자원 플랫폼
-        </h1>
-        <p style={styles.heroSubtitle} className="mobile-hero-subtitle">
-          기후변화와 월동 폐사 위기를 극복하기 위해 서양벌(Apis mellifera) 및 토종벌(Apis cerana)의 유전체-표현형 데이터를 통합한 AI 기반 디지털 정밀 육종 솔루션
-        </p>
+      <div ref={homeRef} style={{ ...styles.landingHero, maxWidth: "1200px", padding: "80px 20px 60px 20px" }} className="mobile-hero-padding">
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: "48px",
+          alignItems: "center",
+          textAlign: "left"
+        }}>
+          {/* Left Column: Text Content */}
+          <div>
+            <h1 style={{ ...styles.heroTitle, textAlign: "left", fontSize: "38px", lineHeight: "1.25", marginBottom: "16px" }} className="mobile-hero-title">
+              이상기온 대응 꿀벌 육종 유전자원 플랫폼
+            </h1>
+            <p style={{ ...styles.heroSubtitle, textAlign: "left", margin: "0 0 28px 0", fontSize: "15px", lineHeight: "1.6" }} className="mobile-hero-subtitle">
+              기후변화와 월동 폐사 위기를 극복하기 위해 서양벌(Apis mellifera) 및 토종벌(Apis cerana)의 유전체-표현형 데이터를 통합한 AI 기반 디지털 정밀 육종 솔루션
+            </p>
+            {/* Dynamic Launcher vs Prompt block */}
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+              {!user ? (
+                /* Unauthenticated -> prompt login with pulse helper text */
+                <div 
+                  style={{ 
+                    padding: "14px 24px", 
+                    borderRadius: "10px", 
+                    background: "var(--bg-surface)", 
+                    border: "1px solid var(--border-color)",
+                    boxShadow: "var(--shadow-sm)"
+                  }}
+                  className="pulse-glow-tip"
+                >
+                  <span style={{ fontSize: "13px", fontWeight: "bold", color: "var(--color-gold)" }}>
+                    💡 우상단에서 로그인 후 플랫폼 서비스를 이용하실 수 있습니다. ↗
+                  </span>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowDashboard(true)}
+                  style={styles.btnGold}
+                  className="btn-hover-effect"
+                >
+                  플랫폼 대시보드 바로가기 ➔
+                </button>
+              )}
+            </div>
+          </div>
 
-        {/* Dynamic Launcher vs Prompt block */}
-        <div style={{ marginTop: "40px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          {!user ? (
-            /* Unauthenticated -> prompt login with pulse helper text */
+          {/* Right Column: Hero Video Component */}
+          <div style={{
+            position: "relative",
+            borderRadius: "16px",
+            overflow: "hidden",
+            border: "1px solid var(--border-color)",
+            boxShadow: "var(--shadow-lg)",
+            aspectRatio: "16 / 9",
+            background: "#0d1527"
+          }}>
+            <video
+              src="/hero-video.mp4"
+              muted
+              playsInline
+              autoPlay
+              loop
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover"
+              }}
+            />
+            {/* High-tech watermark / label overlay */}
+            <div style={{
+              position: "absolute",
+              bottom: "10px",
+              left: "10px",
+              background: "rgba(11,17,32,0.85)",
+              backdropFilter: "blur(4px)",
+              color: "var(--color-gold)",
+              padding: "4px 8px",
+              borderRadius: "6px",
+              fontSize: "10px",
+              fontWeight: "bold",
+              border: "1px solid rgba(251,191,36,0.25)"
+            }}>
+              📡 MelittaBreed Live Breeding Platform
+            </div>
+          </div>
+        </div>
+
+        {/* Big Launcher Grid (appears below the columns if user is logged in) */}
+        {user && (
+          <div style={{ marginTop: "60px", textAlign: "left" }} className="animate-fade">
+            <h3 style={{ fontSize: "13px", fontWeight: 700, textTransform: "uppercase", color: "var(--color-gold)", letterSpacing: "1px", marginBottom: "16px" }}>
+              🚀 플랫폼 서비스 바로가기 런처
+            </h3>
+            
             <div 
               style={{ 
-                padding: "16px 28px", 
-                borderRadius: "12px", 
-                background: "var(--bg-surface)", 
-                border: "1px solid var(--border-color)",
-                boxShadow: "var(--shadow-sm)"
+                display: "grid", 
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", 
+                gap: "16px" 
               }}
-              className="pulse-glow-tip"
             >
-              <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>
-                💡 우상단에서 로그인 후 플랫폼 서비스를 이용하실 수 있습니다. ↗
-              </span>
+              {/* FARMER Role Launcher Options */}
+              {(user.role === "farmer" || user.role === "admin") && (
+                <>
+                  <div 
+                    onClick={() => handleLaunch("apiaries")}
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid var(--color-gold)", padding: "20px" }}
+                    className="feature-card-hover"
+                  >
+                    <span style={{ fontSize: "28px" }}>🏡</span>
+                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>스마트 양봉장·봉군 관리</h4>
+                    <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>양봉장 위치 등록 및 각 벌통 내부 상태 관제 모듈로 진입</p>
+                  </div>
+
+                  <div 
+                    onClick={() => handleLaunch("records")}
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #f97316", padding: "20px" }}
+                    className="feature-card-hover"
+                  >
+                    <span style={{ fontSize: "28px" }}>📋</span>
+                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>스마트폰 1분 내검 기록기</h4>
+                    <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>야외 작업 시 장갑 터치가 용이한 모바일 표현형 내검 기록 모듈</p>
+                  </div>
+                </>
+              )}
+
+              {/* RESEARCHER / ADMIN Role Launcher Options */}
+              {(user.role === "researcher" || user.role === "admin") && (
+                <>
+                  <div 
+                    onClick={() => handleLaunch("browser")}
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #3b82f6", padding: "20px" }}
+                    className="feature-card-hover"
+                  >
+                    <span style={{ fontSize: "28px" }}>🧬</span>
+                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>K-BEE-ID 디지털 육종 분석</h4>
+                    <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>범유전체 브라우저, 유전체 변이 트랙 탐색 분석 센터로 진입</p>
+                  </div>
+
+                  <div 
+                    onClick={() => handleLaunch("researcher")}
+                    style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #c084fc", padding: "20px" }}
+                    className="feature-card-hover"
+                  >
+                    <span style={{ fontSize: "28px" }}>🔬</span>
+                    <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>연구원 통합 분석 센터</h4>
+                    <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>전국 시딩 농가 스탯 관제 및 현미경 형태 측정 기록 관리</p>
+                  </div>
+                </>
+              )}
             </div>
-          ) : (
-            /* Authenticated -> Show Big Launcher Card Grid */
-            <div style={{ width: "100%", maxWidth: "800px" }} className="animate-fade">
-              <h3 style={{ fontSize: "13px", fontWeight: 700, textTransform: "uppercase", color: "var(--color-gold)", letterSpacing: "1px", marginBottom: "16px" }}>
-                🚀 플랫폼 서비스 바로가기 런처
-              </h3>
-              
-              <div 
-                style={{ 
-                  display: "grid", 
-                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", 
-                  gap: "16px" 
-                }}
-              >
-                {/* FARMER Role Launcher Options */}
-                {(user.role === "farmer" || user.role === "admin") && (
-                  <>
-                    <div 
-                      onClick={() => handleLaunch("apiaries")}
-                      style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid var(--color-gold)", padding: "20px" }}
-                      className="feature-card-hover"
-                    >
-                      <span style={{ fontSize: "28px" }}>🏡</span>
-                      <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>스마트 양봉장·봉군 관리</h4>
-                      <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>양봉장 위치 등록 및 각 벌통 내부 상태 관제 모듈로 진입</p>
-                    </div>
-
-                    <div 
-                      onClick={() => handleLaunch("records")}
-                      style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #f97316", padding: "20px" }}
-                      className="feature-card-hover"
-                    >
-                      <span style={{ fontSize: "28px" }}>📋</span>
-                      <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>스마트폰 1분 내검 기록기</h4>
-                      <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>야외 작업 시 장갑 터치가 용이한 모바일 표현형 내검 기록 모듈</p>
-                    </div>
-                  </>
-                )}
-
-                {/* RESEARCHER / ADMIN Role Launcher Options */}
-                {(user.role === "researcher" || user.role === "admin") && (
-                  <>
-                    <div 
-                      onClick={() => handleLaunch("browser")}
-                      style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #3b82f6", padding: "20px" }}
-                      className="feature-card-hover"
-                    >
-                      <span style={{ fontSize: "28px" }}>🧬</span>
-                      <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>K-BEE-ID 디지털 육종 분석</h4>
-                      <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>범유전체 브라우저, 유전체 변이 트랙 탐색 분석 센터로 진입</p>
-                    </div>
-
-                    <div 
-                      onClick={() => handleLaunch("researcher")}
-                      style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #c084fc", padding: "20px" }}
-                      className="feature-card-hover"
-                    >
-                      <span style={{ fontSize: "28px" }}>🔬</span>
-                      <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>연구원 통합 분석 센터</h4>
-                      <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>전국 시딩 농가 스탯 관제 및 현미경 형태 측정 기록 관리</p>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
 
       {/* Section 2: Background & Necessity Infographic */}
       <div ref={backgroundRef} style={styles.landingSection} className="mobile-section-padding">

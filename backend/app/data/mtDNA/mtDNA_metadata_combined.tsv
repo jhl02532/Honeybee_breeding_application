@@ -1,0 +1,566 @@
+Project_ID	Original_Sequence_ID	Year	Country_abbr	Country_Eng	Region_Kor	Region_Eng	Region_Abbr	Final_Haplogroup	Q0	Q1	Source_Group
+K-1-2014	n	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-10-2014	K10	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-11-2014	K11	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-12-2014	K12	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-13-2014	K13	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-14-2014	K14	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-15-2014	K15	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-16-2014	K16	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-17-2014	K17	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-18-2014	K18	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-19-2014	K19	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-20-2014	K20	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-3-2014	K3	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-31-2014	K31	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-34-2014	K34	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-35-2014	K35	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-36-2014	K36	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-37-2014	K37	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-39-2014	K39	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-6-2014	K6	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-8-2014	K8	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+K-9-2014	K9	2014.0	KR	Rep. Korea	의성/영양/인제/연천		K1~K39	K	0.99999	1e-05	Korean_Project
+KBH-1-2018	KBH-1	2018.0	KR	Rep. Korea	걍상북도 봉화	Gyeongsangnam-do	KBH	K	0.99999	1e-05	Korean_Project
+KBH-10-2018	KBH-10	2018.0	KR	Rep. Korea	걍상북도 봉화	Gyeongsangbuk-do	KBH	K	0.99999	1e-05	Korean_Project
+KBH-2-2018	KBH-2	2018.0	KR	Rep. Korea	걍상북도 봉화	Gyeongsangbuk-do	KBH	K	0.996665	0.003335	Korean_Project
+KBH-3-2018	KBH-3	2018.0	KR	Rep. Korea	걍상북도 봉화	Gyeongsangbuk-do	KBH	K	0.996954	0.003046	Korean_Project
+KBH-4-2018	KBH-4	2018.0	KR	Rep. Korea	걍상북도 봉화	Gyeongsangbuk-do	KBH	K	0.99999	1e-05	Korean_Project
+KBH-5-2018	KBH-5	2018.0	KR	Rep. Korea	걍상북도 봉화	Gyeongsangbuk-do	KBH	K	0.99999	1e-05	Korean_Project
+KBH-6-2018	KBH-6	2018.0	KR	Rep. Korea	걍상북도 봉화	Gyeongsangbuk-do	KBH	K	0.99999	1e-05	Korean_Project
+KBH-7-2018	KBH-7	2018.0	KR	Rep. Korea	걍상북도 봉화	Gyeongsangbuk-do	KBH	K	0.99999	1e-05	Korean_Project
+KBH-8-2018	KBH-8	2018.0	KR	Rep. Korea	걍상북도 봉화	Gyeongsangbuk-do	KBH	K	0.99999	1e-05	Korean_Project
+KBH-9-2018	KBH-9	2018.0	KR	Rep. Korea	걍상북도 봉화	Gyeongsangbuk-do	KBH	K	0.99999	1e-05	Korean_Project
+KBS-1-2018	KBS-1	2018.0	KR	Rep. Korea	부산	Busan	KBS	K	0.99999	1e-05	Korean_Project
+KBS-2-2018	KBS-2	2018.0	KR	Rep. Korea	부산	Busan	KBS	K	0.99999	1e-05	Korean_Project
+KBS-3-2018	KBS-3	2018.0	KR	Rep. Korea	부산	Busan	KBS	K	0.989222	0.010778	Korean_Project
+KBS-4-2018	KBS-4	2018.0	KR	Rep. Korea	부산	Busan	KBS	K	0.99999	1e-05	Korean_Project
+KBS-5-2018	KBS-5	2018.0	KR	Rep. Korea	부산	Busan	KBS	K	0.668307	0.331693	Korean_Project
+KCJ-1-2018	KCJ-1	2018.0	KR	Rep. Korea	충청북도 충주	Chungcheongbuk-do	KCJ	C	1e-05	0.99999	Korean_Project
+KCJ-2-2018	KCJ-2	2018.0	KR	Rep. Korea	충청북도 충주	Chungcheongbuk-do	KCJ	C	1e-05	0.99999	Korean_Project
+KCJ-3-2018	KCJ-3	2018.0	KR	Rep. Korea	충청북도 충주	Chungcheongbuk-do	KCJ	C	0.16956	0.83044	Korean_Project
+KCJ-4-2018	KCJ-4	2018.0	KR	Rep. Korea	충청북도 충주	Chungcheongbuk-do	KCJ	C	0.223713	0.776287	Korean_Project
+KCY-1-2018	KCY-1	2018.0	KR	Rep. Korea	충청남도 청양	Chungcheongnam-do	KCY	K	0.99999	1e-05	Korean_Project
+KCY-2-2018	KCY-2	2018.0	KR	Rep. Korea	충청남도 청양	Chungcheongnam-do	KCY	K	0.99999	1e-05	Korean_Project
+KCY-3-2018	KCY-3	2018.0	KR	Rep. Korea	충청남도 청양	Chungcheongnam-do	KCY	K	0.99999	1e-05	Korean_Project
+KCY-4-2018	KCY-4	2018.0	KR	Rep. Korea	충청남도 청양	Chungcheongnam-do	KCY	K	0.99999	1e-05	Korean_Project
+KGN-1-2018	KGN-1	2018.0	KR	Rep. Korea	강원도 강릉	Gangwon-do	KGN	K	0.99999	1e-05	Korean_Project
+KGN-2-2018	KGN-2	2018.0	KR	Rep. Korea	강원도 강릉	Gangwon-do	KGN	K	0.99999	1e-05	Korean_Project
+KGN-3-2018	KGN-3	2018.0	KR	Rep. Korea	강원도 강릉	Gangwon-do	KGN	K	0.99999	1e-05	Korean_Project
+KGN-4-2018	KGN-4	2018.0	KR	Rep. Korea	강원도 강릉	Gangwon-do	KGN	K	0.99999	1e-05	Korean_Project
+KH-1-2018	KH-1	2019.0	KR	Rep. Korea	한라벌	Halla	KH	C	1e-05	0.99999	Korean_Project
+KHC-1-2022	40	2022.0	KR	Rep. Korea	강원도 홍천군	Gangwon-do	KHC1	C	0.128779	0.871221	Korean_Project
+KHC1-1-2018	KHC1-1	2018.0	KR	Rep. Korea	강원도 홍천	Gangwon-do	KHC1	K	0.99999	1e-05	Korean_Project
+KHC1-1-2022	KHC1-1	2018.0	KR	Rep. Korea	강원도 홍천	Gangwon-do	KHC1	K	0.688946	0.311054	Korean_Project
+KHC1-2-2018	KHC1-2	2018.0	KR	Rep. Korea	강원도 홍천	Gangwon-do	KHC1	K	0.99999	1e-05	Korean_Project
+KHC2-1-2018	KHC2-1	2018.0	KR	Rep. Korea	합천	Hapcheon	KHC2	K	0.99999	1e-05	Korean_Project
+KHC2-2-2018	KHC2-2	2018.0	KR	Rep. Korea	합천	Hapcheon	KHC2	K	0.99999	1e-05	Korean_Project
+KHD-1-2018	KHD-1	2018.0	KR	Rep. Korea	경상남도 하동	Gyeongsangnam-do	KHD	K	0.99999	1e-05	Korean_Project
+KHD-2-2018	KHD-2	2018.0	KR	Rep. Korea	경상남도 하동	Gyeongsangnam-do	KHD	K	0.99999	1e-05	Korean_Project
+KHD-3-2018	KHD-3	2018.0	KR	Rep. Korea	경상남도 하동	Gyeongsangnam-do	KHD	K	0.99999	1e-05	Korean_Project
+KHD-4-2018	KHD-4	2018.0	KR	Rep. Korea	경상남도 하동	Gyeongsangnam-do	KHD	K	0.99999	1e-05	Korean_Project
+KHN-1-2022	28	2022.0	KR	Rep. Korea	전라남도 해남군	Jeollanam-do	KHN2	C	0.588128	0.411872	Korean_Project
+KHN1-2022	33	2022.0	KR	Rep. Korea	경기도 하남시 남한산성	Geonggi-do	KHN1	K	0.807582	0.192418	Korean_Project
+KHP-1-2022	29	2022.0	KR	Rep. Korea	전라남도 함평군	Jeollanam-do	KHP	C	0.255085	0.744915	Korean_Project
+KHR-1-2018	KHR-1	2018.0	KR	Rep. Korea	경상북도 상주 회룡	Gyeongsangbuk-do	KHR	K	0.99999	1e-05	Korean_Project
+KHR-2-2018	KHR-2	2018.0	KR	Rep. Korea	경상북도 상주 회룡	Gyeongsangbuk-do	KHR	K	0.99999	1e-05	Korean_Project
+KHR-3-2018	KHR-3	2018.0	KR	Rep. Korea	경상북도 상주 회룡	Gyeongsangbuk-do	KHR	K	0.99999	1e-05	Korean_Project
+KHR-4-2018	KHR-4	2018.0	KR	Rep. Korea	경상북도 상주 회룡	Gyeongsangbuk-do	KHR	K	0.99999	1e-05	Korean_Project
+KHR-5-2018	KHR-5	2018.0	KR	Rep. Korea	경상북도 상주 회룡	Gyeongsangbuk-do	KHR	K	0.99999	1e-05	Korean_Project
+KHR-6-2018	KHR-6	2018.0	KR	Rep. Korea	경상북도 상주 회룡	Gyeongsangbuk-do	KHR	K	0.99999	1e-05	Korean_Project
+KHR-7-2018	KHR-7	2018.0	KR	Rep. Korea	경상북도 상주 회룡	Gyeongsangbuk-do	KHR	K	0.956743	0.043257	Korean_Project
+KHR-8-2018	KHR-8	2018.0	KR	Rep. Korea	경상북도 상주 회룡	Gyeongsangbuk-do	KHR	K	0.99999	1e-05	Korean_Project
+KHS-1-2022	41	2022.0	KR	Rep. Korea	강원도 횡성군 청일면	Gangwon-do	KHS	C	0.515453	0.484547	Korean_Project
+KHS-2-2022	42	2022.0	KR	Rep. Korea	강원도 횡성군 안흥면	Gangwon-do	KHS	C	0.135104	0.864896	Korean_Project
+KHS-3-2022	44	2022.0	KR	Rep. Korea	강원도 횡성군 둔내면	Gangwon-do	KHS	K	0.99999	1e-05	Korean_Project
+KHS-4-2022	45	2022.0	KR	Rep. Korea	강원도 횡성군 갑천면	Gangwon-do	KHS	C	0.293589	0.706411	Korean_Project
+KIC-1-2019	KIC-1	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	C	0.624667	0.375333	Korean_Project
+KIC-1-2022	KIC-1	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	C	0.992149	0.007851	Korean_Project
+KIC-2-2019	KIC-2	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	K	0.97895	0.02105	Korean_Project
+KIC-2-2022	KIC-2	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	K	0.932019	0.067981	Korean_Project
+KIC-3-2019	KIC-3	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	K	0.99999	1e-05	Korean_Project
+KIC-3-2022	KIC-3	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	K	0.568781	0.431219	Korean_Project
+KIC-4-2019	KIC-4	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	K	0.99999	1e-05	Korean_Project
+KIC-4-2022	KIC-4	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	K	1e-05	0.99999	Korean_Project
+KIC-5-2019	KIC-5	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	K	0.99999	1e-05	Korean_Project
+KIC-5-2022	KIC-5	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	K	0.526445	0.473555	Korean_Project
+KIC-6-2019	KIC-6	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	K	0.99999	1e-05	Korean_Project
+KIC-7-2019	KIC-7	2019.0	KR	Rep. Korea	경기도 이천	Geonggi-do	KIC	C	0.79958	0.20042	Korean_Project
+KJJ-1-2022	N-1	2022.0	KR	Rep. Korea	전라북도 전주시	Jeollabuk-do	KJJ	C	0.30263	0.69737	Korean_Project
+KJJ-2-2022	N-2	2022.0	KR	Rep. Korea	전라북도 전주시	Jeollabuk-do	KJJ	K	0.355708	0.644292	Korean_Project
+KJJ-3-2022	N-3	2022.0	KR	Rep. Korea	전라북도 전주시	Jeollabuk-do	KJJ	K	0.63444	0.36556	Korean_Project
+KJJ-4-2022	N-4	2022.0	KR	Rep. Korea	전라북도 전주시	Jeollabuk-do	KJJ	C	0.009238	0.990762	Korean_Project
+KJJ-5-2022	N-5	2022.0	KR	Rep. Korea	전라북도 전주시	Jeollabuk-do	KJJ	K	0.557549	0.442451	Korean_Project
+KJJ-6-2022	N-6	2022.0	KR	Rep. Korea	전라북도 전주시	Jeollabuk-do	KJJ	C	0.397207	0.602793	Korean_Project
+KNW-1-2022	32	2022.0	KR	Rep. Korea	전라북도 남원	Jeollabuk-do	KNW	C	0.592803	0.407197	Korean_Project
+KOC-1-2018	KOC-1	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	K	0.99999	1e-05	Korean_Project
+KOC-1-2022	KOC-1	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	K	0.282987	0.717013	Korean_Project
+KOC-2-2018	KOC-2	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	K	0.99999	1e-05	Korean_Project
+KOC-2-2022	KOC-2	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	K	0.28573	0.71427	Korean_Project
+KOC-3-2018	KOC-3	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	K	0.99999	1e-05	Korean_Project
+KOC-3-2022	KOC-3	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	K	0.238013	0.761987	Korean_Project
+KOC-4-2018	KOC-4	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	K	0.99999	1e-05	Korean_Project
+KOC-4-2022	KOC-4	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	K	0.409147	0.590853	Korean_Project
+KOC-5-2018	KOC-5	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	C	1e-05	0.99999	Korean_Project
+KOC-5-2022	KOC-5	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	C	0.700054	0.299946	Korean_Project
+KOC-6-2018	KOC-6	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	K	0.99999	1e-05	Korean_Project
+KOC-6-2022	KOC-6	2018.0	KR	Rep. Korea	충창북도 옥천	Chungcheongbuk-do	KOC	K	0.366961	0.633039	Korean_Project
+KOC-7-2022	1	2022.0	KR	Rep. Korea	전라남도 해남군 옥천면 성산도	Jeollanam-do	KHN2	C	0.135819	0.864181	Korean_Project
+KPC-1-2018	KPC-1	2018.0	KR	Rep. Korea	강원도 평창	Gangwon-do	KPC	K	0.99999	1e-05	Korean_Project
+KSC1-1-2018	KSC1-1	2018.0	KR	Rep. Korea	강원도 삼척	Gangwon-do	KSC1	K	0.99999	1e-05	Korean_Project
+KSC1-2-2018	KSC1-2	2018.0	KR	Rep. Korea	강원도 삼척	Gangwon-do	KSC1	K	0.99999	1e-05	Korean_Project
+KSC1-3-2018	KSC1-3	2018.0	KR	Rep. Korea	강원도 삼척	Gangwon-do	KSC1	K	0.99999	1e-05	Korean_Project
+KSC1-4-2018	KSC1-4	2018.0	KR	Rep. Korea	강원도 삼척	Gangwon-do	KSC1	K	0.99999	1e-05	Korean_Project
+KSC2-1-2018	KSC2-1	2018.0	KR	Rep. Korea	경상남도 산청	Gyeongsangnam-do	KSC2	K	0.99999	1e-05	Korean_Project
+KSC2-1-2022	KSC2-1	2018.0	KR	Rep. Korea	경상남도 산청	Gyeongsangnam-do	KSC2	K	0.690069	0.309931	Korean_Project
+KSC2-2-2018	KSC2-2	2018.0	KR	Rep. Korea	경상남도 산청	Gyeongsangnam-do	KSC2	K	0.99999	1e-05	Korean_Project
+KSC2-3-2018	KSC2-3	2018.0	KR	Rep. Korea	경상남도 산청	Gyeongsangnam-do	KSC2	K	0.99999	1e-05	Korean_Project
+KSC2-4-2018	KSC2-4	2018.0	KR	Rep. Korea	경상남도 산청	Gyeongsangnam-do	KSC2	K	0.99999	1e-05	Korean_Project
+KSC2-5-2018	KSC2-5	2018.0	KR	Rep. Korea	경상남도 산청	Gyeongsangnam-do	KSC2	K	0.983159	0.016841	Korean_Project
+KSC2-6-2018	KSC2-6	2018.0	KR	Rep. Korea	경상남도 산청	Gyeongsangnam-do	KSC2	K	0.99999	1e-05	Korean_Project
+KSC2-7-2018	KSC2-7	2018.0	KR	Rep. Korea	경상남도 산청	Gyeongsangnam-do	KSC2	K	0.967233	0.032767	Korean_Project
+KSC2-8-2018	KSC2-8	2018.0	KR	Rep. Korea	경상남도 산청	Gyeongsangnam-do	KSC2	K	0.99999	1e-05	Korean_Project
+KSC2-9-2018	KSC2-9	2018.0	KR	Rep. Korea	경상남도 산청	Gyeongsangnam-do	KSC2	K	0.99999	1e-05	Korean_Project
+KSJ-1-2018	KSJ-1	2018.0	KR	Rep. Korea	경상북도 상주	Gyeongsangbuk-do	KSJ	K	0.99999	1e-05	Korean_Project
+KTA-1-2018	KTA-1	2018.0	KR	Rep. Korea	충청남도 태안	Chungcheongnam-do	KTA	K	0.814598	0.185402	Korean_Project
+KTA-2-2018	KTA-2	2018.0	KR	Rep. Korea	충청남도 태안	Chungcheongnam-do	KTA	K	0.99999	1e-05	Korean_Project
+KTA-3-2018	KTA-3	2018.0	KR	Rep. Korea	충청남도 태안	Chungcheongnam-do	KTA	K	0.99999	1e-05	Korean_Project
+KTA-4-2018	KTA-4	2018.0	KR	Rep. Korea	충청남도 태안	Chungcheongnam-do	KTA	K	0.99999	1e-05	Korean_Project
+KTA-5-2018	KTA-5	2018.0	KR	Rep. Korea	충청남도 태안	Chungcheongnam-do	KTA	K	0.99999	1e-05	Korean_Project
+KWJ-1-2018	KWJ-1	2018.0	KR	Rep. Korea	전라북도 완주	Jeollabuk-do	KWJ	C	0.437571	0.562429	Korean_Project
+KWJ-1-2022	KWJ-1	2018.0	KR	Rep. Korea	전라북도 완주	Jeollabuk-do	KWJ	C	0.99999	1e-05	Korean_Project
+KWJ-1-2024	KWJ-1	2018.0	KR	Rep. Korea	전라북도 완주	Jeollabuk-do	KWJ	C	0.892001	0.107999	Korean_Project
+KWJ-2-2022	26	2022.0	KR	Rep. Korea	강원도 원주 송림	Gangwon-do	KWJ	K	0.99999	1e-05	Korean_Project
+KWJ-3-2022	34	2022.0	KR	Rep. Korea	강원도 원주시 지정면	Gangwon-do	KWJ	K	0.99999	1e-05	Korean_Project
+KYC-1-2018	KYC-1	2018.0	KR	Rep. Korea	경기도 연천	Geonggi-do	KYC	K	0.971877	0.028123	Korean_Project
+KYC-2-2018	KYC-2	2018.0	KR	Rep. Korea	경기도 연천	Geonggi-do	KYC	K	0.724231	0.275769	Korean_Project
+KYC-3-2018	KYC-3	2018.0	KR	Rep. Korea	경기도 연천	Geonggi-do	KYC	K	0.970088	0.029912	Korean_Project
+KYG-1-2018	KYG-1	2018.0	KR	Rep. Korea	강원도 양구	Gangwon-do	KYG	K	0.99999	1e-05	Korean_Project
+KYG-2-2018	KYG-2	2018.0	KR	Rep. Korea	강원도 양구	Gangwon-do	KYG	K	0.99999	1e-05	Korean_Project
+KYG-3-2018	KYG-3	2018.0	KR	Rep. Korea	강원도 양구	Gangwon-do	KYG	K	0.99999	1e-05	Korean_Project
+KYG-4-2018	KYG-4	2018.0	KR	Rep. Korea	강원도 양구	Gangwon-do	KYG	K	0.99999	1e-05	Korean_Project
+KYP-1-2022	37	2022.0	KR	Rep. Korea	경기도 양평군 용문면	Geonggi-do	KYP	K	0.99999	1e-05	Korean_Project
+KYP-2-2022	38	2022.0	KR	Rep. Korea	경기도 양평군 양동면	Geonggi-do	KYP	K	0.99999	1e-05	Korean_Project
+KYP-3-2022	39	2022.0	KR	Rep. Korea	경기도 양평군 개군면	Geonggi-do	KYP	K	0.784731	0.215269	Korean_Project
+KYW-1-2018	KYW-1	2018.0	KR	Rep. Korea	영월	Yeongwol	KYW	K	0.99999	1e-05	Korean_Project
+JT-1	JT-1	2018.0	JP	Japan	도쿄	Tokyo	JT	K	0.0	0.0	Overseas_Reference
+JT-2	JT-2	2018.0	JP	Japan	도쿄	Tokyo	JT	K	0.0	0.0	Overseas_Reference
+JT-3	JT-3	2018.0	JP	Japan	도쿄	Tokyo	JT	K	0.0	0.0	Overseas_Reference
+JO-1	JO-1	2018.0	JP	Japan	오사카	Osaka	JO	K	0.0	0.0	Overseas_Reference
+JH-1	JH-1	2018.0	JP	Japan	히로시마	Hiroshima	JH	K	0.0	0.0	Overseas_Reference
+JH-2	JH-2	2018.0	JP	Japan	히로시마	Hiroshima	JH	K	0.0	0.0	Overseas_Reference
+JKH-1	JKH-1	2018.0	JP	Japan	기타히로시마	Kita-hiroshima	JKH	K	0.0	0.0	Overseas_Reference
+JKH-2	JKH-2	2018.0	JP	Japan	기타히로시마	Kita-hiroshima	JKH	K	0.0	0.0	Overseas_Reference
+JKN-1	JKN-1	2018.0	JP	Japan	가나가와	Kanagawa	JKN	K	0.0	0.0	Overseas_Reference
+JKN-2	JKN-2	2018.0	JP	Japan	가나가와	Kanagawa	JKN	K	0.0	0.0	Overseas_Reference
+TT-1	TT-1	2018.0	TW	Taiwan	타이중	Taichung	TT	T	0.0	0.0	Overseas_Reference
+RV-1	RV-1	2018.0	RU	Russia	블라디보스토크	Vladivostok	RV	K	0.0	0.0	Overseas_Reference
+RV-2	RV-2	2018.0	RU	Russia	블라디보스토크	Vladivostok	RV	K	0.0	0.0	Overseas_Reference
+IT-1	IT-1	2018.0	IN	India	타밀나두	Tamil-Nadu	IT	I	0.0	0.0	Overseas_Reference
+Vc-1	Vc-1	2018.0	VN	Vietnam	하노이	Hanoi ?	Vc	N	0.0	0.0	Overseas_Reference
+Vi-1	Vi-1	2018.0	VN	Vietnam	하노이	Hanoi ?	Vi	N	0.0	0.0	Overseas_Reference
+Vi-2	Vi-2	2018.0	VN	Vietnam	하노이	Hanoi ?	Vi	N	0.0	0.0	Overseas_Reference
+Vi-3	Vi-3	2018.0	VN	Vietnam	하노이	Hanoi ?	Vi	N	0.0	0.0	Overseas_Reference
+SY1	SY1	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SY2	SY2	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SY3	SY3	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SY4	SY4	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SY5	SY5	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SY6	SY6	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SY7	SY7	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SY8	SY8	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+TS1	TS1	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+TS2	TS2	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+TS3	TS3	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+TS4	TS4	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+TS5	TS5	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+BD1	BD1	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+BD2	BD2	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+BD3	BD3	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+BD4	BD4	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+BD5	BD5	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+BD6	BD6	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+BD7	BD7	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+BD8	BD8	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+BD9	BD9	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+BD10	BD10	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SZ1	SZ1	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SZ2	SZ2	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SZ3	SZ3	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SZ4	SZ4	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SZ5	SZ5	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SZ6	SZ6	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SZ7	SZ7	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SZ8	SZ8	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SZ9	SZ9	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SQ1	SQ1	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SQ2	SQ2	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SQ3	SQ3	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SQ4	SQ4	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SQ5	SQ5	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SQ6	SQ6	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SQ7	SQ7	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SQ8	SQ8	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SQ9	SQ9	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+LZ1	LZ1	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+LZ2	LZ2	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+LZ3	LZ3	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+LZ4	LZ4	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+LZ5	LZ5	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+LZ6	LZ6	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+LZ7	LZ7	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+LZ8	LZ8	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+LZ9	LZ9	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+WF3	WF3	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+WF4	WF4	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+WF5	WF5	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+WF6	WF6	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+WF7	WF7	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+WF8	WF8	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+WF9	WF9	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+YS1	YS1	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+YS2	YS2	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+YS3	YS3	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+YS4	YS4	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SNJ3	SNJ3	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SNJ4	SNJ4	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SNJ5	SNJ5	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SNJ6	SNJ6	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SNJ7	SNJ7	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SNJ8	SNJ8	2019.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+MX08	MX08	2014.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+MX02	MX02	2014.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+XS01	XS01	2014.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+XS03	XS03	2014.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+XS08	XS08	2014.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+XS09	XS09	2014.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+ME05	ME05	2014.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+ME01	ME01	2014.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+GY05	GY05	2014.0	CN	China	닝샤	Ningxia	NX	N	0.0	0.0	Overseas_Reference
+DQ02	DQ02	2014.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+DQ03	DQ03	2014.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+DQ04	DQ04	2014.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+JZ06	JZ06	2014.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+QY07	QY07	2014.0	CN	China	랴오닝	Liaoning	LN	N	0.0	0.0	Overseas_Reference
+QY08	QY08	2014.0	CN	China	랴오닝	Liaoning	LN	N	0.0	0.0	Overseas_Reference
+QY05	QY05	2014.0	CN	China	랴오닝	Liaoning	LN	N	0.0	0.0	Overseas_Reference
+NY03	NY03	2014.0	CN	China	구이저우	Guizhou	gZ	N	0.0	0.0	Overseas_Reference
+BM05	BM05	2014.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+BM04	BM04	2014.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+SJ09	SJ09	2014.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SJ07	SJ07	2014.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+SN09	SN09	2014.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+QY10	QY10	2014.0	CN	China	랴오닝	Liaoning	LN	N	0.0	0.0	Overseas_Reference
+SN08	SN08	2014.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+SN07	SN07	2014.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+AK02	AK02	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+YL10	YL10	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+YL09	YL09	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+YL06	YL06	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+YL02	YL02	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+MY01	MY01	2014.0	CN	China	산둥	Shandong	SD	N	0.0	0.0	Overseas_Reference
+XA06	XA06	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+MX05	MX05	2014.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+MX01	MX01	2014.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+ME09	ME09	2014.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+ME06	ME06	2014.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+ME08	ME08	2014.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+GY03	GY03	2014.0	CN	China	닝샤	Ningxia	NX	N	0.0	0.0	Overseas_Reference
+GY06	GY06	2014.0	CN	China	닝샤	Ningxia	NX	N	0.0	0.0	Overseas_Reference
+GY09	GY09	2014.0	CN	China	닝샤	Ningxia	NX	N	0.0	0.0	Overseas_Reference
+DQ01	DQ01	2014.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+DQ10	DQ10	2014.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+NY01	NY01	2014.0	CN	China	귀주	Guizhou	GZ	B	0.0	0.0	Overseas_Reference
+BM09	BM09	2016.0	CN	China	티벳	Qinghai-Tibet	QT	B	0.0	0.0	Overseas_Reference
+BM10	BM10	2016.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+BM07	BM07	2016.0	CN	China	티벳	Qinghai-Tibet	QT	B	0.0	0.0	Overseas_Reference
+BM06	BM06	2016.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+BM01	BM01	2014.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+BM02	BM02	2014.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+SJ06	SJ06	2014.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+QY09	QY09	2014.0	CN	China	랴오닝	Liaoning	LN	N	0.0	0.0	Overseas_Reference
+AK09	AK09	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+AK06	AK06	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+YL03	YL03	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+YL01	YL01	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+MY02	MY02	2014.0	CN	China	산둥	Shandong	SD	N	0.0	0.0	Overseas_Reference
+XA09	XA09	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+XA01	XA01	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+XA05	XA05	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+XA07	XA07	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+XA08	XA08	2014.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+DB:2	DB:2	2019.0	TH	Thailand	치앙마이	Chiang Mai	TH-50	N	0.0	0.0	Overseas_Reference
+DC:1	DC:1	2019.0	TH	Thailand	치앙마이	Chiang Mai	TH-50	N	0.0	0.0	Overseas_Reference
+CA:3	CA:3	2019.0	TH	Thailand	치앙마이	Chiang Mai	TH-50	N	0.0	0.0	Overseas_Reference
+CB:1	CB:1	2019.0	TH	Thailand	치앙마이	Chiang Mai	TH-50	B	0.0	0.0	Overseas_Reference
+CC:4	CC:4	2019.0	TH	Thailand	치앙마이	Chiang Mai	TH-50	N	0.0	0.0	Overseas_Reference
+DA:3	DA:3	2019.0	TH	Thailand	치앙마이	Chiang Mai	TH-50	N	0.0	0.0	Overseas_Reference
+GSTS:1	GSTS:1	2019.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+GSTS:4	GSTS:4	2019.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+GSTS:3	GSTS:3	2019.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+GSTS:6	GSTS:6	2019.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+GSTS:5	GSTS:5	2019.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+GSTS:8	GSTS:8	2019.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+GSTS:7	GSTS:7	2019.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+GSTS:10	GSTS:10	2019.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+GSTS:9	GSTS:9	2019.0	CN	China	간쑤	Gansu	GS	N	0.0	0.0	Overseas_Reference
+YNLJ:3	YNLJ:3	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNLJ:2	YNLJ:2	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNLJ:8	YNLJ:8	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNLJ:5	YNLJ:5	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNLJ:6	YNLJ:6	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNLJ:9	YNLJ:9	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNLJ:10	YNLJ:10	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+XTBG:17	XTBG:17	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+XTBG:16	XTBG:16	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+XTBG:14	XTBG:14	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+XTBG:11	XTBG:11	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+XTBG:7	XTBG:7	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+XTBG:5	XTBG:5	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNDQG:8	YNDQG:8	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNDQG:9	YNDQG:9	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNDQG:7	YNDQG:7	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNDQG:6	YNDQG:6	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNDQG:4	YNDQG:4	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNDQG:3	YNDQG:3	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNDQG:2	YNDQG:2	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNDQG:11	YNDQG:11	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNDQG:10	YNDQG:10	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNHK:8	YNHK:8	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:9	YNHK:9	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:10	YNHK:10	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:7	YNHK:7	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:11	YNHK:11	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:12	YNHK:12	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:15	YNHK:15	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:16	YNHK:16	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:17	YNHK:17	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:2	YNHK:2	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:6	YNHK:6	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNKM:16	YNKM:16	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:4	YNHK:4	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNHK:3	YNHK:3	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YNKM:8	YNKM:8	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNKM:3	YNKM:3	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNKM:14	YNKM:14	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+YNKM:11	YNKM:11	2019.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+XTBG:9	XTBG:9	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+XTBG:10	XTBG:10	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+XTBG:20	XTBG:20	2019.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+CL100065708_L01_527	CL100065708_L01_527	2002.0	CN	China	후베이	Hubei	HB	N	0.0	0.0	Overseas_Reference
+CL100063132_L01_505	CL100063132_L01_505	2013.0	CN	China	허난	Henan	HA	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_32	CL100033396_L01_32	2013.0	CN	China	허난	Henan	HA	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_27	CL100033396_L01_27	2015.0	CN	China	귀주	Guizhou	GZ	N	0.0	0.0	Overseas_Reference
+CL100065709_L02_544	CL100065709_L02_544	2014.0	CN	China	귀주	Guizhou	GZ	N	0.0	0.0	Overseas_Reference
+CL100063132_L01_532	CL100063132_L01_532	2014.0	CN	China	귀주	Guizhou	GZ	N	0.0	0.0	Overseas_Reference
+CL100065709_L02_542	CL100065709_L02_542	2015.0	CN	China	귀주	Guizhou	GZ	N	0.0	0.0	Overseas_Reference
+CL100065709_L02_541	CL100065709_L02_541	2015.0	CN	China	귀주	Guizhou	GZ	B	0.0	0.0	Overseas_Reference
+CL100065708_L01_539	CL100065708_L01_539	2012.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100065709_L01_533	CL100065709_L01_533	2015.0	CN	China	귀주	Guizhou	GZ	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_24	CL100033396_L01_24	2014.0	CN	China	광시	Guangxi	GX	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_509	CL100065708_L02_509	2014.0	CN	China	광시	Guangxi	GX	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_23	CL100033396_L01_23	2004.0	CN	China	광시	Guangxi	GX	N	0.0	0.0	Overseas_Reference
+CL100063036_L02_511	CL100063036_L02_511	2004.0	CN	China	광시	Guangxi	GX	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_31	CL100033396_L01_31	2013.0	CN	China	광동	Guangdong	GD	N	0.0	0.0	Overseas_Reference
+CL100065708_L01_538	CL100065708_L01_538	2012.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100065709_L01_538	CL100065709_L01_538	2014.0	CN	China	간수	Gansu	GS	N	0.0	0.0	Overseas_Reference
+CL100065708_L01_520	CL100065708_L01_520	2007.0	CN	China	푸젠	Fujian	FJ	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_41	CL100033396_L01_41	2008.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100065709_L01_505	CL100065709_L01_505	2007.0	CN	China	푸젠	Fujian	FJ	N	0.0	0.0	Overseas_Reference
+CL100063036_L01_532	CL100063036_L01_532	2017.0	CN	China	티벳	Qinghai-Tibet	QT	B	0.0	0.0	Overseas_Reference
+CL100065709_L02_519	CL100065709_L02_519	2008.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100063036_L02_535	CL100063036_L02_535	2017.0	CN	China	티벳	Qinghai-Tibet	QT	B	0.0	0.0	Overseas_Reference
+CL100065709_L02_534	CL100065709_L02_534	2015.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_26	CL100033396_L01_26	2015.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_37	CL100033396_L01_37	2008.0	TW	Taiwan	타이완	Taiwan	TW	T	0.0	0.0	Overseas_Reference
+CL100065709_L02_522	CL100065709_L02_522	2008.0	TW	Taiwan	타이완	Taiwan	TW	T	0.0	0.0	Overseas_Reference
+CL100065709_L02_523	CL100065709_L02_523	2008.0	TW	Taiwan	타이완	Taiwan	TW	T	0.0	0.0	Overseas_Reference
+CL100065709_L02_524	CL100065709_L02_524	2008.0	TW	Taiwan	타이완	Taiwan	TW	T	0.0	0.0	Overseas_Reference
+CL100065709_L02_525	CL100065709_L02_525	2008.0	TW	Taiwan	타이완	Taiwan	TW	T	0.0	0.0	Overseas_Reference
+B14777	B14777	2018.0	TW	Taiwan	타이완	Taiwan	TW	T	0.0	0.0	Overseas_Reference
+B14772	B14772	2018.0	TW	Taiwan	타이완	Taiwan	TW	T	0.0	0.0	Overseas_Reference
+B14771	B14771	2018.0	TW	Taiwan	타이완	Taiwan	TW	T	0.0	0.0	Overseas_Reference
+B14755	B14755	2018.0	TW	Taiwan	타이완	Taiwan	TW	T	0.0	0.0	Overseas_Reference
+B14753	B14753	2018.0	TW	Taiwan	타이완	Taiwan	TW	T	0.0	0.0	Overseas_Reference
+CL100065709_L01_545	CL100065709_L01_545	2015.0	CN	China	티벳	Qinghai-Tibet	QT	B	0.0	0.0	Overseas_Reference
+CL100063036_L02_505	CL100063036_L02_505	2017.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_504	CL100065708_L02_504	2017.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B2187	B2187	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B2124	B2124	2017.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B2086	B2086	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B2037	B2037	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B2007	B2007	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B1992	B1992	2017.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+CL100065709_L02_536	CL100065709_L02_536	2015.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_35	CL100033396_L01_35	2008.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+B1978	B1978	2017.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B1950	B1950	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B1936	B1936	2017.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B13871	B13871	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_20	CL100033396_L01_20	2004.0	KP	Rep. Korea		South Pyongan		K	0.0	0.0	Overseas_Reference
+CL100065708_L01_531	CL100065708_L01_531	2017.0	CN	China		Jilin	JL	K	0.0	0.0	Overseas_Reference
+CL100033396_L01_21	CL100033396_L01_21	2002.0	CN	China		Jilin	JL	K	0.0	0.0	Overseas_Reference
+CL100033396_L01_34	CL100033396_L01_34	2008.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+CL100065708_L01_534	CL100065708_L01_534	2017.0	CN	China		Jilin	JL	K	0.0	0.0	Overseas_Reference
+CL100065708_L01_536	CL100065708_L01_536	2017.0	CN	China		Jilin	JL	K	0.0	0.0	Overseas_Reference
+CL100065708_L02_502	CL100065708_L02_502	2015.0	CN	China		Jilin	JL	K	0.0	0.0	Overseas_Reference
+CL100033396_L01_25	CL100033396_L01_25	2007.0	CN	China		Jilin	JL	K	0.0	0.0	Overseas_Reference
+CL100063008_L02_4	CL100063008_L02_4	2017.0	MY	Malaysia	세랑고르	Selangor		L	0.0	0.0	Overseas_Reference
+CL100063008_L02_28	CL100063008_L02_28	2017.0	MY	Malaysia	세랑고르	Selangor		L	0.0	0.0	Overseas_Reference
+CL100063008_L02_3	CL100063008_L02_3	2017.0	MY	Malaysia	세랑고르	Selangor		L	0.0	0.0	Overseas_Reference
+CL100075149_L01_529	CL100075149_L01_529	2014.0	MY	Malaysia	쿠알라룸푸르	Kuala Lumpur		L	0.0	0.0	Overseas_Reference
+CL100075149_L01_532	CL100075149_L01_532	2014.0	MY	Malaysia	조호르	Johor		L	0.0	0.0	Overseas_Reference
+CL100075149_L01_531	CL100075149_L01_531	2014.0	MY	Malaysia	조호르	Johor		L	0.0	0.0	Overseas_Reference
+B14556	B14556	2018.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+B14571	B14571	2018.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+B14570	B14570	2018.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+B14537	B14537	2018.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+B14549	B14549	2018.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100063036_L02_516	CL100063036_L02_516	2004.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100063036_L02_513	CL100063036_L02_513	2004.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_28	CL100033396_L01_28	2007.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100065708_L01_519	CL100065708_L01_519	2007.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100065709_L01_503	CL100065709_L01_503	2007.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100065709_L01_502	CL100065709_L01_502	2007.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100065709_L01_501	CL100065709_L01_501	2007.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_42	CL100033396_L01_42	2014.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_514	CL100065708_L02_514	2015.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_513	CL100065708_L02_513	2015.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_17	CL100063008_L02_17	2017.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_18	CL100063008_L02_18	2017.0	CN	China	하이난	Hainan	HI	N	0.0	0.0	Overseas_Reference
+CL100063036_L02_514	CL100063036_L02_514	2004.0	CN	China		Hunan	HI	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_8	CL100063008_L02_8	2017.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_511	CL100065708_L02_511	2014.0	CN	China		Hunan	Hi	N	0.0	0.0	Overseas_Reference
+B14520	B14520	2018.0	VN	Vietnam		Vinh Phuc	VN-70	N	0.0	0.0	Overseas_Reference
+B14519	B14519	2018.0	VN	Vietnam		Vinh Phuc	VN-70	N	0.0	0.0	Overseas_Reference
+B14518	B14518	2018.0	VN	Vietnam		Vinh Phuc	VN-70	N	0.0	0.0	Overseas_Reference
+B14517	B14517	2018.0	VN	Vietnam		Vinh Phuc	VN-70	N	0.0	0.0	Overseas_Reference
+B14516	B14516	2018.0	VN	Vietnam		Vinh Phuc	VN-70	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_19	CL100063008_L02_19	2017.0	TH	Thailand		Phitsanulok	TH-65	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_25	CL100063008_L02_25	2017.0	TH	Thailand		Phitsanulok	TH-65	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_20	CL100063008_L02_20	2017.0	TH	Thailand		Phitsanulok	TH-65	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_7	CL100063008_L02_7	2017.0	CN	China		Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_26	CL100063008_L02_26	2017.0	TH	Thailand		Phitsanulok	TH-65	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_27	CL100063008_L02_27	2017.0	TH	Thailand		Phitsanulok	TH-65	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_22	CL100063008_L02_22	2017.0	TH	Thailand		Phitsanulok	TH-65	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_21	CL100063008_L02_21	2017.0	TH	Thailand		Phitsanulok	TH-65	N	0.0	0.0	Overseas_Reference
+B14974	B14974	2018.0	TH	Thailand		Bangkok	TH-10	N	0.0	0.0	Overseas_Reference
+B14971	B14971	2018.0	TH	Thailand		Bangkok	TH-10	N	0.0	0.0	Overseas_Reference
+B14969	B14969	2018.0	TH	Thailand		Bangkok	TH-10	N	0.0	0.0	Overseas_Reference
+B14967	B14967	2018.0	TH	Thailand		Bangkok	TH-10	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_6	CL100063008_L02_6	2017.0	CN	China		Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100063132_L01_523	CL100063132_L01_523	2015.0	CN	China		Zhejiang	ZJ	N	0.0	0.0	Overseas_Reference
+CL100063132_L01_522	CL100063132_L01_522	2015.0	CN	China		Zhejiang	ZJ	N	0.0	0.0	Overseas_Reference
+CL100063132_L01_521	CL100063132_L01_521	2015.0	CN	China		Zhejiang	ZJ	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_503	CL100065708_L02_503	2015.0	CN	China		Zhejiang	ZJ	N	0.0	0.0	Overseas_Reference
+CL100065709_L02_530	CL100065709_L02_530	2007.0	CN	China		Yunnan	YN	N	0.0	0.0	Overseas_Reference
+CL100065709_L02_531	CL100065709_L02_531	2007.0	CN	China		Yunnan	YN	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_36	CL100033396_L01_36	2007.0	CN	China		Yunnan	YN	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_518	CL100065708_L02_518	2015.0	CN	China		Yunnan	YN	N	0.0	0.0	Overseas_Reference
+CL100063008_L02_30	CL100063008_L02_30	2017.0	CN	China		Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_519	CL100065708_L02_519	2015.0	CN	China		Yunnan	YN	N	0.0	0.0	Overseas_Reference
+CL100063132_L01_516	CL100063132_L01_516	2015.0	CN	China		Yunnan	YN	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_517	CL100065708_L02_517	2014.0	CN	China		Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100065708_L02_516	CL100065708_L02_516	2014.0	CN	China		Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100063036_L01_519	CL100063036_L01_519	2007.0	CN	China		Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100063036_L01_522	CL100063036_L01_522	2007.0	CN	China		Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100063036_L01_521	CL100063036_L01_521	2007.0	CN	China		Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100063008_L02_5	CL100063008_L02_5	2017.0	CN	China		Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100063036_L01_520	CL100063036_L01_520	2007.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100063036_L01_523	CL100063036_L01_523	2007.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100063036_L01_516	CL100063036_L01_516	2007.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100065708_L01_526	CL100065708_L01_526	2007.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100065708_L01_530	CL100065708_L01_530	2003.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100065708_L02_521	CL100065708_L02_521	2015.0	CN	China	윈난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+CL100063036_L01_528	CL100063036_L01_528	2007.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100063036_L01_526	CL100063036_L01_526	2007.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100063036_L01_525	CL100063036_L01_525	2007.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100065708_L02_515	CL100065708_L02_515	2014.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100033396_L01_38	CL100033396_L01_38	2007.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100065708_L01_541	CL100065708_L01_541	2012.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100063036_L01_515	CL100063036_L01_515	2007.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+CL100063036_L01_513	CL100063036_L01_513	2007.0	CN	China	윈난	Yunnan	YN	B	0.0	0.0	Overseas_Reference
+B13853	B13853	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B13852	B13852	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B13851	B13851	2018.0	CN	China	티벳	Qinghai-Tibet	QT	B	0.0	0.0	Overseas_Reference
+B13866	B13866	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B13865	B13865	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B13864	B13864	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B13862	B13862	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+CL100065708_L01_547	CL100065708_L01_547	2012.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+B13847	B13847	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B13846	B13846	2018.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+B5730	B5730	2018.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+B5710	B5710	2018.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+B5698	B5698	2018.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+B5766	B5766	2018.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_531	CL100065708_L02_531	2014.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100063036_L02_548	CL100063036_L02_548	2017.0	CN	China	산시	Shanxi	SX	S	0.0	0.0	Overseas_Reference
+CL100065709_L02_501	CL100065709_L02_501	2015.0	CN	China	산동	Shandong	SD	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_30	CL100033396_L01_30	2015.0	CN	China	산동	Shandong	SD	N	0.0	0.0	Overseas_Reference
+CL100065709_L02_546	CL100065709_L02_546	2013.0	CN	China	산동	Shandong	SD	N	0.0	0.0	Overseas_Reference
+CL100033396_L01_29	CL100033396_L01_29	2012.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+CL100063036_L02_510	CL100063036_L02_510	2017.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_527	CL100065708_L02_527	2017.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+CL100065708_L02_528	CL100065708_L02_528	2017.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+CL100065709_L02_521	CL100065709_L02_521	2008.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+CL100065709_L01_508	CL100065709_L01_508	2008.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+CL100065709_L02_520	CL100065709_L02_520	2008.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+CL100065709_L01_507	CL100065709_L01_507	2008.0	CN	China	산시	Shanxi	SX	N	0.0	0.0	Overseas_Reference
+CL100063132_L01_503	CL100063132_L01_503	2014.0	CN	China	닝샤	Ningxia	NX	N	0.0	0.0	Overseas_Reference
+CL100065709_L01_537	CL100065709_L01_537	2014.0	CN	China	닝샤	Ningxia	NX	N	0.0	0.0	Overseas_Reference
+CL100065708_L01_522	CL100065708_L01_522	2007.0	CN	China	장시	Jiangxi	JX	N	0.0	0.0	Overseas_Reference
+CL100065708_L01_523	CL100065708_L01_523	2007.0	CN	China	장시	Jiangxi	JX	N	0.0	0.0	Overseas_Reference
+CL100065708_L01_544	CL100065708_L01_544	2012.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100063036_L01_507	CL100063036_L01_507	2007.0	CN	China	장시	Jiangxi	JX	N	0.0	0.0	Overseas_Reference
+CL100065708_L01_537	CL100065708_L01_537	2012.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+CL100065709_L01_516	CL100065709_L01_516	2008.0	CN	China	쓰촨	Sichuan	SC	N	0.0	0.0	Overseas_Reference
+GQ162109.1	GQ162109.1	2009.0	CN	China	운난	Yunnan	YN	N	0.0	0.0	Overseas_Reference
+YRUPSC-2021	YRUPSC-2021	2021.0	CN	China	티벳	Qinghai-Tibet	QT	N	0.0	0.0	Overseas_Reference
+Ac_R_2025_mt	Ac_R_2025	2025.0	KR	Rep. Korea	전라북도 부안군 격리육종장	Jeollabuk-do	KBU	C	1e-05	0.99999	Korean_Project
+Ac_X_2025_mt	Ac_X_2025	2025.0	KR	Rep. Korea	전라북도 부안군 격리육종장	Jeollabuk-do	KBU	C	1e-05	0.99999	Korean_Project
+OL944305.1	OL944305	2026.0	UNK	Unknown	Unknown	Unknown	UNK	Unknown	0.0	0.0	NCBI_Download
+PV088921.1	PV088921	2022.0	HIM	Himalaya	Himalaya region	Himalaya region	HIM	Unknown	0.0	0.0	NCBI_Download
+AP017942.1	AP017942	2025.0	IND	India	Southern India	Southern India	SOU	Unknown	0.0	0.0	NCBI_Download
+OR936096.1	OR936096	2025.0	REP	Rep. Korea	GH-2021 (Korea)	GH-2021 (Korea)	GH-	Unknown	0.0	0.0	NCBI_Download
+AP018368.1	AP018368	2025.0	IND	India	Southern India	Southern India	SOU	Unknown	0.0	0.0	NCBI_Download
+AP018450.1	AP018450	2025.0	RUS	Russia	Primorsky Krai	Primorsky Krai	PRI	Unknown	0.0	0.0	NCBI_Download
+PP692293.1	PP692293	2024.0	CHI	China	China cerana	China cerana	CHI	Unknown	0.0	0.0	NCBI_Download
+CM077319.1	CM077319	2017.0	CHI	China	China isolate B1952	China isolate B1952	CHI	Unknown	0.0	0.0	NCBI_Download
+PP175371.1	PP175371	2024.0	CHI	China	Sanya, Hainan	Sanya, Hainan	SAN	Unknown	0.0	0.0	NCBI_Download
+PP175370.1	PP175370	2024.0	CHI	China	Yunnan-Guizhou Plateau	Yunnan-Guizhou Plateau	YUN	Unknown	0.0	0.0	NCBI_Download
+OR897030.1	OR897030	2023.0	CHI	China	Guizhou isolate GZ1	Guizhou isolate GZ1	GUI	Unknown	0.0	0.0	NCBI_Download
+OR897033.1	OR897033	2023.0	CHI	China	Guizhou isolate GZ3	Guizhou isolate GZ3	GUI	Unknown	0.0	0.0	NCBI_Download
+OR897032.1	OR897032	2023.0	CHI	China	Guizhou isolate GZ2	Guizhou isolate GZ2	GUI	Unknown	0.0	0.0	NCBI_Download
+OP689704.1	OP689704	2022.0	UNK	Unknown	Unknown	Unknown	UNK	Unknown	0.0	0.0	NCBI_Download
+NC_014295.1	NC_014295	2023.0	CHI	China	China reference genome	China reference genome	CHI	Unknown	0.0	0.0	NCBI_Download
+LC640352.1	LC640352	2021.0	REP	Rep. Korea	AcR9 selection line	AcR9 selection line	ACR	Unknown	0.0	0.0	NCBI_Download
+LC640351.1	LC640351	2021.0	REP	Rep. Korea	AcR8 selection line	AcR8 selection line	ACR	Unknown	0.0	0.0	NCBI_Download
+LC640350.1	LC640350	2021.0	REP	Rep. Korea	AcR7 selection line	AcR7 selection line	ACR	Unknown	0.0	0.0	NCBI_Download
+LC640349.1	LC640349	2021.0	REP	Rep. Korea	AcR6 selection line	AcR6 selection line	ACR	Unknown	0.0	0.0	NCBI_Download
+LC640348.1	LC640348	2021.0	REP	Rep. Korea	AcR5 selection line	AcR5 selection line	ACR	Unknown	0.0	0.0	NCBI_Download
+LC640347.1	LC640347	2021.0	REP	Rep. Korea	AcR3 selection line	AcR3 selection line	ACR	Unknown	0.0	0.0	NCBI_Download
+LC640346.1	LC640346	2021.0	REP	Rep. Korea	AcR2 selection line	AcR2 selection line	ACR	Unknown	0.0	0.0	NCBI_Download
+LC640345.1	LC640345	2021.0	REP	Rep. Korea	AcR1 selection line	AcR1 selection line	ACR	Unknown	0.0	0.0	NCBI_Download
+MW309837.1	MW309837	2019.0	REP	Rep. Korea	Kwon Hyung Wook voucher	Kwon Hyung Wook voucher	KWO	Unknown	0.0	0.0	NCBI_Download
+AP018431.1	AP018431	2018.0	UNK	Unknown	Unknown	Unknown	UNK	Unknown	0.0	0.0	NCBI_Download
+KX908206.1	KX908206	2018.0	UNK	Unknown	Unknown	Unknown	UNK	Unknown	0.0	0.0	NCBI_Download
+AP017984.2	AP017984	2016.0	UNK	Unknown	Unknown	Unknown	UNK	Unknown	0.0	0.0	NCBI_Download
+AP017983.2	AP017983	2015.0	CHI	China	China cerana	China cerana	CHI	Unknown	0.0	0.0	NCBI_Download
+AP017985.1	AP017985	2014.0	JAP	Japan	Japan japonica	Japan japonica	JAP	Unknown	0.0	0.0	NCBI_Download
+AP018149.1	AP018149	2017.0	UNK	Unknown	Unknown	Unknown	UNK	Unknown	0.0	0.0	NCBI_Download
+KZ288519.1	KZ288519	2017.0	CHI	China	Wufu Mountain, Jiangxi	Wufu Mountain, Jiangxi	WUF	Unknown	0.0	0.0	NCBI_Download
+KZ288534.1	KZ288534	2017.0	CHI	China	Wufu Mountain, Jiangxi	Wufu Mountain, Jiangxi	WUF	Unknown	0.0	0.0	NCBI_Download
+KZ288539.1	KZ288539	2017.0	CHI	China	Wufu Mountain, Jiangxi	Wufu Mountain, Jiangxi	WUF	Unknown	0.0	0.0	NCBI_Download
+KZ288542.1	KZ288542	2017.0	CHI	China	Wufu Mountain, Jiangxi	Wufu Mountain, Jiangxi	WUF	Unknown	0.0	0.0	NCBI_Download
+KZ288543.1	KZ288543	2017.0	CHI	China	Wufu Mountain, Jiangxi	Wufu Mountain, Jiangxi	WUF	Unknown	0.0	0.0	NCBI_Download
+KZ288546.1	KZ288546	2017.0	CHI	China	Wufu Mountain, Jiangxi	Wufu Mountain, Jiangxi	WUF	Unknown	0.0	0.0	NCBI_Download
+KZ288605.1	KZ288605	2017.0	CHI	China	Wufu Mountain, Jiangxi	Wufu Mountain, Jiangxi	WUF	Unknown	0.0	0.0	NCBI_Download
+AP017941.1	AP017941	2017.0	JAP	Japan	Japan japonica	Japan japonica	JAP	Unknown	0.0	0.0	NCBI_Download
+AP017314.1	AP017314	2016.0	JAP	Japan	Japan japonica	Japan japonica	JAP	Unknown	0.0	0.0	NCBI_Download
+KM244704.1	KM244704	2014.0	CHI	China	China isolate CL24	China isolate CL24	CHI	Unknown	0.0	0.0	NCBI_Download
+WJ_AC_1	WJ_AC_1	2026.0	KOR	Rep. Korea	강원도 원주시	Wonju, Gangwon-do	WJ	C	0.0	0.0	Korean_Project
+WJ_AC_2	WJ_AC_2	2026.0	KOR	Rep. Korea	강원도 원주시	Wonju, Gangwon-do	WJ	C	0.0	0.0	Korean_Project
+WJ_AC_3	WJ_AC_3	2026.0	KOR	Rep. Korea	강원도 원주시	Wonju, Gangwon-do	WJ	C	0.0	0.0	Korean_Project
+WJ_AC_4	WJ_AC_4	2026.0	KOR	Rep. Korea	강원도 원주시	Wonju, Gangwon-do	WJ	C	0.0	0.0	Korean_Project
+WJ_AC_5	WJ_AC_5	2026.0	KOR	Rep. Korea	강원도 원주시	Wonju, Gangwon-do	WJ	C	0.0	0.0	Korean_Project

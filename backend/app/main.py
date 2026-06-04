@@ -1,5 +1,8 @@
 import time
 import json
+import os
+import datetime
+import openpyxl
 from collections import defaultdict
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +20,9 @@ app = FastAPI(
     description="PhD Beekeeping Breeding Record & Telemetry Sync Hub",
     version="2.0.0"
 )
+
+# Initialize app state cache
+app.state.sampling_cache = {}
 
 # Enable CORS for Next.js web (3000) and Flutter devices/emulators
 app.add_middleware(
@@ -57,7 +63,41 @@ def startup_event():
     db = next(get_db())
     crud.seed_database_if_empty(db)
 
+    # On-memory caching of the beekeeping sampling spreadsheet
+    excel_path = os.path.join(os.path.dirname(__file__), "data", "샘플링최종.xlsx")
+    try:
+        if os.path.exists(excel_path):
+            wb = openpyxl.load_workbook(excel_path)
+            cache_data = {}
+            for sheet_name in wb.sheetnames:
+                ws = wb[sheet_name]
+                rows = list(ws.iter_rows(values_only=True))
+                if not rows:
+                    cache_data[sheet_name] = []
+                    continue
+                headers = [str(h) for h in rows[0]]
+                sheet_rows = []
+                for r in rows[1:]:
+                    if any(x is not None for x in r):  # skip blank rows
+                        row_dict = {}
+                        for col_idx, val in enumerate(r):
+                            if col_idx < len(headers):
+                                key = headers[col_idx]
+                                if isinstance(val, (datetime.datetime, datetime.date)):
+                                    row_dict[key] = val.strftime("%Y-%m-%d")
+                                else:
+                                    row_dict[key] = val
+                        sheet_rows.append(row_dict)
+                cache_data[sheet_name] = sheet_rows
+            app.state.sampling_cache = cache_data
+            print("Successfully loaded beekeeping Excel dataset to memory cache.")
+        else:
+            print(f"Warning: Beekeeping sampling spreadsheet not found at {excel_path}")
+    except Exception as e:
+        print(f"Failed to load beekeeping Excel sheet into memory: {str(e)}")
+
 @app.get("/")
+
 def read_root():
     return {"name": "MelittaBreed Central API Server", "status": "Online", "version": "2.0.0"}
 

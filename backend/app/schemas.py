@@ -15,6 +15,30 @@ class UserCreate(BaseModel):
     role: UserRole
     initial_colony_count: Optional[int] = Field(default=0, ge=0, le=100)
     queen_types: Optional[List[str]] = []
+    queen_lineage: Optional[str] = None
+    queen_species: Optional[str] = None
+
+class FarmerRegister(BaseModel):
+    username: str = Field(..., min_length=3, max_length=100)
+    password: str = Field(..., min_length=4, max_length=100)
+    full_name: str = Field(..., min_length=1, max_length=100)
+    phone: str = Field(..., min_length=1, max_length=50)
+    
+    # Apiary Master
+    apiary_name: str = Field(..., min_length=1, max_length=100)
+    apiary_address: str = Field(..., min_length=1, max_length=255)
+    latitude: float
+    longitude: float
+    
+    # Infrastructure & Experience
+    total_colony_count: int = Field(..., ge=0, le=100)
+    experience_years: int = Field(..., ge=0)
+    
+    # Queen lines selection
+    queen_lines: List[str] = []
+    queen_lineage: Optional[str] = None
+    queen_species: Optional[str] = None
+
 
 class UserLogin(BaseModel):
     username: str
@@ -25,6 +49,9 @@ class UserOut(BaseModel):
     username: str
     farm_name: Optional[str] = None
     role: UserRole
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    experience_years: Optional[int] = None
 
     class Config:
         from_attributes = True

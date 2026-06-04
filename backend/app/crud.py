@@ -12,8 +12,27 @@ BREED_MAP = {
     "카니올란": "CA", "Carniolan": "CA",
     "코카시안": "CU", "Caucasian": "CU",
     "한봉": "KN", "Korean Native": "KN",
-    "기타": "HY", "Hybrid": "HY"
+    "기타": "HY", "Hybrid": "HY",
+    "장원벌(다수확)": "JW", "Jangwon": "JW",
+    "한라벌(낭충봉아부패병 저항성)": "HL", "Hanra": "HL",
+    "백두벌(토종꿀 다수확)": "BD", "Baekdu": "BD",
+    "젤리킹(로열젤리)": "JK", "Jellyking": "JK",
+    "봉교1호(프로폴리스)": "BG", "Bonggyo": "BG",
+    "기타 일반 재래종": "GT", "Common Native": "GT",
+    
+    # Simplified inputs from UI
+    "장원벌": "JW",
+    "로열1호": "RL",
+    "젤리킹": "JK",
+    "봉교1호": "BG",
+    "한라벌": "HL",
+    "백두벌": "BD",
+    "일반 재래종": "GT",
+    "서양벌": "IT",
+    "동양벌": "KN",
+    "토종벌": "KN"
 }
+
 
 REGION_MAP = {
     "서울": "SU", "seoul": "SU",
@@ -505,7 +524,10 @@ def seed_database_if_empty(db: Session):
             username="farmer1",
             hashed_password=get_password_hash("farmer1pass"),
             farm_name="지리산 육종 시험포",
-            role="farmer"
+            role="farmer",
+            full_name="김지리",
+            phone="010-1234-5678",
+            experience_years=15
         )
         db.add(farmer1)
 
@@ -515,7 +537,10 @@ def seed_database_if_empty(db: Session):
             username="farmer2",
             hashed_password=get_password_hash("farmer2pass"),
             farm_name="강화도 협력 양봉장",
-            role="farmer"
+            role="farmer",
+            full_name="이강화",
+            phone="010-9876-5432",
+            experience_years=8
         )
         db.add(farmer2)
 
@@ -525,7 +550,10 @@ def seed_database_if_empty(db: Session):
             username="researcher1",
             hashed_password=get_password_hash("researcher1pass"),
             farm_name="한국 꿀벌 유전학 연구실",
-            role="researcher"
+            role="researcher",
+            full_name="박연구",
+            phone="010-1111-2222",
+            experience_years=5
         )
         db.add(researcher1)
 
@@ -535,7 +563,10 @@ def seed_database_if_empty(db: Session):
             username="admin",
             hashed_password=get_password_hash("adminpass"),
             farm_name="시스템 총괄 관리자",
-            role="admin"
+            role="admin",
+            full_name="최관리",
+            phone="010-3333-4444",
+            experience_years=10
         )
         db.add(admin)
 
@@ -547,7 +578,7 @@ def seed_database_if_empty(db: Session):
     if db.query(models.Apiary).count() > 0:
         return
     
-    # 1. Create Apiaries
+    # 1. Create Apiaries (using Jirisan GPS & Ganghwa GPS)
     apiary1 = models.Apiary(
         name="지리산포 제1봉장",
         owner="farmer1",
@@ -567,11 +598,11 @@ def seed_database_if_empty(db: Session):
     db.add_all([apiary1, apiary2])
     db.commit()
 
-    # 2. Create Colonies
-    c1 = models.Colony(code="C-GN-FAR-26-01-01", apiary_id=apiary1.id, status="Active", queen_tag="Q-IT-GN-26-FAR-01")
-    c2 = models.Colony(code="C-GN-FAR-26-01-02", apiary_id=apiary1.id, status="Active", queen_tag="Q-CA-GN-26-FAR-02")
-    c3 = models.Colony(code="C-IC-FAR-26-01-01", apiary_id=apiary2.id, status="Active", queen_tag="Q-CU-IC-26-FAR-01")
-    c4 = models.Colony(code="C-IC-FAR-26-01-02", apiary_id=apiary2.id, status="Weak", queen_tag="Q-HY-IC-26-FAR-02")
+    # 2. Create Colonies (c1 and c3 seeded as Hanra-beol 'HL' queen lines)
+    c1 = models.Colony(code="C-GN-FAR-26-01-01", apiary_id=apiary1.id, status="Active", queen_tag="Q-HL-GN-26-FAR-01")
+    c2 = models.Colony(code="C-GN-FAR-26-01-02", apiary_id=apiary1.id, status="Active", queen_tag="Q-JW-GN-26-FAR-02")
+    c3 = models.Colony(code="C-IC-FAR-26-01-01", apiary_id=apiary2.id, status="Active", queen_tag="Q-HL-IC-26-FAR-01")
+    c4 = models.Colony(code="C-IC-FAR-26-01-02", apiary_id=apiary2.id, status="Weak", queen_tag="Q-GT-IC-26-FAR-02")
     db.add_all([c1, c2, c3, c4])
     db.commit()
 
@@ -584,9 +615,9 @@ def seed_database_if_empty(db: Session):
     db.add_all([r1, r2, r3, r4, r5])
     db.commit()
 
-    # 4. Create Morphological Lab Samples (Seeding morphological values)
+    # 4. Create Morphological Lab Samples (Seeding morphological values mapped to new Q-Tags)
     morph1 = models.MorphologicalRecord(
-        queen_tag="Q-IT-GN-26-FAR-01",
+        queen_tag="Q-HL-GN-26-FAR-01",
         colony_id=c1.id,
         date="2026-05-18",
         cubital_index=1.85,
@@ -594,10 +625,10 @@ def seed_database_if_empty(db: Session):
         tergite_color="Yellow-Stripes",
         basitarsus_length=3.25,
         basitarsus_width=1.15,
-        researcher_notes="지리산 여왕벌 날개 및 구기 분석 완료"
+        researcher_notes="지리산 여왕벌 날개 및 구기 분석 완료 (한라벌 계통)"
     )
     morph2 = models.MorphologicalRecord(
-        queen_tag="Q-CU-IC-26-FAR-01",
+        queen_tag="Q-HL-IC-26-FAR-01",
         colony_id=c3.id,
         date="2026-05-19",
         cubital_index=1.92,
@@ -605,7 +636,7 @@ def seed_database_if_empty(db: Session):
         tergite_color="Dark",
         basitarsus_length=3.15,
         basitarsus_width=1.10,
-        researcher_notes="강화도 시료 분석 완료"
+        researcher_notes="강화도 시료 분석 완료 (한라벌 계통)"
     )
     db.add_all([morph1, morph2])
     db.commit()

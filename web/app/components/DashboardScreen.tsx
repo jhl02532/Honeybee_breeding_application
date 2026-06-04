@@ -15,6 +15,8 @@ import ChemoreceptorExplorer from "./ChemoreceptorExplorer";
 import MarkerAssayDesigner from "./MarkerAssayDesigner";
 import FarmerTraitSimulator from "./FarmerTraitSimulator";
 import BreedingMatchmaker from "./BreedingMatchmaker";
+import SamplingStatusPanel from "./SamplingStatusPanel";
+import PhylogenyPanel from "./PhylogenyPanel";
 
 type DashView =
   | "overview"
@@ -29,7 +31,9 @@ type DashView =
   | "chemo"
   | "marker"
   | "farmer"
-  | "matchmaker";
+  | "matchmaker"
+  | "sampling"
+  | "phylogeny";
 
 interface DashboardScreenProps {
   user: User;
@@ -137,6 +141,8 @@ export default function DashboardScreen({
     { key: "apiaries", label: "양봉장 관리", icon: "🏡" },
     { key: "colonies", label: "봉군 관리", icon: "🐝" },
     { key: "records", label: "형질 기록", icon: "📋" },
+    { key: "sampling", label: "유전자원 현황", icon: "📂" },
+    { key: "phylogeny", label: "국내 계통수", icon: "🌳" },
   ];
 
   if (user.role === "researcher" || user.role === "admin") {
@@ -561,6 +567,12 @@ export default function DashboardScreen({
           )}
           {view === "manual" && (
             <ManualPanel />
+          )}
+          {view === "sampling" && (
+            <SamplingStatusPanel />
+          )}
+          {view === "phylogeny" && (
+            <PhylogenyPanel />
           )}
         </div>
       </main>

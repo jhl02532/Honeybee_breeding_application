@@ -11,6 +11,11 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     farm_name = Column(String(100), nullable=True)
     role = Column(String(20), default="farmer") # farmer, researcher, admin
+    
+    # New fields for advanced registration
+    full_name = Column(String(100), nullable=True)
+    phone = Column(String(50), nullable=True)
+    experience_years = Column(Integer, nullable=True)
 
     apiaries = relationship("Apiary", back_populates="owner_user", cascade="all, delete-orphan")
 
