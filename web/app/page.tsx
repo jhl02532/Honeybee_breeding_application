@@ -3,14 +3,30 @@
 import { useState, useEffect, useRef } from "react";
 import { User, Token } from "./types";
 import { getStoredUser, getToken, setAuth, clearAuth } from "./utils";
-import AuthScreen from "./components/AuthScreen";
+import AuthBar from "./components/AuthBar";
 import DashboardScreen from "./components/DashboardScreen";
 import { styles } from "./styles";
+
+type DashView =
+  | "overview"
+  | "apiaries"
+  | "colonies"
+  | "records"
+  | "researcher"
+  | "manual"
+  | "admin"
+  | "browser"
+  | "synteny"
+  | "chemo"
+  | "marker"
+  | "farmer"
+  | "matchmaker";
 
 export default function Page() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [initialDashboardView, setInitialDashboardView] = useState<DashView>("overview");
   const [activeSection, setActiveSection] = useState("home");
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
@@ -44,19 +60,18 @@ export default function Page() {
   useEffect(() => {
     if (loading) return;
     if (!user) {
+      setShowDashboard(false);
       const params = new URLSearchParams(window.location.search);
-      // If there are search parameters (meaning attempt to deep-link view or bypass), clean them up
       if (params.toString() !== "") {
-        console.warn("Unauthorized access attempt blocked by client-side Route Guard.");
+        console.warn("Unauthorized access attempt blocked by Route Guard.");
         window.history.replaceState({}, document.title, window.location.pathname);
-        setShowLoginModal(true); // Prompt login modal immediately
       }
     }
   }, [user, loading]);
 
   // Monitor scroll to update active navigation item
   useEffect(() => {
-    if (user) return; // Only run scroll tracker on public landing page
+    if (user && showDashboard) return; // Only track scroll when viewing public landing page
     const handleScroll = () => {
       const scrollPos = window.scrollY + 200;
       if (manualRef.current && scrollPos >= manualRef.current.offsetTop) {
@@ -73,17 +88,23 @@ export default function Page() {
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [user]);
+  }, [user, showDashboard]);
 
   const handleLogin = (data: Token) => {
     setAuth(data);
     setUser(data.user);
-    setShowLoginModal(false);
+    setShowDashboard(false); // keep on landing page, activate launcher!
   };
 
   const handleLogout = () => {
     clearAuth();
     setUser(null);
+    setShowDashboard(false);
+  };
+
+  const handleLaunch = (view: DashView) => {
+    setInitialDashboardView(view);
+    setShowDashboard(true);
   };
 
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>, sectionName: string) => {
@@ -113,12 +134,21 @@ export default function Page() {
     );
   }
 
-  // Private Mode (Logged In) -> Show Dashboard View (Acts as Route Guard)
-  if (user) {
-    return <DashboardScreen user={user} onLogout={handleLogout} theme={theme} onToggleTheme={handleToggleTheme} />;
+  // Private Mode -> Render Dashboard Screen only if explicitly launched (showDashboard === true)
+  if (user && showDashboard) {
+    return (
+      <DashboardScreen 
+        user={user} 
+        onLogout={handleLogout} 
+        theme={theme} 
+        onToggleTheme={handleToggleTheme} 
+        initialView={initialDashboardView}
+        onBackToLanding={() => setShowDashboard(false)}
+      />
+    );
   }
 
-  // Public Mode (Not Logged In) -> Show Research Project Landing View
+  // Public/Landing Mode (Authenticated users see landing + launcher; Unauthenticated see landing + login form)
   return (
     <div style={styles.landingLayout} className="animate-fade">
       {/* Sticky Header Navigation */}
@@ -180,7 +210,7 @@ export default function Page() {
           </button>
         </nav>
 
-        <div style={styles.landingHeaderRight}>
+        <div style={styles.landingHeaderRight} className="auth-bar-header-container">
           <button
             onClick={handleToggleTheme}
             style={{
@@ -196,23 +226,68 @@ export default function Page() {
               cursor: "pointer",
               fontSize: "16px",
               transition: "all 0.2s",
+              marginRight: "4px"
             }}
             title={theme === "light" ? "다크 모드로 전환" : "라이트 모드로 전환"}
           >
             {theme === "light" ? "🌙" : "☀️"}
           </button>
-          <button
-            onClick={() => setShowLoginModal(true)}
-            className="btn-outline-hover"
-            style={{
-              ...styles.btnOutline,
-              padding: "8px 18px",
-              fontSize: "13px",
-              borderRadius: "8px",
-            }}
-          >
-            로그인
-          </button>
+          
+          {user ? (
+            /* Logged in state in header */
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }} className="auth-profile-badge-wrapper">
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px", alignItems: "flex-end" }}>
+                <span style={{ fontSize: "12px", fontWeight: "bold", color: "var(--text-main)" }}>
+                  👤 {user.farm_name || user.username}님
+                </span>
+                <span style={{
+                  padding: "1px 6px",
+                  fontSize: "9px",
+                  borderRadius: "10px",
+                  fontWeight: "bold",
+                  background: user.role === "admin" ? "rgba(251,191,36,0.15)" : user.role === "researcher" ? "rgba(96,165,250,0.15)" : "rgba(52,211,153,0.15)",
+                  color: user.role === "admin" ? "#fbbf24" : user.role === "researcher" ? "#60a5fa" : "#34d399",
+                }}>
+                  {user.role === "admin" ? "ADMIN" : user.role === "researcher" ? "RESEARCHER" : "FARMER"}
+                </span>
+              </div>
+              <button
+                onClick={() => setShowDashboard(true)}
+                style={{
+                  padding: "6px 12px",
+                  fontSize: "12px",
+                  fontWeight: "bold",
+                  borderRadius: "6px",
+                  border: "none",
+                  background: "linear-gradient(135deg, var(--color-gold), var(--color-gold-hover))",
+                  color: "#ffffff",
+                  cursor: "pointer",
+                  marginLeft: "4px"
+                }}
+                className="btn-hover-effect"
+              >
+                대시보드 열기
+              </button>
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: "5px 10px",
+                  fontSize: "11px",
+                  borderRadius: "6px",
+                  border: "1px solid rgba(239,68,68,0.3)",
+                  background: "rgba(239,68,68,0.05)",
+                  color: "#f87171",
+                  cursor: "pointer",
+                }}
+                className="btn-outline-hover"
+              >
+                로그아웃
+              </button>
+            </div>
+          ) : (
+            /* Unauthenticated inline form bar in header */
+            <AuthBar onAuth={handleLogin} />
+          )}
         </div>
       </header>
 
@@ -224,21 +299,91 @@ export default function Page() {
         <p style={styles.heroSubtitle} className="mobile-hero-subtitle">
           기후변화와 월동 폐사 위기를 극복하기 위해 서양벌(Apis mellifera) 및 토종벌(Apis cerana)의 유전체-표현형 데이터를 통합한 AI 기반 디지털 정밀 육종 솔루션
         </p>
-        <div style={styles.heroActions} className="mobile-actions-stack">
-          <button 
-            style={styles.btnGold} 
-            onClick={() => setShowLoginModal(true)} 
-            className="btn-hover-effect"
-          >
-            플랫폼 시작하기 (로그인)
-          </button>
-          <button 
-            style={styles.btnOutline} 
-            onClick={() => scrollToSection(backgroundRef, "background")}
-            className="btn-outline-hover"
-          >
-            과제 배경 둘러보기 ➔
-          </button>
+
+        {/* Dynamic Launcher vs Prompt block */}
+        <div style={{ marginTop: "40px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          {!user ? (
+            /* Unauthenticated -> prompt login with pulse helper text */
+            <div 
+              style={{ 
+                padding: "16px 28px", 
+                borderRadius: "12px", 
+                background: "var(--bg-surface)", 
+                border: "1px solid var(--border-color)",
+                boxShadow: "var(--shadow-sm)"
+              }}
+              className="pulse-glow-tip"
+            >
+              <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>
+                💡 우상단에서 로그인 후 플랫폼 서비스를 이용하실 수 있습니다. ↗
+              </span>
+            </div>
+          ) : (
+            /* Authenticated -> Show Big Launcher Card Grid */
+            <div style={{ width: "100%", maxWidth: "800px" }} className="animate-fade">
+              <h3 style={{ fontSize: "13px", fontWeight: 700, textTransform: "uppercase", color: "var(--color-gold)", letterSpacing: "1px", marginBottom: "16px" }}>
+                🚀 플랫폼 서비스 바로가기 런처
+              </h3>
+              
+              <div 
+                style={{ 
+                  display: "grid", 
+                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", 
+                  gap: "16px" 
+                }}
+              >
+                {/* FARMER Role Launcher Options */}
+                {(user.role === "farmer" || user.role === "admin") && (
+                  <>
+                    <div 
+                      onClick={() => handleLaunch("apiaries")}
+                      style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid var(--color-gold)", padding: "20px" }}
+                      className="feature-card-hover"
+                    >
+                      <span style={{ fontSize: "28px" }}>🏡</span>
+                      <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>스마트 양봉장·봉군 관리</h4>
+                      <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>양봉장 위치 등록 및 각 벌통 내부 상태 관제 모듈로 진입</p>
+                    </div>
+
+                    <div 
+                      onClick={() => handleLaunch("records")}
+                      style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #f97316", padding: "20px" }}
+                      className="feature-card-hover"
+                    >
+                      <span style={{ fontSize: "28px" }}>📋</span>
+                      <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>스마트폰 1분 내검 기록기</h4>
+                      <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>야외 작업 시 장갑 터치가 용이한 모바일 표현형 내검 기록 모듈</p>
+                    </div>
+                  </>
+                )}
+
+                {/* RESEARCHER / ADMIN Role Launcher Options */}
+                {(user.role === "researcher" || user.role === "admin") && (
+                  <>
+                    <div 
+                      onClick={() => handleLaunch("browser")}
+                      style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #3b82f6", padding: "20px" }}
+                      className="feature-card-hover"
+                    >
+                      <span style={{ fontSize: "28px" }}>🧬</span>
+                      <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>K-BEE-ID 디지털 육종 분석</h4>
+                      <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>범유전체 브라우저, 유전체 변이 트랙 탐색 분석 센터로 진입</p>
+                    </div>
+
+                    <div 
+                      onClick={() => handleLaunch("researcher")}
+                      style={{ ...styles.infoCard, cursor: "pointer", borderLeft: "4px solid #c084fc", padding: "20px" }}
+                      className="feature-card-hover"
+                    >
+                      <span style={{ fontSize: "28px" }}>🔬</span>
+                      <h4 style={{ fontSize: "14px", fontWeight: "bold", margin: 0 }}>연구원 통합 분석 센터</h4>
+                      <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0 }}>전국 시딩 농가 스탯 관제 및 현미경 형태 측정 기록 관리</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -288,7 +433,7 @@ export default function Page() {
         </div>
 
         <div style={styles.landingGrid}>
-          <div style={styles.featureCard} className="feature-card-hover" onClick={() => setShowLoginModal(true)}>
+          <div style={styles.featureCard} className="feature-card-hover" onClick={() => { if (!user) setInitialDashboardView("overview"); setShowDashboard(true); }}>
             <div style={styles.featureIcon}>🏡</div>
             <h3 style={styles.featureTitle}>1. 스마트폰 1분 내검 기록기</h3>
             <p style={styles.featureDesc}>
@@ -296,7 +441,7 @@ export default function Page() {
             </p>
           </div>
 
-          <div style={styles.featureCard} className="feature-card-hover" onClick={() => setShowLoginModal(true)}>
+          <div style={styles.featureCard} className="feature-card-hover" onClick={() => { if (!user) setInitialDashboardView("overview"); setShowDashboard(true); }}>
             <div style={styles.featureIcon}>🧬</div>
             <h3 style={styles.featureTitle}>2. 우수 유전자 원스톱 진단 서비스</h3>
             <p style={styles.featureDesc}>
@@ -304,7 +449,7 @@ export default function Page() {
             </p>
           </div>
 
-          <div style={styles.featureCard} className="feature-card-hover" onClick={() => setShowLoginModal(true)}>
+          <div style={styles.featureCard} className="feature-card-hover" onClick={() => { if (!user) setInitialDashboardView("overview"); setShowDashboard(true); }}>
             <div style={styles.featureIcon}>🏷️</div>
             <h3 style={styles.featureTitle}>3. 분자 마커 디자이너</h3>
             <p style={styles.featureDesc}>
@@ -312,7 +457,7 @@ export default function Page() {
             </p>
           </div>
 
-          <div style={styles.featureCard} className="feature-card-hover" onClick={() => setShowLoginModal(true)}>
+          <div style={styles.featureCard} className="feature-card-hover" onClick={() => { if (!user) setInitialDashboardView("overview"); setShowDashboard(true); }}>
             <div style={styles.featureIcon}>👑</div>
             <h3 style={styles.featureTitle}>4. 가상 교배 매치메이커</h3>
             <p style={styles.featureDesc}>
@@ -416,29 +561,6 @@ export default function Page() {
           본 플랫폼은 농림축산식품부/농촌진흥청 이상기온 대응 꿀벌 육종 유전자원 플랫폼 개발 과제(과제번호: RS-2025-0221478)의 지원을 받아 수행되었으며, 한국농업기술진흥원 및 국가 유전자원 보존 관리 가이드라인을 준수하여 가동됩니다.
         </div>
       </footer>
-
-      {/* Glassmorphic Login Modal */}
-      {showLoginModal && (
-        <div 
-          style={styles.modalBackdrop} 
-          onClick={(e) => {
-            // Close if clicking the backdrop itself
-            if (e.target === e.currentTarget) setShowLoginModal(false);
-          }}
-        >
-          <div style={styles.modalBox} className="animate-slide">
-            {/* Close Button */}
-            <button 
-              style={styles.modalCloseBtn}
-              onClick={() => setShowLoginModal(false)}
-              title="닫기"
-            >
-              ✕
-            </button>
-            <AuthScreen onAuth={handleLogin} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

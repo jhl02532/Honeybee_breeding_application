@@ -36,15 +36,29 @@ interface DashboardScreenProps {
   onLogout: () => void;
   theme?: "light" | "dark";
   onToggleTheme?: () => void;
+  initialView?: DashView;
+  onBackToLanding?: () => void;
 }
 
-export default function DashboardScreen({ user, onLogout, theme = "light", onToggleTheme }: DashboardScreenProps) {
-  const [view, setView] = useState<DashView>("overview");
+export default function DashboardScreen({ 
+  user, 
+  onLogout, 
+  theme = "light", 
+  onToggleTheme, 
+  initialView = "overview", 
+  onBackToLanding 
+}: DashboardScreenProps) {
+  const [view, setView] = useState<DashView>(initialView);
   const [species, setSpecies] = useState<"mellifera" | "cerana">("mellifera");
   const [stats, setStats] = useState<DashStats | null>(null);
   const [apiaries, setApiaries] = useState<Apiary[]>([]);
   const [selectedApiary, setSelectedApiary] = useState<Apiary | null>(null);
   const [selectedColony, setSelectedColony] = useState<Colony | null>(null);
+
+  // Sync internal view state if parent changes initialView (e.g. from launcher cards)
+  useEffect(() => {
+    setView(initialView);
+  }, [initialView]);
 
   // Researcher / Admin Farmer Selection State
   const [selectedFarmerId, setSelectedFarmerId] = useState<string>("");
@@ -338,6 +352,33 @@ export default function DashboardScreen({ user, onLogout, theme = "light", onTog
             >
               {sidebarOpen ? "◀" : "☰"}
             </button>
+
+            {onBackToLanding && (
+              <button
+                onClick={onBackToLanding}
+                style={{
+                  background: "rgba(255, 255, 255, 0.05)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "8px",
+                  padding: "0 12px",
+                  height: "40px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  color: "var(--text-main)",
+                  fontSize: "13px",
+                  fontWeight: "bold",
+                  transition: "all 0.2s",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                  gap: "6px"
+                }}
+                className="btn-outline-hover"
+                title="메인 소개 페이지로 돌아가기"
+              >
+                🏠 홈으로
+              </button>
+            )}
 
             <div>
               <h1 style={{ ...styles.pageTitle, fontSize: isMobile ? "18px" : "22px", margin: 0 }}>
