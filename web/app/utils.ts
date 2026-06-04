@@ -20,7 +20,15 @@ export function clearAuth() {
 export function getStoredUser(): User | null {
   if (typeof window === "undefined") return null;
   const s = localStorage.getItem("melitta_user");
-  return s ? JSON.parse(s) : null;
+  if (!s) return null;
+  try {
+    return JSON.parse(s);
+  } catch (e) {
+    console.error("Failed to parse stored user", e);
+    localStorage.removeItem("melitta_user");
+    localStorage.removeItem("melitta_token");
+    return null;
+  }
 }
 
 export async function authFetch(path: string, opts: RequestInit = {}) {

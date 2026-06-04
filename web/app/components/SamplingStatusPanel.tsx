@@ -217,6 +217,9 @@ export default function SamplingStatusPanel() {
   // 2. Initialize Leaflet Map
   useEffect(() => {
     if (!leafletLoaded || !mapRef.current || mapInstance) return;
+    
+    // Prevent double-initialization crash in React Strict Mode/development reload
+    if ((mapRef.current as any)._leaflet_id) return;
 
     const L = (window as any).L;
     if (!L) return;
