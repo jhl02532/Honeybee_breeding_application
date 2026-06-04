@@ -22,6 +22,26 @@ export default function SamplingStatusPanel() {
   const [speciesFilter, setSpeciesFilter] = useState<string>("all");
   const [regionFilter, setRegionFilter] = useState<string>("all");
   const [lineageFilter, setLineageFilter] = useState<string>("all");
+  const [hoveredSample, setHoveredSample] = useState<string | null>(null);
+
+  // Projection functions to map lat/lng to Y/X on a 300x420 SVG canvas
+  const getXY = (latVal: number, lngVal: number) => {
+    const minLat = 33.0;
+    const maxLat = 39.0;
+    const minLng = 125.0;
+    const maxLng = 130.5;
+
+    const width = 300;
+    const height = 400;
+
+    const lat = Math.max(minLat, Math.min(maxLat, latVal));
+    const lng = Math.max(minLng, Math.min(maxLng, lngVal));
+
+    const x = ((lng - minLng) / (maxLng - minLng)) * width;
+    const y = (1 - (lat - minLat) / (maxLat - minLat)) * height;
+
+    return { x, y };
+  };
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -210,164 +230,292 @@ export default function SamplingStatusPanel() {
         </div>
       </div>
 
-      {/* 📁 Sheet Switcher Tabs */}
-      <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--border-color)", paddingBottom: "10px" }}>
-        {Object.keys(data).filter(k => k !== "error").map((sheetName) => (
-          <button
-            key={sheetName}
-            onClick={() => {
-              setActiveSheet(sheetName);
-              // Reset filters on sheet switch
-              setRegionFilter("all");
-              setLineageFilter("all");
-              setSpeciesFilter("all");
-              setSearchQuery("");
-            }}
-            style={{
-              padding: "10px 18px",
-              borderRadius: "8px",
-              border: "1px solid var(--border-color)",
-              background: activeSheet === sheetName ? "var(--color-gold-glow)" : "var(--bg-surface)",
-              color: activeSheet === sheetName ? "var(--color-gold)" : "var(--text-muted)",
-              fontWeight: activeSheet === sheetName ? "bold" : "normal",
-              cursor: "pointer",
-              fontSize: "13px",
-              transition: "all 0.2s"
-            }}
-          >
-            {sheetName === "Pore-C_sample" ? "🧬 Pore-C 시료 분석 현황" : 
-             sheetName === "육종 샘플링_Ac" ? "🐝 동양벌(토종) 수집 현황" : 
-             sheetName === "육종 샘플링 Am" ? "🍯 서양벌(양봉) 수집 현황" : sheetName} ({data[sheetName]?.length || 0})
-          </button>
-        ))}
-      </div>
+      {/* 🗺️ Main Panel Content (Map + Table Controls) */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
+        
+        {/* Left Side: Map Visualizer */}
+        <div style={{
+          flex: "1 1 300px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          position: "relative"
+        }}>
+          <style>{`
+            @keyframes pulse-dot {
+              0% { transform: scale(0.9); opacity: 0.8; }
+              50% { transform: scale(1.4); opacity: 0.3; }
+              100% { transform: scale(0.9); opacity: 0.8; }
+            }
+            .pulse-ring {
+              animation: pulse-dot 2s infinite ease-in-out;
+              transform-origin: center;
+            }
+          `}</style>
+          
+          <div style={{ position: "relative" }}>
+            <svg 
+              width="100%" 
+              height="420px" 
+              viewBox="0 0 300 420" 
+              style={{ 
+                background: "rgba(0,0,0,0.15)", 
+                borderRadius: "14px", 
+                border: "1px solid var(--border-color)", 
+                overflow: "visible" 
+              }}
+            >
+              {/* Province Boundaries Outline */}
+              <g stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1.5" fill="rgba(59, 130, 246, 0.04)">
+                <path d="M 80,60 L 140,55 L 150,90 L 130,120 L 75,100 Z" />
+                <path d="M 140,55 L 210,40 L 250,95 L 230,150 L 150,90 Z" />
+                <path d="M 130,120 L 150,90 L 230,150 L 200,200 L 160,190 L 130,160 Z" />
+                <path d="M 75,100 L 130,120 L 130,160 L 150,210 L 80,180 Z" />
+                <path d="M 80,180 L 150,210 L 160,190 L 180,240 L 120,270 L 85,250 Z" />
+                <path d="M 85,250 L 120,270 L 160,255 L 185,320 L 80,340 Z" />
+                <path d="M 230,150 L 270,140 L 285,230 L 210,265 L 180,240 L 200,200 Z" />
+                <path d="M 180,240 L 210,265 L 280,250 L 265,310 L 185,320 L 160,255 Z" />
+                <path d="M 70,370 A 25,15 0 1,0 120,370 A 25,15 0 1,0 70,370 Z" />
+              </g>
 
-      {/* 🔍 Search & Filters Bar */}
-      <div style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "12px",
-        background: "var(--bg-surface)",
-        border: "1px solid var(--border-color)",
-        padding: "16px",
-        borderRadius: "12px",
-        alignItems: "center"
-      }}>
-        {/* Text Search */}
-        <div style={{ flex: 2, minWidth: "200px" }}>
-          <input
-            type="text"
-            placeholder="시료명, 농가주, 주소 등 검색..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px 12px",
-              borderRadius: "6px",
-              border: "1px solid var(--border-color)",
-              background: "var(--bg-app)",
-              color: "var(--text-main)",
-              fontSize: "13px",
-              outline: "none"
-            }}
-          />
+              {/* Grid lines */}
+              <line x1="0" y1="100" x2="300" y2="100" stroke="rgba(255,255,255,0.02)" />
+              <line x1="0" y1="200" x2="300" y2="200" stroke="rgba(255,255,255,0.02)" />
+              <line x1="0" y1="300" x2="300" y2="300" stroke="rgba(255,255,255,0.02)" />
+              <line x1="100" y1="0" x2="100" y2="420" stroke="rgba(255,255,255,0.02)" />
+              <line x1="200" y1="0" x2="200" y2="420" stroke="rgba(255,255,255,0.02)" />
+
+              <text x="15" y="30" fill="var(--color-gold)" fontSize="12px" fontWeight="bold" opacity="0.8">📡 유전자원 시료 지도 관제</text>
+
+              {/* Markers */}
+              {filteredRows.map((row, idx) => {
+                const latVal = parseFloat(row["lat"]);
+                const lngVal = parseFloat(row["lng"]);
+                if (isNaN(latVal) || isNaN(lngVal)) return null;
+
+                const { x, y } = getXY(latVal, lngVal);
+
+                const sampleId = row["시료 ID"] || row["시료ID"] || "-";
+                const farmerName = row["농가(대표자)"] || row["농가주"] || "-";
+                const address = row["주소 (상세)"] || row["주소"] || "-";
+
+                const tooltipText = `[${sampleId}] ${farmerName} - ${address}`;
+
+                return (
+                  <g 
+                    key={idx} 
+                    transform={`translate(${x}, ${y})`}
+                    onMouseEnter={() => setHoveredSample(tooltipText)}
+                    onMouseLeave={() => setHoveredSample(null)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <circle
+                      r="6"
+                      fill="var(--color-gold)"
+                      opacity="0.4"
+                      className="pulse-ring"
+                    />
+                    <circle
+                      r="4.5"
+                      fill="var(--color-gold)"
+                      stroke="#ffffff"
+                      strokeWidth="1"
+                    />
+                  </g>
+                );
+              })}
+            </svg>
+
+            {/* Hover Tooltip Overlay Box */}
+            {hoveredSample && (
+              <div style={{
+                position: "absolute",
+                bottom: "12px",
+                left: "12px",
+                right: "12px",
+                background: "rgba(11, 17, 32, 0.92)",
+                border: "1px solid var(--color-gold)",
+                borderRadius: "8px",
+                padding: "8px 12px",
+                color: "#ffffff",
+                fontSize: "12px",
+                zIndex: 10,
+                pointerEvents: "none",
+                boxShadow: "var(--shadow-lg)",
+                wordBreak: "break-all"
+              }}>
+                📌 <strong>시료 정보:</strong> {hoveredSample}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Region Filter */}
-        {uniqueRegions.length > 0 && (
-          <div style={{ minWidth: "120px" }}>
-            <select
-              value={regionFilter}
-              onChange={(e) => setRegionFilter(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px",
-                borderRadius: "6px",
-                border: "1px solid var(--border-color)",
-                background: "var(--bg-app)",
-                color: "var(--text-main)",
-                fontSize: "13px",
-                outline: "none",
-                cursor: "pointer"
-              }}
-            >
-              <option value="all">권역 (전체)</option>
-              {uniqueRegions.map(r => <option key={r} value={r}>{r}</option>)}
-            </select>
+        {/* Right Side: Switcher, Filters, Search */}
+        <div style={{
+          flex: "2 1 450px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px"
+        }}>
+          {/* 📁 Sheet Switcher Tabs */}
+          <div style={{ display: "flex", gap: "8px", borderBottom: "1px solid var(--border-color)", paddingBottom: "10px", flexWrap: "wrap" }}>
+            {Object.keys(data).filter(k => k !== "error").map((sheetName) => (
+              <button
+                key={sheetName}
+                onClick={() => {
+                  setActiveSheet(sheetName);
+                  setRegionFilter("all");
+                  setLineageFilter("all");
+                  setSpeciesFilter("all");
+                  setSearchQuery("");
+                }}
+                style={{
+                  padding: "10px 18px",
+                  borderRadius: "8px",
+                  border: "1px solid var(--border-color)",
+                  background: activeSheet === sheetName ? "var(--color-gold-glow)" : "var(--bg-surface)",
+                  color: activeSheet === sheetName ? "var(--color-gold)" : "var(--text-muted)",
+                  fontWeight: activeSheet === sheetName ? "bold" : "normal",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  transition: "all 0.2s"
+                }}
+              >
+                {sheetName === "Pore-C_sample" ? "🧬 Pore-C 시료 분석 현황" : 
+                 sheetName === "육종 샘플링_Ac" ? "🐝 동양벌(토종) 수집 현황" : 
+                 sheetName === "육종 샘플링 Am" ? "🍯 서양벌(양봉) 수집 현황" : sheetName} ({data[sheetName]?.length || 0})
+              </button>
+            ))}
           </div>
-        )}
 
-        {/* Lineage Filter */}
-        {uniqueLineages.length > 0 && (
-          <div style={{ minWidth: "120px" }}>
-            <select
-              value={lineageFilter}
-              onChange={(e) => setLineageFilter(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px",
-                borderRadius: "6px",
-                border: "1px solid var(--border-color)",
-                background: "var(--bg-app)",
-                color: "var(--text-main)",
-                fontSize: "13px",
-                outline: "none",
-                cursor: "pointer"
-              }}
-            >
-              <option value="all">계통 (전체)</option>
-              {uniqueLineages.map(l => <option key={l} value={l}>{l}</option>)}
-            </select>
+          {/* 🔍 Search & Filters Bar */}
+          <div style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-color)",
+            padding: "16px",
+            borderRadius: "12px"
+          }}>
+            {/* Text Search */}
+            <div>
+              <input
+                type="text"
+                placeholder="시료명, 농가주, 주소 등 검색..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid var(--border-color)",
+                  background: "var(--bg-app)",
+                  color: "var(--text-main)",
+                  fontSize: "13px",
+                  outline: "none"
+                }}
+              />
+            </div>
+
+            {/* Dropdown Filters Row */}
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              {uniqueRegions.length > 0 && (
+                <div style={{ flex: 1, minWidth: "100px" }}>
+                  <select
+                    value={regionFilter}
+                    onChange={(e) => setRegionFilter(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "6px",
+                      border: "1px solid var(--border-color)",
+                      background: "var(--bg-app)",
+                      color: "var(--text-main)",
+                      fontSize: "13px",
+                      outline: "none",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <option value="all">권역 (전체)</option>
+                    {uniqueRegions.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {uniqueLineages.length > 0 && (
+                <div style={{ flex: 1, minWidth: "100px" }}>
+                  <select
+                    value={lineageFilter}
+                    onChange={(e) => setLineageFilter(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "6px",
+                      border: "1px solid var(--border-color)",
+                      background: "var(--bg-app)",
+                      color: "var(--text-main)",
+                      fontSize: "13px",
+                      outline: "none",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <option value="all">계통 (전체)</option>
+                    {uniqueLineages.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                </div>
+              )}
+
+              {uniqueSpecies.length > 0 && (
+                <div style={{ flex: 1, minWidth: "100px" }}>
+                  <select
+                    value={speciesFilter}
+                    onChange={(e) => setSpeciesFilter(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "6px",
+                      border: "1px solid var(--border-color)",
+                      background: "var(--bg-app)",
+                      color: "var(--text-main)",
+                      fontSize: "13px",
+                      outline: "none",
+                      cursor: "pointer"
+                    }}
+                  >
+                    <option value="all">종류 (전체)</option>
+                    {uniqueSpecies.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Reset button */}
+            {(searchQuery || regionFilter !== "all" || lineageFilter !== "all" || speciesFilter !== "all") && (
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setRegionFilter("all");
+                  setLineageFilter("all");
+                  setSpeciesFilter("all");
+                }}
+                style={{
+                  width: "100%",
+                  padding: "8px 14px",
+                  borderRadius: "6px",
+                  border: "none",
+                  background: "rgba(239, 68, 68, 0.1)",
+                  color: "#f87171",
+                  fontSize: "13px",
+                  cursor: "pointer",
+                  fontWeight: "bold"
+                }}
+              >
+                필터 초기화
+              </button>
+            )}
           </div>
-        )}
-
-        {/* Species Filter */}
-        {uniqueSpecies.length > 0 && (
-          <div style={{ minWidth: "120px" }}>
-            <select
-              value={speciesFilter}
-              onChange={(e) => setSpeciesFilter(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px",
-                borderRadius: "6px",
-                border: "1px solid var(--border-color)",
-                background: "var(--bg-app)",
-                color: "var(--text-main)",
-                fontSize: "13px",
-                outline: "none",
-                cursor: "pointer"
-              }}
-            >
-              <option value="all">종류 (전체)</option>
-              {uniqueSpecies.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-        )}
-
-        {/* Reset button */}
-        {(searchQuery || regionFilter !== "all" || lineageFilter !== "all" || speciesFilter !== "all") && (
-          <button
-            onClick={() => {
-              setSearchQuery("");
-              setRegionFilter("all");
-              setLineageFilter("all");
-              setSpeciesFilter("all");
-            }}
-            style={{
-              padding: "8px 14px",
-              borderRadius: "6px",
-              border: "none",
-              background: "rgba(239, 68, 68, 0.1)",
-              color: "#f87171",
-              fontSize: "13px",
-              cursor: "pointer",
-              fontWeight: "bold"
-            }}
-          >
-            필터 초기화
-          </button>
-        )}
+        </div>
       </div>
 
       {/* 📄 Interactive Data Table */}

@@ -212,50 +212,45 @@ def export_global_csv(
 
 @router.get("/sampling-status")
 def get_sampling_status():
-    """가입자 전체에 열린 유전자원 수집 현황 (안전한 동적 시트 파싱 및 스트링 직렬화 적용)"""
-    EXCEL_PATH = "/Users/jeonghyeonlee/Desktop/Ongoing/2026/2026_육종과제/02_샘플링/샘플링최종.xlsx"
-    fallback_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "샘플링최종.xlsx")
+    """가입자 전체에 열린 유전자원 수집 현황 (TSV 기반 초고속 경량화 파싱)"""
+    sampling_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "sampling")
     
-    selected_path = EXCEL_PATH
-    if not os.path.exists(selected_path):
-        selected_path = fallback_path
-        
-    if not os.path.exists(selected_path):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="샘플링 엑셀 파일을 지정된 경로에서 찾을 수 없습니다."
-        )
-        
+    files_map = {
+        "Pore-C_sample": "sampling_pore_c.tsv",
+        "육종 샘플링_Ac": "sampling_ac.tsv",
+        "육종 샘플링 Am": "sampling_am.tsv"
+    }
+    
     try:
         import pandas as pd
-        # 파일 권한 분리 및 에러 방지를 위한 처리
-        with open(selected_path, "rb") as f:
-            xls = pd.ExcelFile(f, engine="openpyxl")
-            all_sheet_data = {}
-            
-            # 하드코딩 대신 파일에 존재하는 모든 시트를 동적으로 안전하게 순회
-            for sheet_name in xls.sheet_names:
-                df = pd.read_excel(xls, sheet_name=sheet_name)
-                
+        all_sheet_data = {}
+        
+        for sheet_key, filename in files_map.items():
+            filepath = os.path.join(sampling_dir, filename)
+            if os.path.exists(filepath):
+                df = pd.read_csv(filepath, sep="\t")
                 # 1. FastAPI JSON 크래시 방지: 모든 날짜형(DateTime) 및 결측치(NaN)를 안전하게 문자열화
                 df = df.astype(str).replace({"nan": "", "NaN": "", "None": ""})
-                
-                # 2. 공백이나 특수문자가 섞인 시트 이름도 안전하게 딕셔너리에 적재
-                all_sheet_data[sheet_name] = df.to_dict(orient="records")
+                all_sheet_data[sheet_key] = df.to_dict(orient="records")
+            else:
+                all_sheet_data[sheet_key] = []
                 
         return {
             "status": "success",
             "metadata": {
-                "available_sheets": xls.sheet_names,
-                "total_sheets": len(xls.sheet_names)
+                "available_sheets": list(files_map.keys()),
+                "total_sheets": len(files_map)
             },
             "data": all_sheet_data
         }
 
     except Exception as e:
+        import traceback
+        error_detail = f"TSV 직렬화 분석 중 내부 오류 발생: {str(e)}\n{traceback.format_exc()}"
+        print(error_detail)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"엑셀 직렬화 분석 중 내부 오류 발생: {str(e)}"
+            detail=error_detail
         )
 
 
