@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { authFetch } from "../utils";
 
 interface SamplingRow {
@@ -22,8 +22,6 @@ export default function SamplingStatusPanel() {
   const [speciesFilter, setSpeciesFilter] = useState<string>("all");
   const [regionFilter, setRegionFilter] = useState<string>("all");
   const [lineageFilter, setLineageFilter] = useState<string>("all");
-  const [hoveredSample, setHoveredSample] = useState<string | null>(null);
-
   // Map Mode and World WGS states
   const [mapMode, setMapMode] = useState<"korea" | "world">("korea");
   const [wgsData, setWgsData] = useState<any[] | null>(null);
@@ -33,38 +31,11 @@ export default function SamplingStatusPanel() {
   const [wgsSpeciesFilter, setWgsSpeciesFilter] = useState<string>("all");
   const [wgsSearchQuery, setWgsSearchQuery] = useState<string>("");
 
-  // Projection functions to map lat/lng to Y/X on a 300x420 SVG canvas (Korea)
-  const getXY = (latVal: number, lngVal: number) => {
-    // Reference geographical center of South Korea
-    const centerLat = 36.0;
-    const centerLng = 127.75;
-    
-    // Scale factor (pixels per degree) adjusted for the 300x400 canvas height
-    const latScale = 65.0;
-    // Longitude scale factor corrected for the aspect ratio at 36 deg latitude (cos(36 deg) ≈ 0.81)
-    const lngScale = latScale * 0.81;
-
-    // Viewport center on the 300x400 SVG canvas
-    const canvasCenterX = 150;
-    const canvasCenterY = 200;
-
-    const x = canvasCenterX + (lngVal - centerLng) * lngScale;
-    const y = canvasCenterY - (latVal - centerLat) * latScale; // SVG coordinates go downwards
-
-    // Safe bounds padding check
-    const finalX = Math.max(10, Math.min(290, x));
-    const finalY = Math.max(10, Math.min(390, y));
-
-    return { x: finalX, y: finalY };
-  };
-
-  // Projection functions to map lat/lng to Y/X on a 500x300 SVG canvas (World)
-  const getWorldXY = (latVal: number, lngVal: number) => {
-    // Equirectangular projection
-    const x = ((lngVal + 180) / 360) * 500;
-    const y = ((90 - latVal) / 180) * 300;
-    return { x, y };
-  };
+  // Leaflet map refs and states
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const [mapInstance, setMapInstance] = useState<any>(null);
+  const [leafletLoaded, setLeafletLoaded] = useState<boolean>(false);
+  const [leafletMarkers, setLeafletMarkers] = useState<any[]>([]);
 
   // Fetch Korea sampling status data
   useEffect(() => {
@@ -220,6 +191,147 @@ export default function SamplingStatusPanel() {
     return matchesSearch && matchesCountry && matchesSpecies;
   });
 
+  // 1. Dynamic CDN Loading of Leaflet
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    
+    // Check if Leaflet is already loaded on window
+    if ((window as any).L) {
+      setLeafletLoaded(true);
+      return;
+    }
+
+    const cssLink = document.createElement("link");
+    cssLink.rel = "stylesheet";
+    cssLink.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(cssLink);
+
+    const jsScript = document.createElement("script");
+    jsScript.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    jsScript.onload = () => {
+      setLeafletLoaded(true);
+    };
+    document.head.appendChild(jsScript);
+  }, []);
+
+  // 2. Initialize Leaflet Map
+  useEffect(() => {
+    if (!leafletLoaded || !mapRef.current || mapInstance) return;
+
+    const L = (window as any).L;
+    if (!L) return;
+
+    // Center map on Korea initially
+    const map = L.map(mapRef.current, {
+      center: [35.8, 127.75],
+      zoom: 7,
+      zoomControl: true,
+      attributionControl: false
+    });
+
+    const isDark = document.documentElement.classList.contains("dark") || 
+                  document.documentElement.getAttribute("data-theme") === "dark";
+    
+    const tileUrl = isDark 
+      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
+    const tiles = L.tileLayer(tileUrl, {
+      maxZoom: 19
+    }).addTo(map);
+
+    setMapInstance(map);
+
+    const handleThemeChange = () => {
+      const isDarkTheme = document.documentElement.classList.contains("dark") || 
+                          document.documentElement.getAttribute("data-theme") === "dark";
+      const newUrl = isDarkTheme
+        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+      
+      tiles.setUrl(newUrl);
+    };
+
+    const observer = new MutationObserver(handleThemeChange);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class", "data-theme"] });
+
+    return () => {
+      observer.disconnect();
+      map.remove();
+    };
+  }, [leafletLoaded]);
+
+  // 3. Pan and Zoom depending on mapMode
+  useEffect(() => {
+    if (!mapInstance) return;
+    if (mapMode === "korea") {
+      mapInstance.setView([35.8, 127.75], 7);
+    } else {
+      mapInstance.setView([25.0, 10.0], 2.2);
+    }
+  }, [mapMode, mapInstance]);
+
+  // 4. Render Markers dynamically
+  useEffect(() => {
+    if (!mapInstance) return;
+    const L = (window as any).L;
+    if (!L) return;
+
+    leafletMarkers.forEach(m => m.remove());
+    const newMarkers: any[] = [];
+
+    if (mapMode === "korea") {
+      (filteredRows || []).forEach(row => {
+        const latVal = parseFloat(row.lat);
+        const lngVal = parseFloat(row.lng);
+        if (isNaN(latVal) || isNaN(lngVal)) return;
+
+        const sampleId = row["시료 ID"] || row["시료ID"] || "-";
+        const region = row["권역"] || "-";
+        const lineage = row["계통"] || "-";
+        const tooltipText = `<b>[시료 ID: ${sampleId}]</b><br/>권역: ${region}<br/>계통: ${lineage}`;
+
+        const marker = L.circleMarker([latVal, lngVal], {
+          radius: 5.5,
+          fillColor: "#fbbf24",
+          color: "#ffffff",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.85
+        })
+        .bindTooltip(tooltipText, { direction: "top", offset: [0, -5] })
+        .addTo(mapInstance);
+
+        newMarkers.push(marker);
+      });
+    } else {
+      (filteredWgsRows || []).forEach(row => {
+        const latVal = parseFloat(row.lat);
+        const lngVal = parseFloat(row.lng);
+        const countVal = parseInt(row.Count) || 1;
+        if (isNaN(latVal) || isNaN(lngVal)) return;
+
+        const tooltipText = `<b>[${row.Country} / ${row.Region}]</b><br/>종: <i>${row.Species}</i><br/>수량: ${countVal} 개체`;
+        const bubbleRadius = Math.max(4, Math.min(20, 4 + Math.sqrt(countVal) * 0.5));
+
+        const marker = L.circleMarker([latVal, lngVal], {
+          radius: bubbleRadius,
+          fillColor: "#fbbf24",
+          color: "#ffffff",
+          weight: 0.8,
+          opacity: 1,
+          fillOpacity: 0.7
+        })
+        .bindTooltip(tooltipText, { direction: "top", offset: [0, -bubbleRadius] })
+        .addTo(mapInstance);
+
+        newMarkers.push(marker);
+      });
+    }
+
+    setLeafletMarkers(newMarkers);
+  }, [mapInstance, mapMode, filteredRows, filteredWgsRows]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       
@@ -346,187 +458,18 @@ export default function SamplingStatusPanel() {
           </div>
           
           <div style={{ position: "relative" }}>
-            {mapMode === "korea" ? (
-              <svg 
-                width="100%" 
-                height="420px" 
-                viewBox="0 0 300 420" 
-                style={{ 
-                  background: "rgba(0,0,0,0.15)", 
-                  borderRadius: "14px", 
-                  border: "1px solid var(--border-color)", 
-                  overflow: "visible" 
-                }}
-              >
-                {/* Province Boundaries Outline */}
-                <g stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1.5" fill="rgba(59, 130, 246, 0.04)">
-                  <path d="M 80,60 L 140,55 L 150,90 L 130,120 L 75,100 Z" />
-                  <path d="M 140,55 L 210,40 L 250,95 L 230,150 L 150,90 Z" />
-                  <path d="M 130,120 L 150,90 L 230,150 L 200,200 L 160,190 L 130,160 Z" />
-                  <path d="M 75,100 L 130,120 L 130,160 L 150,210 L 80,180 Z" />
-                  <path d="M 80,180 L 150,210 L 160,190 L 180,240 L 120,270 L 85,250 Z" />
-                  <path d="M 85,250 L 120,270 L 160,255 L 185,320 L 80,340 Z" />
-                  <path d="M 230,150 L 270,140 L 285,230 L 210,265 L 180,240 L 200,200 Z" />
-                  <path d="M 180,240 L 210,265 L 280,250 L 265,310 L 185,320 L 160,255 Z" />
-                  <path d="M 70,370 A 25,15 0 1,0 120,370 A 25,15 0 1,0 70,370 Z" />
-                </g>
-
-                {/* Grid lines */}
-                <line x1="0" y1="100" x2="300" y2="100" stroke="rgba(255,255,255,0.02)" />
-                <line x1="0" y1="200" x2="300" y2="200" stroke="rgba(255,255,255,0.02)" />
-                <line x1="0" y1="300" x2="300" y2="300" stroke="rgba(255,255,255,0.02)" />
-                <line x1="100" y1="0" x2="100" y2="420" stroke="rgba(255,255,255,0.02)" />
-                <line x1="200" y1="0" x2="200" y2="420" stroke="rgba(255,255,255,0.02)" />
-
-                <text x="15" y="30" fill="var(--color-gold)" fontSize="12px" fontWeight="bold" opacity="0.8">📡 유전자원 시료 지도 관제</text>
-
-                {/* Markers */}
-                {filteredRows.map((row, idx) => {
-                  const latVal = parseFloat(row["lat"]);
-                  const lngVal = parseFloat(row["lng"]);
-                  if (isNaN(latVal) || isNaN(lngVal)) return null;
-
-                  const { x, y } = getXY(latVal, lngVal);
-
-                  const sampleId = row["시료 ID"] || row["시료ID"] || "-";
-                  const region = row["권역"] || "-";
-                  const lineage = row["계통"] || "-";
-
-                  const tooltipText = `[${sampleId}] ${region} - ${lineage}`;
-
-                  return (
-                    <g 
-                      key={idx} 
-                      transform={`translate(${x}, ${y})`}
-                      onMouseEnter={() => setHoveredSample(tooltipText)}
-                      onMouseLeave={() => setHoveredSample(null)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <circle
-                        r="6"
-                        fill="var(--color-gold)"
-                        opacity="0.3"
-                      />
-                      <circle
-                        r="4.5"
-                        fill="var(--color-gold)"
-                        stroke="#ffffff"
-                        strokeWidth="1"
-                        className="map-marker"
-                      />
-                    </g>
-                  );
-                })}
-              </svg>
-            ) : (
-              <svg 
-                width="100%" 
-                height="420px" 
-                viewBox="0 0 500 300" 
-                style={{ 
-                  background: "rgba(0,0,0,0.15)", 
-                  borderRadius: "14px", 
-                  border: "1px solid var(--border-color)", 
-                  overflow: "visible" 
-                }}
-              >
-                {/* World Grid Lines */}
-                <g stroke="rgba(255, 255, 255, 0.02)" strokeWidth="1">
-                  <line x1="0" y1="50" x2="500" y2="50" />
-                  <line x1="0" y1="100" x2="500" y2="100" />
-                  <line x1="0" y1="150" x2="500" y2="150" />
-                  <line x1="0" y1="200" x2="500" y2="200" />
-                  <line x1="0" y1="250" x2="500" y2="250" />
-                  <line x1="83" y1="0" x2="83" y2="300" />
-                  <line x1="166" y1="0" x2="166" y2="300" />
-                  <line x1="250" y1="0" x2="250" y2="300" />
-                  <line x1="333" y1="0" x2="333" y2="300" />
-                  <line x1="416" y1="0" x2="416" y2="300" />
-                </g>
-
-                {/* World Continents Simplified Outline */}
-                <g stroke="rgba(255, 255, 255, 0.12)" strokeWidth="1.2" fill="rgba(59, 130, 246, 0.05)">
-                  {/* Greenland */}
-                  <path d="M 148,16 L 233,16 L 194,50 Z" />
-                  {/* North America */}
-                  <path d="M 16,41 L 166,41 L 145,91 L 138,108 L 118,125 L 83,91 Z" />
-                  {/* South America */}
-                  <path d="M 145,133 L 201,158 L 152,241 L 138,158 Z" />
-                  {/* Africa */}
-                  <path d="M 229,100 L 294,100 L 320,133 L 277,206 L 263,141 Z" />
-                  {/* Eurasia */}
-                  <path d="M 236,50 L 277,33 L 486,33 L 472,58 L 444,90 L 416,100 L 358,133 L 312,125 L 243,83 Z" />
-                  {/* Australia */}
-                  <path d="M 409,183 L 451,175 L 458,208 L 409,208 Z" />
-                </g>
-
-                <text x="15" y="30" fill="var(--color-gold)" fontSize="12px" fontWeight="bold" opacity="0.8">🌐 글로벌 공공 WGS 수집 지도</text>
-
-                {/* World Markers */}
-                {wgsLoading ? (
-                  <text x="250" y="150" fill="var(--text-muted)" fontSize="13px" textAnchor="middle">글로벌 WGS 데이터 로드 중...</text>
-                ) : wgsError ? (
-                  <text x="250" y="150" fill="#ef4444" fontSize="12px" textAnchor="middle">WGS 데이터 로딩 실패</text>
-                ) : (
-                  filteredWgsRows.map((row, idx) => {
-                    const latVal = parseFloat(row.lat);
-                    const lngVal = parseFloat(row.lng);
-                    const countVal = parseInt(row.Count) || 1;
-                    if (isNaN(latVal) || isNaN(lngVal)) return null;
-
-                    const { x, y } = getWorldXY(latVal, lngVal);
-                    const bubbleRadius = Math.max(3, Math.min(15, 3 + Math.sqrt(countVal) * 0.4));
-
-                    const tooltipText = `[${row.Country} / ${row.Region}] ${row.Species} - 총 ${countVal} 개체`;
-
-                    return (
-                      <g
-                        key={`wgs-${idx}`}
-                        transform={`translate(${x}, ${y})`}
-                        onMouseEnter={() => setHoveredSample(tooltipText)}
-                        onMouseLeave={() => setHoveredSample(null)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <circle
-                          r={bubbleRadius + 2.5}
-                          fill="var(--color-gold)"
-                          opacity="0.3"
-                        />
-                        <circle
-                          r={bubbleRadius}
-                          fill="var(--color-gold)"
-                          stroke="#ffffff"
-                          strokeWidth="0.8"
-                          className="map-marker"
-                        />
-                      </g>
-                    );
-                  })
-                )}
-              </svg>
-            )}
-
-            {/* Hover Tooltip Overlay Box */}
-            {hoveredSample && (
-              <div style={{
-                position: "absolute",
-                bottom: "12px",
-                left: "12px",
-                right: "12px",
-                background: "rgba(11, 17, 32, 0.92)",
-                border: "1px solid var(--color-gold)",
-                borderRadius: "8px",
-                padding: "8px 12px",
-                color: "#ffffff",
-                fontSize: "12px",
-                zIndex: 10,
-                pointerEvents: "none",
-                boxShadow: "var(--shadow-lg)",
-                wordBreak: "break-all"
-              }}>
-                📌 <strong>위치 정보:</strong> {hoveredSample}
-              </div>
-            )}
+            <div 
+              ref={mapRef} 
+              id="bee-map" 
+              style={{ 
+                width: "100%", 
+                height: "420px", 
+                borderRadius: "14px", 
+                border: "1px solid var(--border-color)",
+                overflow: "hidden",
+                zIndex: 1
+              }} 
+            />
           </div>
         </div>
 
