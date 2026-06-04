@@ -15,11 +15,13 @@ export default function Page() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
   const homeRef = useRef<HTMLDivElement>(null);
+  const backgroundRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
+  const roadmapRef = useRef<HTMLDivElement>(null);
   const manualRef = useRef<HTMLDivElement>(null);
 
+  // Initialize theme from localStorage on mount
   useEffect(() => {
-    // Read theme preference from localStorage on mount
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
     const initialTheme = savedTheme || "light";
     setTheme(initialTheme);
@@ -38,27 +40,33 @@ export default function Page() {
     setLoading(false);
   }, []);
 
-  const handleToggleTheme = () => {
-    const nextTheme = theme === "light" ? "dark" : "light";
-    setTheme(nextTheme);
-    localStorage.setItem("theme", nextTheme);
-    document.documentElement.setAttribute("data-theme", nextTheme);
-    if (nextTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
+  // Client-side Route Guard for non-logged-in users
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      const params = new URLSearchParams(window.location.search);
+      // If there are search parameters (meaning attempt to deep-link view or bypass), clean them up
+      if (params.toString() !== "") {
+        console.warn("Unauthorized access attempt blocked by client-side Route Guard.");
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setShowLoginModal(true); // Prompt login modal immediately
+      }
     }
-  };
+  }, [user, loading]);
 
   // Monitor scroll to update active navigation item
   useEffect(() => {
-    if (user) return; // Only run on landing page
+    if (user) return; // Only run scroll tracker on public landing page
     const handleScroll = () => {
       const scrollPos = window.scrollY + 200;
       if (manualRef.current && scrollPos >= manualRef.current.offsetTop) {
         setActiveSection("manual");
+      } else if (roadmapRef.current && scrollPos >= roadmapRef.current.offsetTop) {
+        setActiveSection("roadmap");
       } else if (aboutRef.current && scrollPos >= aboutRef.current.offsetTop) {
         setActiveSection("about");
+      } else if (backgroundRef.current && scrollPos >= backgroundRef.current.offsetTop) {
+        setActiveSection("background");
       } else {
         setActiveSection("home");
       }
@@ -85,6 +93,18 @@ export default function Page() {
     }
   };
 
+  const handleToggleTheme = () => {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    setTheme(nextTheme);
+    localStorage.setItem("theme", nextTheme);
+    document.documentElement.setAttribute("data-theme", nextTheme);
+    if (nextTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
+
   if (loading) {
     return (
       <div style={styles.loadingScreen}>
@@ -93,12 +113,12 @@ export default function Page() {
     );
   }
 
-  // Private Mode (Logged In) -> Show Dashboard View
+  // Private Mode (Logged In) -> Show Dashboard View (Acts as Route Guard)
   if (user) {
     return <DashboardScreen user={user} onLogout={handleLogout} theme={theme} onToggleTheme={handleToggleTheme} />;
   }
 
-  // Public Mode (Not Logged In) -> Show Premium Landing View
+  // Public Mode (Not Logged In) -> Show Research Project Landing View
   return (
     <div style={styles.landingLayout} className="animate-fade">
       {/* Sticky Header Navigation */}
@@ -121,12 +141,32 @@ export default function Page() {
           <button
             style={{
               ...styles.landingNavLink,
+              ...(activeSection === "background" ? styles.landingNavLinkActive : {}),
+            }}
+            onClick={() => scrollToSection(backgroundRef, "background")}
+            className="landing-nav-link-hover"
+          >
+            개발 배경
+          </button>
+          <button
+            style={{
+              ...styles.landingNavLink,
               ...(activeSection === "about" ? styles.landingNavLinkActive : {}),
             }}
             onClick={() => scrollToSection(aboutRef, "about")}
             className="landing-nav-link-hover"
           >
             서비스 소개
+          </button>
+          <button
+            style={{
+              ...styles.landingNavLink,
+              ...(activeSection === "roadmap" ? styles.landingNavLinkActive : {}),
+            }}
+            onClick={() => scrollToSection(roadmapRef, "roadmap")}
+            className="landing-nav-link-hover"
+          >
+            추진 로드맵
           </button>
           <button
             style={{
@@ -176,13 +216,13 @@ export default function Page() {
         </div>
       </header>
 
-      {/* Hero Section */}
+      {/* Section 1: Hero Area */}
       <div ref={homeRef} style={styles.landingHero} className="mobile-hero-padding">
         <h1 style={styles.heroTitle} className="mobile-hero-title">
-          MelittaBreed: 꿀벌 디지털 육종 통합 플랫폼
+          이상기온 대응 꿀벌 육종 유전자원 플랫폼
         </h1>
         <p style={styles.heroSubtitle} className="mobile-hero-subtitle">
-          디지털 형질 기록부터 AI 기반 다중교배 시뮬레이션, GBLUP 유전체 선발까지 하나로 연결되는 스마트 양봉 데이터 혁신을 경험해 보세요.
+          기후변화와 월동 폐사 위기를 극복하기 위해 서양벌(Apis mellifera) 및 토종벌(Apis cerana)의 유전체-표현형 데이터를 통합한 AI 기반 디지털 정밀 육종 솔루션
         </p>
         <div style={styles.heroActions} className="mobile-actions-stack">
           <button 
@@ -190,19 +230,55 @@ export default function Page() {
             onClick={() => setShowLoginModal(true)} 
             className="btn-hover-effect"
           >
-            플랫폼 시작하기 / 로그인
+            플랫폼 시작하기 (로그인)
           </button>
           <button 
             style={styles.btnOutline} 
-            onClick={() => scrollToSection(aboutRef, "about")}
+            onClick={() => scrollToSection(backgroundRef, "background")}
             className="btn-outline-hover"
           >
-            기능 둘러보기 ➔
+            과제 배경 둘러보기 ➔
           </button>
         </div>
       </div>
 
-      {/* Features Grid Section */}
+      {/* Section 2: Background & Necessity Infographic */}
+      <div ref={backgroundRef} style={styles.landingSection} className="mobile-section-padding">
+        <div style={styles.sectionHeaderLanding}>
+          <div style={styles.sectionTitlePre}>National Crisis & Necessity</div>
+          <h2 style={styles.sectionMainTitle} className="mobile-section-title">
+            개발 배경 및 필요성
+          </h2>
+        </div>
+
+        <div style={styles.infographicGrid}>
+          <div style={styles.infoCard} className="feature-card-hover">
+            <div style={styles.infoNumber}>약 5.8조 원</div>
+            <h3 style={styles.infoTitle}>"꿀벌이 없으면 우리 농사도 없습니다."</h3>
+            <p style={styles.infoDesc}>
+              대한민국 과일과 채소 5개 중 1개는 꿀벌이 꽃가루를 옮겨주어야만 열매를 맺습니다. 꿀벌이 우리 농업에 기여하는 경제적 가치는 매년 무려 5조 8천억 원에 달합니다.
+            </p>
+          </div>
+
+          <div style={styles.infoCard} className="feature-card-hover">
+            <div style={styles.infoNumber}>약 140억 마리</div>
+            <h3 style={styles.infoTitle}>"사라지는 꿀벌, 봄철 벌통 텅 빔 피해"</h3>
+            <p style={styles.infoDesc}>
+              최근 겨울을 나고 나면 벌통이 통째로 비어버리는 기이한 폐사 피해로 인해 전국에서 140억 마리의 꿀벌이 실종되었습니다. 더 이상 옛날 방식의 경험만으로는 기후 변화와 변종 응애/바이러스를 막아내기 어렵습니다.
+            </p>
+          </div>
+
+          <div style={styles.infoCard} className="feature-card-hover">
+            <div style={styles.infoNumber}>이상고온 35℃</div>
+            <h3 style={styles.infoTitle}>"이상고온 벌통 속, '길치 벌'을 만듭니다."</h3>
+            <p style={styles.infoDesc}>
+              연구실 실험 결과, 여름철 무더위로 벌통 내부가 35℃ 이상 올라가면 그 안에서 자란 애벌레들은 성충이 되었을 때 기억력과 학습 능력이 뚝 떨어집니다. 꿀을 따러 나갔다가 집을 못 찾아오는 실종 유전자를 분석해내야 하는 이유입니다.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 3: 4 Core Services Guide */}
       <div ref={aboutRef} style={styles.landingSection} className="mobile-section-padding">
         <div style={styles.sectionHeaderLanding}>
           <div style={styles.sectionTitlePre}>Core Technologies</div>
@@ -214,67 +290,87 @@ export default function Page() {
         <div style={styles.landingGrid}>
           <div style={styles.featureCard} className="feature-card-hover" onClick={() => setShowLoginModal(true)}>
             <div style={styles.featureIcon}>🏡</div>
-            <h3 style={styles.featureTitle}>1. 야외 현장 내검 기록기</h3>
+            <h3 style={styles.featureTitle}>1. 스마트폰 1분 내검 기록기</h3>
             <p style={styles.featureDesc}>
-              모바일 현장 내검을 통해 언제 어디서나 실시간으로 벌통의 데이터를 수집하고 클라우드로 즉시 동기화합니다.
+              장갑을 낀 상태에서도 손쉽게 조작할 수 있는 스마트폰 친화형 UI를 통해 벌통의 VSH(바로아응애 청소율) 및 상태를 실시간 기록하고 즉각 동기화합니다.
             </p>
           </div>
 
           <div style={styles.featureCard} className="feature-card-hover" onClick={() => setShowLoginModal(true)}>
             <div style={styles.featureIcon}>🧬</div>
-            <h3 style={styles.featureTitle}>2. 비교 유전체 브라우저</h3>
+            <h3 style={styles.featureTitle}>2. 우수 유전자 원스톱 진단 서비스</h3>
             <p style={styles.featureDesc}>
-              동양종(토종벌) 및 서양종(양봉) 꿀벌의 유전체 지도를 시각화하고 주요 QTL(양적형질유전자좌) 영역을 정밀 비교 분석합니다.
+              HiFi 롱리드 시퀀싱 분석 결과를 기반으로 동양종(토종벌) 및 서양종(양봉) 꿀벌의 참조 유전체 및 변이 트랙을 직관적으로 검제할 수 있는 범유전체 브라우저를 제공합니다.
             </p>
           </div>
 
           <div style={styles.featureCard} className="feature-card-hover" onClick={() => setShowLoginModal(true)}>
             <div style={styles.featureIcon}>🏷️</div>
-            <h3 style={styles.featureTitle}>3. 분자 마커 설계 및 PCR</h3>
+            <h3 style={styles.featureTitle}>3. 분자 마커 디자이너</h3>
             <p style={styles.featureDesc}>
-              꿀벌 육종의 표적 형질 타겟 마커 검출용 프라이머 세트를 설계하고 가상 PCR 시뮬레이션을 통해 밴드 크기를 예측합니다.
+              낭충봉아부패병(CSBV) 및 기후 적응 유전형 분석 마커 검증을 위한 프라이머 설계 기능과 PCR 전기영동 밴드 예측 가상 시뮬레이터를 독점 지원합니다.
             </p>
           </div>
 
           <div style={styles.featureCard} className="feature-card-hover" onClick={() => setShowLoginModal(true)}>
             <div style={styles.featureIcon}>👑</div>
-            <h3 style={styles.featureTitle}>4. 다중교배 육종 매치메이커</h3>
+            <h3 style={styles.featureTitle}>4. 가상 교배 매치메이커</h3>
             <p style={styles.featureDesc}>
-              월동 생존율, 채밀성, 온순성 등 다중 복합 형질의 유전력 시뮬레이션을 돌려 최적의 우수 교배 조합 후보군을 자동으로 매칭합니다.
+              꿀벌 고유의 반수-배수체 집단 유전 알고리즘을 통해 여왕벌의 다중교배(Polyandry) 시나리오를 모사하여 복합 우수 형질을 발현시킬 수 있는 최적의 교배 조합을 진단합니다.
             </p>
           </div>
         </div>
+      </div>
 
-        {/* Informative Middle Layout */}
-        <div style={{ ...styles.aboutContainer, marginTop: "60px" }} className="mobile-about-container">
-          <div style={styles.aboutText}>
-            <h3 style={{ fontSize: "20px", fontWeight: "bold", color: "#fbbf24" }}>
-              한국형 디지털 스마트 육종 생태계의 완성
-            </h3>
-            <p>
-              MelittaBreed는 국가적 보존 가치가 높은 토종벌 유전자원 보존과 경제성이 우수한 보급 여왕벌 품종 개량을 위해 구축된 스마트 육종 플랫폼입니다. 
-            </p>
-            <p>
-              현장 농가의 친근한 내검 모바일 인터페이스와 분자 유전학 연구원의 고성능 빅데이터 분석 파이프라인을 실시간 연계하여 다중 테넌트 환경에서 보안 및 권한 격리를 유지하며 안정적인 데이터 연동을 지원합니다.
-            </p>
+      {/* Section 4: Annual Roadmap */}
+      <div ref={roadmapRef} style={styles.landingSection} className="mobile-section-padding">
+        <div style={styles.sectionHeaderLanding}>
+          <div style={styles.sectionTitlePre}>Project Roadmap</div>
+          <h2 style={styles.sectionMainTitle} className="mobile-section-title">
+            연도별 개발 로드맵 (3개년 마일스톤)
+          </h2>
+        </div>
+
+        <div style={styles.roadmapTimeline}>
+          <div style={styles.roadmapItem} className="animate-slide">
+            <div style={styles.roadmapYearBadge}>1년차 (2025)</div>
+            <div style={styles.roadmapCard}>
+              <h4 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--color-gold)", marginBottom: "8px" }}>
+                🎯 꿀벌 유전자원 선발 및 기본 DB 설계
+              </h4>
+              <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.6" }}>
+                대한민국 꿀벌 핵심집단 50개체 유전자원 정밀 선발 및 PacBio HiFi 롱리드 시퀀싱 해독을 진행하며, 디지털 표현형-유전체 통합 데이터베이스 아키텍처를 설계합니다.
+              </p>
+            </div>
           </div>
-          <div style={styles.aboutGraphic} className="mobile-about-graphic">
-            <span>🧬</span>
-            <div style={{
-              position: "absolute",
-              fontSize: "12px",
-              bottom: "20px",
-              color: "#fbbf24",
-              fontWeight: "600",
-              letterSpacing: "2px"
-            }}>
-              DATA DRIVEN BREEDING
+
+          <div style={styles.roadmapItem} className="animate-slide">
+            <div style={styles.roadmapYearBadge}>2년차 (2026)</div>
+            <div style={styles.roadmapCard}>
+              <h4 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--color-gold)", marginBottom: "8px" }}>
+                🧬 대량 변이 발굴 및 분석 알고리즘 고도화
+              </h4>
+              <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.6" }}>
+                Oxford Nanopore Pore-C 스캐폴딩 조립을 완성하고, 200개체 규모의 대량 변이(SNP/Indel) 발굴(GWAS 분석)과 함께 다중교배 시뮬레이션 알고리즘 및 딥러닝 기반 형질 예측 모델(DNNGP)을 플랫폼에 연동합니다.
+              </p>
+            </div>
+          </div>
+
+          <div style={styles.roadmapItem} className="animate-slide">
+            <div style={styles.roadmapYearBadge}>3년차 (2027)</div>
+            <div style={styles.roadmapCard}>
+              <h4 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--color-gold)", marginBottom: "8px" }}>
+                🌍 현장 검증 및 전국 육종 생태계 확산
+              </h4>
+              <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: "1.6" }}>
+                실제 표현형-유전체 현장 실증 데이터를 완전 연동하여 신뢰도를 입증하고, 우수 여왕벌 디지털 품질 검증서 발급 및 K-BEE-ID 보급 체계를 갖추어 전국 양봉 농가와 연구소를 위한 통합 생태계로 확산합니다.
+              </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Manual Section */}
+      {/* Section 5: Manual & Guidelines */}
       <div ref={manualRef} style={styles.landingSection} className="mobile-section-padding">
         <div style={styles.sectionHeaderLanding}>
           <div style={styles.sectionTitlePre}>User Guidebook</div>
@@ -285,26 +381,26 @@ export default function Page() {
 
         <div style={{ maxWidth: "800px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "24px" }}>
           <div style={{
-            background: "rgba(31, 41, 55, 0.4)",
-            border: "1px solid rgba(255,255,255,0.06)",
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-color)",
             borderRadius: "12px",
             padding: "24px"
           }}>
-            <h4 style={{ color: "#fbbf24", fontWeight: "bold", marginBottom: "8px" }}>💡 양봉 농가(Farmer) 사용 안내</h4>
-            <p style={{ fontSize: "14px", color: "#d1d5db", lineHeight: "1.6" }}>
+            <h4 style={{ color: "var(--color-gold)", fontWeight: "bold", marginBottom: "8px" }}>💡 양봉 농가(Farmer) 사용 안내</h4>
+            <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>
               회원가입 시 "양봉 농가"를 선택하시면 즉시 온라인 봉군 모바일 내검 기록을 관리할 수 있습니다. 
               수집된 행동 데이터는 연구실의 형태측정 데이터와 실시간 결합하여 형질 개선율을 가상 예측하는 진단서를 발행할 수 있도록 지원합니다.
             </p>
           </div>
 
           <div style={{
-            background: "rgba(31, 41, 55, 0.4)",
-            border: "1px solid rgba(255, 255, 255, 0.06)",
+            background: "var(--bg-surface)",
+            border: "1px solid var(--border-color)",
             borderRadius: "12px",
             padding: "24px"
           }}>
             <h4 style={{ color: "#60a5fa", fontWeight: "bold", marginBottom: "8px" }}>🔬 전문 육종 연구원(Researcher) 및 관리자(Admin) 안내</h4>
-            <p style={{ fontSize: "14px", color: "#d1d5db", lineHeight: "1.6" }}>
+            <p style={{ fontSize: "14px", color: "var(--text-muted)", lineHeight: "1.6" }}>
               연구원 및 관리자 계정은 전국 가입 농가의 데이터를 연계/조회할 수 있는 통합 컨트롤 드롭다운이 활성화됩니다.
               게놈 브라우저를 통한 시각 분석 및 프라이머 설계, 모본-부본 계통 추적을 통한 가상 교배 시뮬레이터 기능을 독점 제공합니다.
             </p>
@@ -314,10 +410,10 @@ export default function Page() {
 
       {/* Footer */}
       <footer style={styles.landingFooter}>
-        <div style={{ fontWeight: "bold", color: "#f3f4f6" }}>MelittaBreed Beekeeping Ecosystem</div>
+        <div style={{ fontWeight: "bold", color: "var(--text-main)" }}>MelittaBreed Beekeeping Ecosystem</div>
         <div>© 2026 MelittaBreed Digital Breeding Center. All Rights Reserved.</div>
-        <div style={{ fontSize: "11px", color: "#4b5563" }}>
-          본 플랫폼은 한국농업기술진흥원 및 국가 유전자원 보존 관리 가이드라인을 준수하여 가동됩니다.
+        <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+          본 플랫폼은 농림축산식품부/농촌진흥청 이상기온 대응 꿀벌 육종 유전자원 플랫폼 개발 과제(과제번호: RS-2025-0221478)의 지원을 받아 수행되었으며, 한국농업기술진흥원 및 국가 유전자원 보존 관리 가이드라인을 준수하여 가동됩니다.
         </div>
       </footer>
 
