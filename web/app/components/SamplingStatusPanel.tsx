@@ -42,6 +42,10 @@ type FilterState = {
   regionFilter: string | null;
   countryFilter: string | null;
   countrySearch: string;
+  data: any;
+  wgsData: any[] | null;
+  loading: boolean;
+  error: string;
 };
 
 type FilterAction =
@@ -51,7 +55,10 @@ type FilterAction =
   | { type: "SET_REGION"; payload: string | null }
   | { type: "SET_COUNTRY_FILTER"; payload: string | null }
   | { type: "SET_COUNTRY_SEARCH"; payload: string }
-  | { type: "RESET_FILTERS" };
+  | { type: "RESET_FILTERS" }
+  | { type: "FETCH_START" }
+  | { type: "FETCH_SUCCESS"; payload: { data: any; wgsData: any[] | null } }
+  | { type: "FETCH_ERROR"; payload: string };
 
 const initialFilterState: FilterState = {
   mode: "domestic",
@@ -59,11 +66,26 @@ const initialFilterState: FilterState = {
   sourceFilter: "all",
   regionFilter: "all",
   countryFilter: null,
-  countrySearch: ""
+  countrySearch: "",
+  data: null,
+  wgsData: null,
+  loading: true,
+  error: ""
 };
 
 function filterReducer(state: FilterState, action: FilterAction): FilterState {
   switch (action.type) {
+    case "FETCH_START":
+      return { ...state, loading: true, error: "" };
+    case "FETCH_SUCCESS":
+      return {
+        ...state,
+        loading: false,
+        data: action.payload.data,
+        wgsData: action.payload.wgsData
+      };
+    case "FETCH_ERROR":
+      return { ...state, loading: false, error: action.payload };
     case "SET_MODE":
       if (action.payload === "domestic") {
         return {
@@ -116,22 +138,17 @@ function filterReducer(state: FilterState, action: FilterAction): FilterState {
 
 export default function SamplingStatusPanel() {
   const router = useRouter();
-  const [data, setData] = useState<any>(null); // Domestic sheets data
-  const [wgsData, setWgsData] = useState<any[] | null>(null); // Global WGS data
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
   const [hoveredSample, setHoveredSample] = useState<string | null>(null);
 
   // Filter States (Unified Reducer)
   const [filterState, dispatch] = useReducer(filterReducer, initialFilterState);
-  const { mode, speciesFilter, sourceFilter, regionFilter, countryFilter, countrySearch } = filterState;
+  const { mode, speciesFilter, sourceFilter, regionFilter, countryFilter, countrySearch, data, wgsData, loading, error } = filterState;
 
   // Load All Datasets on Mount to enable fast, zero-latency client-side filtering
   useEffect(() => {
     const loadAllData = async () => {
       try {
-        setLoading(true);
-        setError("");
+        dispatch({ type: "FETCH_START" });
 
         // Fetch Domestic Sheets
         const domesticRes = await authFetch("/api/v1/researcher/sampling-status");
@@ -147,12 +164,15 @@ export default function SamplingStatusPanel() {
         }
         const globalJson = await globalRes.json();
 
-        setData(domesticJson.data || []);
-        setWgsData(globalJson.data || []);
+        dispatch({
+          type: "FETCH_SUCCESS",
+          payload: {
+            data: domesticJson.data || [],
+            wgsData: globalJson.data || []
+          }
+        });
       } catch (err: any) {
-        setError(err.message || "서버 통신 중 오류가 발생했습니다.");
-      } finally {
-        setLoading(false);
+        dispatch({ type: "FETCH_ERROR", payload: err.message || "서버 통신 중 오류가 발생했습니다." });
       }
     };
     loadAllData();

@@ -40,7 +40,7 @@ export default function Page() {
   const samplingRef = useRef<HTMLDivElement>(null);
   const phylogenyRef = useRef<HTMLDivElement>(null);
 
-  // Initialize theme from localStorage on mount
+  // Initialize theme and restore session from localStorage on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
     const initialTheme = savedTheme || "light";
@@ -56,6 +56,14 @@ export default function Page() {
     const token = getToken();
     if (stored && token) {
       setUser(stored);
+      const storedShow = localStorage.getItem("melitta_show_dashboard") === "true";
+      const storedView = localStorage.getItem("melitta_dashboard_view") as DashView | null;
+      if (storedShow) {
+        setShowDashboard(true);
+      }
+      if (storedView) {
+        setInitialDashboardView(storedView);
+      }
     }
     setLoading(false);
   }, []);
@@ -108,11 +116,15 @@ export default function Page() {
     clearAuth();
     setUser(null);
     setShowDashboard(false);
+    localStorage.removeItem("melitta_show_dashboard");
+    localStorage.removeItem("melitta_dashboard_view");
   };
 
   const handleLaunch = (view: DashView) => {
     setInitialDashboardView(view);
     setShowDashboard(true);
+    localStorage.setItem("melitta_show_dashboard", "true");
+    localStorage.setItem("melitta_dashboard_view", view);
   };
 
   const scrollToSection = (ref: React.RefObject<HTMLDivElement>, sectionName: string) => {
@@ -160,7 +172,11 @@ export default function Page() {
         theme={theme} 
         onToggleTheme={handleToggleTheme} 
         initialView={initialDashboardView}
-        onBackToLanding={() => setShowDashboard(false)}
+        onBackToLanding={() => {
+          setShowDashboard(false);
+          localStorage.removeItem("melitta_show_dashboard");
+          localStorage.removeItem("melitta_dashboard_view");
+        }}
       />
     );
   }
@@ -300,7 +316,11 @@ export default function Page() {
                 </span>
               </div>
               <button
-                onClick={() => setShowDashboard(true)}
+                onClick={() => {
+                  setShowDashboard(true);
+                  localStorage.setItem("melitta_show_dashboard", "true");
+                  localStorage.setItem("melitta_dashboard_view", initialDashboardView);
+                }}
                 style={{
                   padding: "6px 12px",
                   fontSize: "12px",

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { styles } from "../styles";
 import { Apiary, Colony } from "../types";
 import { authFetch } from "../utils";
-import Modal from "./Modal";
 
 interface ColonyPanelProps {
   apiaries: Apiary[];
@@ -23,6 +23,7 @@ export default function ColonyPanel({
   showModal,
   setShowModal,
 }: ColonyPanelProps) {
+  const router = useRouter();
   const [form, setForm] = useState({ code: "", apiary_id: "", status: "Active", queen_tag: "", mother_colony_id: "" });
   const [busy, setBusy] = useState(false);
 
@@ -100,8 +101,10 @@ export default function ColonyPanel({
           id="btn-add-colony"
           style={styles.primaryBtn}
           onClick={() => {
-            if (selectedApiary) setForm({ ...form, apiary_id: String(selectedApiary.id) });
-            setShowModal(true);
+            if (selectedApiary) {
+              localStorage.setItem("melitta_last_apiary_id", String(selectedApiary.id));
+            }
+            router.push("/dashboard/colony/new");
           }}
         >
           + 봉군 추가
@@ -148,101 +151,6 @@ export default function ColonyPanel({
             </div>
           ))}
         </div>
-      )}
-
-      {showModal && (
-        <Modal onClose={() => setShowModal(false)} title="봉군 추가">
-          <form onSubmit={createColony}>
-            <div style={styles.inputGroup}>
-              <label style={styles.inputLabel}>봉군 코드</label>
-              <input
-                id="colony-code"
-                style={styles.input}
-                value={form.code}
-                onChange={(e) => setForm({ ...form, code: e.target.value })}
-                placeholder="공백으로 두면 표준 규칙에 따라 자동 생성"
-              />
-              <span style={{ fontSize: "11px", color: "#fbbf24", marginTop: "4px" }}>
-                💡 예: C-GG-MEL-26-01-01 (지역-농가-연도-봉장-순번)
-              </span>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.inputLabel}>양봉장 *</label>
-              <select
-                id="colony-apiary"
-                style={styles.input}
-                value={form.apiary_id}
-                onChange={(e) => setForm({ ...form, apiary_id: e.target.value })}
-                required
-              >
-                <option value="">양봉장 선택...</option>
-                {apiaries.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.inputLabel}>상태</label>
-              <select
-                style={styles.input}
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value })}
-              >
-                <option value="Active">Active (활성)</option>
-                <option value="Weak">Weak (약세)</option>
-                <option value="Dead">Dead (폐사)</option>
-              </select>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.inputLabel}>여왕벌 품종 지정 / 직접 태그 입력</label>
-              <select
-                style={{ ...styles.input, marginBottom: "8px" }}
-                value={form.queen_tag}
-                onChange={(e) => setForm({ ...form, queen_tag: e.target.value })}
-              >
-                <option value="">기본 자동 생성 (이탈리안 계열)</option>
-                <option value="이탈리안">이탈리안 (Italian)</option>
-                <option value="카니올란">카니올란 (Carniolan)</option>
-                <option value="코카시안">코카시안 (Caucasian)</option>
-                <option value="한봉">한봉 (Korean Native)</option>
-                <option value="기타">기타 혼합 (Hybrid)</option>
-              </select>
-              <input
-                style={styles.input}
-                value={form.queen_tag}
-                onChange={(e) => setForm({ ...form, queen_tag: e.target.value })}
-                placeholder="직접 태그 입력도 가능 (예: Q-2026-N03)"
-              />
-              <span style={{ fontSize: "11px", color: "#fbbf24", marginTop: "4px" }}>
-                💡 미입력 또는 품종 선택 시 Q-IT-GG-26-MEL-01 형태로 자동 명명됩니다.
-              </span>
-            </div>
-            <div style={styles.inputGroup}>
-              <label style={styles.inputLabel}>모계 벌통 (부모 여왕벌 선택)</label>
-              <select
-                style={styles.input}
-                value={form.mother_colony_id}
-                onChange={(e) => setForm({ ...form, mother_colony_id: e.target.value })}
-              >
-                <option value="">모계 선택 안함 (신규 계통)</option>
-                {allColoniesForLineage.map((parent) => (
-                  <option key={parent.id} value={parent.id}>
-                    {parent.code} ({parent.queen_tag})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <button
-              type="submit"
-              style={{ ...styles.primaryBtn, width: "100%", marginTop: "8px" }}
-              disabled={busy}
-            >
-              {busy ? "생성 중..." : "봉군 생성"}
-            </button>
-          </form>
-        </Modal>
       )}
     </div>
   );

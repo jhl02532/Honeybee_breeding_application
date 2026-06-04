@@ -136,6 +136,27 @@ export default function DashboardScreen({
     fetchDashboard(farmerId);
   };
 
+  // Persistence for current dashboard view tab (F5 Guard)
+  useEffect(() => {
+    if (view && user.role !== "guest") {
+      localStorage.setItem("melitta_dashboard_view", view);
+    }
+  }, [view, user.role]);
+
+  // Refetch Sync on Page Mount or Tab/Window Focus (refetches if new data was submitted in subpages)
+  useEffect(() => {
+    const handleRefetch = () => {
+      const shouldRefetch = localStorage.getItem("melitta_refetch_trigger") === "true";
+      if (shouldRefetch) {
+        localStorage.removeItem("melitta_refetch_trigger");
+        fetchDashboard();
+      }
+    };
+    handleRefetch();
+    window.addEventListener("focus", handleRefetch);
+    return () => window.removeEventListener("focus", handleRefetch);
+  }, [fetchDashboard]);
+
   let navItems: { key: DashView; label: string; icon: string }[] = [];
 
   if (user.role === "guest") {
