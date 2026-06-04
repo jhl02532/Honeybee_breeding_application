@@ -261,7 +261,7 @@ def get_sampling_status(
             # Track Pore-C sample IDs (for subset flag is_pore_c = True)
             pore_c_ids = set()
             if not df_pore_c.empty and "시료 ID" in df_pore_c.columns:
-                pore_c_ids = set(df_pore_c["시료 ID"].dropna().astype(str).unique())
+                pore_c_ids = set(df_pore_c["시료 ID"].dropna().astype(str).str.strip().str.upper().unique())
 
             # Combine domestic DataFrames
             dfs_to_concat = [df for df in [df_pore_c, df_ac, df_am] if not df.empty]
@@ -270,8 +270,9 @@ def get_sampling_status(
             else:
                 master_df = pd.DataFrame(columns=["채집일자", "시료전달일자", "권역", "주소 (상세)", "농가(대표자)", "시료 ID", "계통", "종", "lat", "lng"])
 
-            # Strict Deduplication on "시료 ID"
+            # Strict Deduplication on "시료 ID" (case-insensitive)
             if "시료 ID" in master_df.columns:
+                master_df["시료 ID"] = master_df["시료 ID"].astype(str).str.strip().str.upper()
                 master_df = master_df.drop_duplicates(subset=["시료 ID"], keep="first")
             
             # Add dynamic flags

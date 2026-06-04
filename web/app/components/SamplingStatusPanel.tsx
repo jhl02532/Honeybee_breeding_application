@@ -86,6 +86,25 @@ export default function SamplingStatusPanel() {
         is_pore_c: !!row.is_pore_c
       });
     });
+  } else if (data && typeof data === "object") {
+    // Robust fallback for old backend format
+    Object.keys(data).forEach((sheetName) => {
+      const rows = data[sheetName];
+      if (Array.isArray(rows)) {
+        rows.forEach((row: any) => {
+          projectRows.push({
+            ...row,
+            source: "project",
+            lat: parseFloat(row.lat),
+            lng: parseFloat(row.lng),
+            Species: String(row.종 || row.Species || "").toLowerCase().includes("cerana") ? "Apis cerana" : "Apis mellifera",
+            Region: row.권역 || row.Region || "",
+            Country: "South Korea",
+            is_pore_c: sheetName.includes("pore_c") || !!row.is_pore_c
+          });
+        });
+      }
+    });
   }
 
   // Extract and normalize Public collected WGS Rows
