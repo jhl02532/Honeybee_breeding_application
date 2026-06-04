@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { authFetch } from "../utils";
 import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 
@@ -9,6 +10,7 @@ const KOREA_GEOJSON_URL = "https://raw.githubusercontent.com/southkorea/southkor
 const WORLD_TOPOJSON_URL = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 export default function SamplingStatusPanel() {
+  const router = useRouter();
   const [data, setData] = useState<any>(null); // Domestic sheets data
   const [wgsData, setWgsData] = useState<any[] | null>(null); // Global WGS data
   const [loading, setLoading] = useState<boolean>(true);
@@ -735,6 +737,72 @@ export default function SamplingStatusPanel() {
           </div>
         </div>
 
+      </div>
+
+      {/* 📋 영역 4: 유전자원 수집 현황 세부 목록 (Table) */}
+      <div style={{
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border-color)",
+        borderRadius: "16px",
+        padding: "24px",
+        boxShadow: "var(--shadow-md)",
+        marginTop: "12px"
+      }} className="no-print animate-fade">
+        <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--color-gold)", marginBottom: "16px" }}>
+          📋 상세 유전자원 수집 목록 ({finalFilteredRows.length}건)
+        </h3>
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px", textAlign: "left" }}>
+            <thead>
+              <tr style={{ borderBottom: "2px solid var(--border-color)", color: "var(--text-muted)" }}>
+                <th style={{ padding: "12px" }}>시료 ID</th>
+                <th style={{ padding: "12px" }}>수집구분</th>
+                <th style={{ padding: "12px" }}>종</th>
+                <th style={{ padding: "12px" }}>권역 / 국가</th>
+                <th style={{ padding: "12px" }}>상세 주소 (GPS)</th>
+                <th style={{ padding: "12px" }}>조치</th>
+              </tr>
+            </thead>
+            <tbody>
+              {finalFilteredRows.map((row, idx) => (
+                <tr key={idx} style={{ borderBottom: "1px solid var(--border-color)", color: "var(--text-main)" }}>
+                  <td style={{ padding: "12px", fontWeight: "bold" }}>{row["시료 ID"] || row.sample_id || "-"}</td>
+                  <td style={{ padding: "12px" }}>{row.source === "project" ? "자체생산" : "공공수집"}</td>
+                  <td style={{ padding: "12px" }}>{row.Species}</td>
+                  <td style={{ padding: "12px" }}>{row.Region || row.Country}</td>
+                  <td style={{ padding: "12px" }}>
+                    {row["주소 (상세)"] || row.Country || "-"}
+                    {row.lat && row.lng ? ` (${row.lat.toFixed(4)}, ${row.lng.toFixed(4)})` : ""}
+                  </td>
+                  <td style={{ padding: "12px" }}>
+                    {row.source === "project" && (row["시료 ID"] || row.sample_id) && (
+                      <button
+                        onClick={() => {
+                          const sId = row["시료 ID"] || row.sample_id;
+                          router.push(`/dashboard/record?sample_id=${sId}`);
+                        }}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: "6px",
+                          border: "none",
+                          background: "var(--color-gold)",
+                          color: "#fff",
+                          fontWeight: "bold",
+                          fontSize: "11px",
+                          cursor: "pointer",
+                          transition: "background 0.2s"
+                        }}
+                        className="hover:bg-yellow-600"
+                      >
+                        📋 형질 기록 입력
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
     </div>

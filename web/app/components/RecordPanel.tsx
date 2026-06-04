@@ -2,16 +2,11 @@ import React, { useState, useEffect } from "react";
 import { styles } from "../styles";
 import { Apiary, Colony, TraitRecord } from "../types";
 import { authFetch, renderStars } from "../utils";
-import Modal from "./Modal";
-import FormNum from "./FormNum";
-
 interface RecordPanelProps {
   apiaries: Apiary[];
   selectedColony: Colony | null;
   onSelectColony: (c: Colony | null) => void;
   onRefresh: () => void;
-  showModal: boolean;
-  setShowModal: (v: boolean) => void;
   farmers: any[];
   selectedFarmerId: string;
   onFarmerChange: (id: string) => void;
@@ -23,8 +18,6 @@ export default function RecordPanel({
   selectedColony,
   onSelectColony,
   onRefresh,
-  showModal,
-  setShowModal,
   farmers,
   selectedFarmerId,
   onFarmerChange,
@@ -35,89 +28,7 @@ export default function RecordPanel({
     ? selectedColony.records
     : allColonies.flatMap((c) => c.records || []);
 
-  const [form, setForm] = useState({
-    colony_id: selectedColony ? String(selectedColony.id) : "",
-    date: new Date().toISOString().split("T")[0],
-    honey_production: "0",
-    propolis_production: "0",
-    royal_jelly_production: "0",
-    temperament: "3",
-    virus_resistance: "3",
-    mite_resistance: "3",
-    swarming_rate: "0",
-    overwintering_survival: "100",
-    climate_adaptation: "3",
-    vsh_rate: "0",
-    hygienic_rate: "0",
-    temperature: "",
-    humidity: "",
-    notes: "",
-  });
-  const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (selectedColony) {
-      setForm((f) => ({ ...f, colony_id: String(selectedColony.id) }));
-    }
-  }, [selectedColony]);
-
-  const createRecord = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      const body = {
-        colony_id: parseInt(form.colony_id),
-        date: form.date,
-        honey_production: parseFloat(form.honey_production),
-        propolis_production: parseFloat(form.propolis_production),
-        royal_jelly_production: parseFloat(form.royal_jelly_production),
-        temperament: parseInt(form.temperament),
-        virus_resistance: parseInt(form.virus_resistance),
-        mite_resistance: parseInt(form.mite_resistance),
-        swarming_rate: parseFloat(form.swarming_rate),
-        overwintering_survival: parseFloat(form.overwintering_survival),
-        climate_adaptation: parseInt(form.climate_adaptation),
-        vsh_rate: parseFloat(form.vsh_rate),
-        hygienic_rate: parseFloat(form.hygienic_rate),
-        temperature: form.temperature ? parseFloat(form.temperature) : null,
-        humidity: form.humidity ? parseFloat(form.humidity) : null,
-        notes: form.notes || null,
-      };
-      const res = await authFetch("/api/v1/traits", {
-        method: "POST",
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) {
-        const d = await res.json();
-        alert(d.detail || "기록 실패");
-        return;
-      }
-      setShowModal(false);
-      setForm({
-        colony_id: selectedColony ? String(selectedColony.id) : "",
-        date: new Date().toISOString().split("T")[0],
-        honey_production: "0",
-        propolis_production: "0",
-        royal_jelly_production: "0",
-        temperament: "3",
-        virus_resistance: "3",
-        mite_resistance: "3",
-        swarming_rate: "0",
-        overwintering_survival: "100",
-        climate_adaptation: "3",
-        vsh_rate: "0",
-        hygienic_rate: "0",
-        temperature: "",
-        humidity: "",
-        notes: "",
-      });
-      onRefresh();
-    } catch (err: any) {
-      alert(err.message || "기록 실패");
-    } finally {
-      setBusy(false);
-    }
-  };
 
   const deleteRecord = async (id: number) => {
     if (!confirm("이 형질 기록을 삭제하시겠습니까?")) return;
@@ -246,8 +157,11 @@ export default function RecordPanel({
             id="btn-add-record"
             style={styles.primaryBtn}
             onClick={() => {
-              if (selectedColony) setForm((f) => ({ ...f, colony_id: String(selectedColony.id) }));
-              setShowModal(true);
+              if (selectedColony) {
+                window.location.href = `/dashboard/record?colony_id=${selectedColony.id}`;
+              } else {
+                window.location.href = "/dashboard/record";
+              }
             }}
           >
             + 형질 기록 추가
@@ -315,270 +229,7 @@ export default function RecordPanel({
         </div>
       )}
 
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowModal(false)}>
-          <div
-            className="w-full max-w-5xl h-[85vh] rounded-xl shadow-2xl flex flex-col overflow-hidden animate-slide"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "var(--bg-surface)",
-              border: "1px solid var(--border-color)",
-              color: "var(--text-main)"
-            }}
-          >
-            {/* Modal Header */}
-            <div style={styles.modalHeader} className="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
-              <h3 style={styles.modalTitle} className="text-xl font-bold">📋 형질 기록 추가</h3>
-              <button
-                style={styles.modalClose}
-                className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-700 transition"
-                onClick={() => setShowModal(false)}
-              >
-                ✕
-              </button>
-            </div>
 
-            {/* Modal Form */}
-            <form onSubmit={createRecord} className="flex-1 flex flex-col overflow-hidden">
-              {/* Scrollable grid content */}
-              <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Left Column: Metadata & Environmental */}
-                <div className="space-y-6">
-                  <h4 style={styles.formSection} className="text-lg font-bold border-b pb-2 border-gray-200 dark:border-gray-800">📋 기본 정보 및 생산물</h4>
-                  
-                  <div style={{ display: "flex", gap: "12px" }}>
-                    <div style={{ ...styles.inputGroup, flex: 1 }}>
-                      <label style={styles.inputLabel}>봉군 *</label>
-                      <select
-                        style={styles.input}
-                        value={form.colony_id}
-                        onChange={(e) => setForm({ ...form, colony_id: e.target.value })}
-                        required
-                      >
-                        <option value="">봉군 선택...</option>
-                        {allColonies.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.code}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div style={{ ...styles.inputGroup, flex: 1 }}>
-                      <label style={styles.inputLabel}>날짜 *</label>
-                      <input
-                        style={styles.input}
-                        type="date"
-                        value={form.date}
-                        onChange={(e) => setForm({ ...form, date: e.target.value })}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: "flex", gap: "12px" }}>
-                    <FormNum label="프로폴리스 생산량 (g)" value={form.propolis_production} onChange={(v) => setForm({ ...form, propolis_production: v })} />
-                    <FormNum label="로얄젤리 생산량 (g)" value={form.royal_jelly_production} onChange={(v) => setForm({ ...form, royal_jelly_production: v })} />
-                  </div>
-
-                  <h4 style={styles.formSection} className="text-lg font-bold border-b pb-2 border-gray-200 dark:border-gray-800">환경 데이터</h4>
-                  <div style={{ display: "flex", gap: "12px" }}>
-                    <FormNum label="온도 (°C)" value={form.temperature} onChange={(v) => setForm({ ...form, temperature: v })} />
-                    <FormNum label="습도 (%)" value={form.humidity} onChange={(v) => setForm({ ...form, humidity: v })} />
-                  </div>
-
-                  <div style={styles.inputGroup}>
-                    <label style={styles.inputLabel}>비고</label>
-                    <textarea
-                      style={{ ...styles.input, minHeight: "100px", resize: "none" }}
-                      value={form.notes}
-                      onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                      placeholder="특이사항 및 관찰 메모"
-                    />
-                  </div>
-                </div>
-
-                {/* Right Column: Core Trait Range Sliders */}
-                <div className="space-y-6">
-                  <h4 style={styles.formSection} className="text-lg font-bold border-b pb-2 border-gray-200 dark:border-gray-800">🧬 핵심 형질 평가 (슬라이더 조작)</h4>
-
-                  {/* 1. Honey Production Slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <label style={styles.inputLabel}>수밀력 (꿀 생산량, kg)</label>
-                      <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>{form.honey_production} kg</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="0.5"
-                      value={form.honey_production}
-                      onChange={(e) => setForm({ ...form, honey_production: e.target.value })}
-                      style={{ width: "100%", accentColor: "var(--color-gold)", cursor: "pointer" }}
-                    />
-                  </div>
-
-                  {/* 2. Temperament Slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <label style={styles.inputLabel}>온순성 (Temperament)</label>
-                      <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>{form.temperament} / 5</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="5"
-                      step="1"
-                      value={form.temperament}
-                      onChange={(e) => setForm({ ...form, temperament: e.target.value })}
-                      style={{ width: "100%", accentColor: "var(--color-gold)", cursor: "pointer" }}
-                    />
-                  </div>
-
-                  {/* 3. Virus Resistance Slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <label style={styles.inputLabel}>바이러스 저항성</label>
-                      <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>{form.virus_resistance} / 5</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="5"
-                      step="1"
-                      value={form.virus_resistance}
-                      onChange={(e) => setForm({ ...form, virus_resistance: e.target.value })}
-                      style={{ width: "100%", accentColor: "var(--color-gold)", cursor: "pointer" }}
-                    />
-                  </div>
-
-                  {/* 4. Mite Resistance Slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <label style={styles.inputLabel}>응애 저항성</label>
-                      <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>{form.mite_resistance} / 5</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="5"
-                      step="1"
-                      value={form.mite_resistance}
-                      onChange={(e) => setForm({ ...form, mite_resistance: e.target.value })}
-                      style={{ width: "100%", accentColor: "var(--color-gold)", cursor: "pointer" }}
-                    />
-                  </div>
-
-                  {/* 5. Climate Adaptation Slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <label style={styles.inputLabel}>기후 적응성</label>
-                      <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>{form.climate_adaptation} / 5</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1"
-                      max="5"
-                      step="1"
-                      value={form.climate_adaptation}
-                      onChange={(e) => setForm({ ...form, climate_adaptation: e.target.value })}
-                      style={{ width: "100%", accentColor: "var(--color-gold)", cursor: "pointer" }}
-                    />
-                  </div>
-
-                  {/* 6. VSH Rate Slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <label style={styles.inputLabel}>VSH 행동 발현율 (%)</label>
-                      <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>{form.vsh_rate}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="5"
-                      value={form.vsh_rate}
-                      onChange={(e) => setForm({ ...form, vsh_rate: e.target.value })}
-                      style={{ width: "100%", accentColor: "var(--color-gold)", cursor: "pointer" }}
-                    />
-                  </div>
-
-                  {/* 7. Hygienic Rate Slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <label style={styles.inputLabel}>청소 청결율 (%)</label>
-                      <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>{form.hygienic_rate}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="5"
-                      value={form.hygienic_rate}
-                      onChange={(e) => setForm({ ...form, hygienic_rate: e.target.value })}
-                      style={{ width: "100%", accentColor: "var(--color-gold)", cursor: "pointer" }}
-                    />
-                  </div>
-
-                  {/* 8. Swarming Rate Slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <label style={styles.inputLabel}>분봉률 (%)</label>
-                      <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>{form.swarming_rate}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="5"
-                      value={form.swarming_rate}
-                      onChange={(e) => setForm({ ...form, swarming_rate: e.target.value })}
-                      style={{ width: "100%", accentColor: "var(--color-gold)", cursor: "pointer" }}
-                    />
-                  </div>
-
-                  {/* 9. Overwintering Survival Slider */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <label style={styles.inputLabel}>월동 생존율 (%)</label>
-                      <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>{form.overwintering_survival}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      step="5"
-                      value={form.overwintering_survival}
-                      onChange={(e) => setForm({ ...form, overwintering_survival: e.target.value })}
-                      style={{ width: "100%", accentColor: "var(--color-gold)", cursor: "pointer" }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Footer */}
-              <div className="p-6 border-t border-gray-200 dark:border-gray-800 flex justify-end gap-4 no-print">
-                <button
-                  type="button"
-                  style={styles.cardBtnDanger}
-                  onClick={() => setShowModal(false)}
-                  className="px-6 py-2.5 rounded-lg border hover:bg-gray-100 dark:hover:bg-gray-800 transition font-bold"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  style={{ ...styles.primaryBtn, minWidth: "150px" }}
-                  disabled={busy}
-                  className="px-6 py-2.5 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-white font-bold transition flex items-center justify-center"
-                >
-                  {busy ? "기록 중..." : "💾 형질 기록 저장"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

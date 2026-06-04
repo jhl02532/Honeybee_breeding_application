@@ -532,8 +532,6 @@ export default function DashboardScreen({
               selectedColony={selectedColony}
               onSelectColony={setSelectedColony}
               onRefresh={fetchDashboard}
-              showModal={showRecordModal}
-              setShowModal={setShowRecordModal}
               farmers={farmers}
               selectedFarmerId={selectedFarmerId}
               onFarmerChange={handleFarmerChange}
