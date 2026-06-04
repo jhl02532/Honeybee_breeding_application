@@ -54,7 +54,15 @@ function RecordFormContent() {
     if (queryColonyId) {
       setForm(f => ({ ...f, colony_id: queryColonyId }));
     }
-  }, [querySampleId, queryColonyId]);
+    // Fallback: If no sample_id but colony_id is specified, use colony code as sample_id
+    if (!querySampleId && queryColonyId && apiaries.length > 0) {
+      const allCols = apiaries.flatMap((a) => a.colonies);
+      const found = allCols.find((c) => String(c.id) === queryColonyId);
+      if (found) {
+        setForm(f => ({ ...f, sample_id: found.code }));
+      }
+    }
+  }, [querySampleId, queryColonyId, apiaries]);
 
   // Load User and Apiaries
   useEffect(() => {
@@ -132,15 +140,15 @@ function RecordFormContent() {
     fetchSampleMeta();
   }, [mounted, querySampleId]);
 
-  // Null Guard for sample_id parameter to prevent rendering or crash on missing/empty query
-  if (mounted && !querySampleId) {
+  // Null Guard for sample_id / colony_id parameter to prevent rendering or crash on missing/empty query
+  if (mounted && !querySampleId && !queryColonyId) {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen bg-slate-50 p-4">
         <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 shadow-md text-center">
           <span className="text-4xl">⚠️</span>
           <h2 className="text-xl font-bold text-slate-900 mt-4">잘못된 접근입니다</h2>
           <p className="text-sm text-slate-500 mt-2">
-            지정된 시료 ID(Sample ID)가 없거나 비어 있습니다. 유전자원 수집 현황 관제 지도 또는 목록에서 시료를 선택하고 진입해 주세요.
+            지정된 시료 ID(Sample ID) 또는 봉군 ID가 없거나 비어 있습니다. 대시보드나 관제 지도에서 진입해 주세요.
           </p>
           <button
             onClick={() => router.push("/")}
