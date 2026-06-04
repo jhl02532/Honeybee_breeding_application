@@ -307,47 +307,106 @@ export default function DashboardScreen({ user, onLogout }: DashboardScreenProps
             ...styles.topBar,
             display: "flex",
             alignItems: "center",
+            justifyContent: "space-between",
             gap: "16px",
-            padding: isMobile ? "16px 20px" : "24px 32px",
+            padding: isMobile ? "12px 20px" : "16px 32px",
             transition: "all 0.3s",
           }}
         >
-          {/* Collapsible Sidebar Toggle Trigger */}
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            style={{
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: "8px",
-              width: "40px",
-              height: "40px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              color: "#fbbf24",
-              fontSize: "18px",
-              transition: "all 0.2s",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-            }}
-            title={sidebarOpen ? "사이드바 접기" : "사이드바 펼치기"}
-          >
-            {sidebarOpen ? "◀" : "☰"}
-          </button>
+          {/* Left Side: Sidebar Toggle & Title */}
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              style={{
+                background: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                borderRadius: "8px",
+                width: "40px",
+                height: "40px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+                color: "#fbbf24",
+                fontSize: "18px",
+                transition: "all 0.2s",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              }}
+              title={sidebarOpen ? "사이드바 접기" : "사이드바 펼치기"}
+            >
+              {sidebarOpen ? "◀" : "☰"}
+            </button>
 
-          <div>
-            <h1 style={{ ...styles.pageTitle, fontSize: isMobile ? "18px" : "22px" }}>
-              {navItems.find((n) => n.key === view)?.icon}{" "}
-              {navItems.find((n) => n.key === view)?.label}
-            </h1>
-            <p style={styles.pageSubtitle}>
-              {user.farm_name ? `${user.farm_name} · ` : ""}
-              {new Date().toLocaleDateString("ko-KR", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
+            <div>
+              <h1 style={{ ...styles.pageTitle, fontSize: isMobile ? "18px" : "22px", margin: 0 }}>
+                {navItems.find((n) => n.key === view)?.icon}{" "}
+                {navItems.find((n) => n.key === view)?.label}
+              </h1>
+              <p style={{ ...styles.pageSubtitle, margin: 0 }}>
+                {user.farm_name ? `${user.farm_name} · ` : ""}
+                {new Date().toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+          </div>
+
+          {/* Right Side: User Profile Badges & Logout Button */}
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            {/* User Badge */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }} className="mobile-nav-hide">
+              <div style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "8px",
+                background: "linear-gradient(135deg, #fbbf24, #d97706)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "bold",
+                color: "#0b1120",
+                fontSize: "14px"
+              }}>
+                {user.username[0]?.toUpperCase()}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                <span style={{ fontSize: "13px", fontWeight: "bold", color: "#f3f4f6" }}>
+                  {user.farm_name || user.username}
+                </span>
+                <span style={{
+                  ...styles.roleBadge,
+                  alignSelf: "flex-start",
+                  background: user.role === "admin" ? "rgba(251,191,36,0.15)" : user.role === "researcher" ? "rgba(96,165,250,0.15)" : "rgba(52,211,153,0.15)",
+                  color: user.role === "admin" ? "#fbbf24" : user.role === "researcher" ? "#60a5fa" : "#34d399",
+                  padding: "1px 6px",
+                  fontSize: "10px",
+                }}>
+                  {user.role === "admin" ? "ADMIN" : user.role === "researcher" ? "RESEARCHER" : "FARMER"}
+                </span>
+              </div>
+            </div>
+
+            {/* Logout Button */}
+            <button
+              onClick={onLogout}
+              style={{
+                padding: "8px 16px",
+                borderRadius: "8px",
+                border: "1px solid rgba(239,68,68,0.3)",
+                background: "rgba(239,68,68,0.08)",
+                color: "#f87171",
+                fontSize: "12px",
+                fontWeight: 600,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                transition: "all 0.2s"
+              }}
+              className="btn-outline-hover"
+            >
+              로그아웃
+            </button>
           </div>
         </header>
 
