@@ -173,17 +173,27 @@ export default function ComparativeSynteny() {
                     const y2 = yCerana;
 
                     const isActive = selectedOrthologIdx === idx;
+                    const isInverted = pair.mellifera.strand !== pair.cerana.strand;
+
+                    const defaultColor = isInverted ? "rgba(244, 63, 94, 0.7)" : "rgba(14, 165, 233, 0.2)";
+                    const strokeColor = isActive ? "#fbbf24" : defaultColor;
+                    const strokeWidth = isActive
+                      ? (isInverted ? "6" : "4")
+                      : (isInverted ? "4" : "2");
 
                     return (
                       <path
                         key={idx}
                         d={`M ${x1} ${y1} C ${x1} ${y1 + 90}, ${x2} ${y2 - 90}, ${x2} ${y2}`}
                         onClick={() => setSelectedOrthologIdx(idx)}
-                        className={`fill-none stroke-purple-400 cursor-pointer transition-all duration-200 ${
-                          isActive
-                            ? "stroke-amber-400 stroke-[4px] opacity-90 drop-shadow-[0_0_6px_rgba(245,158,11,0.5)]"
-                            : "stroke-[2px] opacity-20 hover:opacity-75 hover:stroke-[3px]"
-                        }`}
+                        fill="none"
+                        stroke={strokeColor}
+                        strokeWidth={strokeWidth}
+                        className="cursor-pointer transition-all duration-200"
+                        opacity={isActive ? 0.95 : (isInverted ? 0.85 : 0.45)}
+                        style={{
+                          filter: isActive ? "drop-shadow(0 0 6px rgba(245,158,11,0.6))" : "none"
+                        }}
                       />
                     );
                   })}

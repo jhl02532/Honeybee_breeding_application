@@ -9244,7 +9244,7 @@ export const ORTHOLOGY_MAP: any = [
       "chrom": "LG5",
       "start": 1016188,
       "end": 1033088,
-      "strand": "-"
+      "strand": "+"
     },
     "cerana": {
       "symbol": "LOC108001348",
@@ -9327,7 +9327,7 @@ export const ORTHOLOGY_MAP: any = [
       "chrom": "LG15",
       "start": 2228204,
       "end": 2230060,
-      "strand": "+"
+      "strand": "-"
     },
     "identity": "88.2%",
     "category": "Chemoreceptor",
@@ -9384,7 +9384,7 @@ export const ORTHOLOGY_MAP: any = [
       "chrom": "LG12",
       "start": 839145,
       "end": 843487,
-      "strand": "+"
+      "strand": "-"
     },
     "identity": "90.1%",
     "category": "Chemoreceptor",

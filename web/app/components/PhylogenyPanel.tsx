@@ -49,6 +49,7 @@ export default function PhylogenyPanel() {
   const [simProgress, setSimProgress] = useState<number>(0);
   const [isSampleInserted, setIsSampleInserted] = useState<boolean>(false);
   const [nearestNodeName, setNearestNodeName] = useState<string>("");
+  const [hammingDistance, setHammingDistance] = useState<number>(0);
 
   // SNP Loci selection for user sample
   const [snp1, setSnp1] = useState<string>("A"); // Locus 1
@@ -128,7 +129,7 @@ export default function PhylogenyPanel() {
   };
 
   // Traversal to inject the user's sample adjacent to the closest reference node
-  const injectUserSample = (node: TreeNode, targetName: string): TreeNode => {
+  const injectUserSample = (node: TreeNode, targetName: string, mismatches: number): TreeNode => {
     if (!node) return node;
 
     // Check if children contains the target closest reference node
@@ -137,10 +138,13 @@ export default function PhylogenyPanel() {
       if (idx !== -1) {
         const targetNode = node.children[idx];
         
+        // Calculate Hamming distance ratio (mismatches / 5 loci)
+        const ratio = mismatches / 5.0;
+
         // Replace targetNode with a split parent node branching into target and user sample
         const userSampleNode: TreeNode = {
           name: "분석된 내 샘플 (User_Sample)",
-          length: 0.0001,
+          length: ratio, // Store the calculated genetic distance ratio
           children: [],
           isUserSample: true
         };
@@ -161,26 +165,39 @@ export default function PhylogenyPanel() {
       // Recursive call on children
       return {
         ...node,
-        children: node.children.map(c => injectUserSample(c, targetName))
+        children: node.children.map(c => injectUserSample(c, targetName, mismatches))
       };
     }
 
     return node;
   };
 
-  // Compile layout coordinates recursively
-  const computeCoordinates = (node: TreeNode, depth: number = 0, leafCount = { count: 0 }, maxDepth = { val: 0 }) => {
+  // Compile layout coordinates recursively with Hamming-distance scaling branch steps
+  const computeCoordinates = (
+    node: TreeNode, 
+    depth: number = 0, 
+    accumulatedX: number = 0,
+    leafCount = { count: 0 }, 
+    maxDepth = { val: 0 }
+  ) => {
     if (depth > maxDepth.val) {
       maxDepth.val = depth;
     }
 
-    node.x = depth; // horizontal placement based on depth spacing
+    node.x = accumulatedX; // dynamic horizontal placement based on branch lengths
 
     if (!node.children || node.children.length === 0) {
       node.y = leafCount.count * 16; // spacing leaves along Y
       leafCount.count += 1;
     } else {
-      node.children.forEach(c => computeCoordinates(c, depth + 1, leafCount, maxDepth));
+      node.children.forEach(c => {
+        let step = 1.0;
+        if (c.isUserSample && c.length !== undefined) {
+          // branch step scales dynamically between 0.2 (0 mismatches) and 1.8 (5 mismatches)
+          step = 0.2 + c.length * 1.6;
+        }
+        computeCoordinates(c, depth + 1, accumulatedX + step, leafCount, maxDepth);
+      });
       // Internal nodes are placed at the center of their children
       const ySum = node.children.reduce((sum, child) => sum + (child.y || 0), 0);
       node.y = ySum / node.children.length;
@@ -360,6 +377,7 @@ export default function PhylogenyPanel() {
           }
 
           setNearestNodeName(closestRefName);
+          setHammingDistance(minDistance);
           setIsSampleInserted(true);
           setIsSimulating(false);
 
@@ -377,6 +395,7 @@ export default function PhylogenyPanel() {
   const handleResetSimulation = () => {
     setIsSampleInserted(false);
     setNearestNodeName("");
+    setHammingDistance(0);
     setSelectedNode(null);
   };
 
@@ -412,7 +431,7 @@ export default function PhylogenyPanel() {
     
     // Inject User Sample adjacent to closest reference strain leaf if analysis was completed
     if (isSampleInserted && nearestNodeName) {
-      parsed = injectUserSample(parsed, nearestNodeName);
+      parsed = injectUserSample(parsed, nearestNodeName, hammingDistance);
     }
     
     computeCoordinates(parsed);

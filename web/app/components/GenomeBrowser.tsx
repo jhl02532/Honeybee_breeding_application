@@ -39,11 +39,55 @@ export default function GenomeBrowser({ species, onSpeciesChange }: GenomeBrowse
   const trackGeneRef = useRef<HTMLDivElement>(null);
   const [focusLineLeft, setFocusLineLeft] = useState<number | null>(null);
 
+  // Viewport virtualization states
+  const [trackZoom, setTrackZoom] = useState<number>(1.0);
+  const [viewportRange, setViewportRange] = useState<{ startBp: number; endBp: number }>({
+    startBp: 0,
+    endBp: 0,
+  });
+
+  const visibleStart = viewportRange.startBp === 0 && viewportRange.endBp === 0 ? 0 : viewportRange.startBp;
+  const visibleEnd = viewportRange.startBp === 0 && viewportRange.endBp === 0 ? activeChrom.size : viewportRange.endBp;
+
+  const handleScrollOrZoom = () => {
+    if (trackViewerRef.current) {
+      const { scrollLeft, clientWidth, scrollWidth } = trackViewerRef.current;
+      if (scrollWidth === 0) return;
+      
+      const trackStartOffset = 120; // Label column width
+      const trackWidth = Math.max(1, scrollWidth - trackStartOffset);
+      
+      const visibleLeft = Math.max(0, scrollLeft - trackStartOffset);
+      const visibleRight = Math.max(0, scrollLeft + clientWidth - trackStartOffset);
+      
+      const startPct = visibleLeft / trackWidth;
+      const endPct = visibleRight / trackWidth;
+      
+      const startBp = startPct * activeChrom.size;
+      const endBp = endPct * activeChrom.size;
+      
+      // Add a small padding (e.g. 500,000 bp) to avoid visual pop-in during scroll
+      setViewportRange({
+        startBp: Math.max(0, startBp - 500000),
+        endBp: Math.min(activeChrom.size, endBp + 500000),
+      });
+    }
+  };
+
   // Switch selected chromosome on species change
   useEffect(() => {
     setSelectedChrom("LG1");
     setFocusLineLeft(null);
+    setTrackZoom(1.0);
   }, [species]);
+
+  // Handle initialization and re-scrolling range recalculation
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleScrollOrZoom();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [selectedChrom, trackZoom, privateVariants, species]);
 
   // Open Sliding Details Drawer
   const openDrawer = (item: any, type: "gene" | "qtl" | "variant") => {
@@ -536,9 +580,33 @@ export default function GenomeBrowser({ species, onSpeciesChange }: GenomeBrowse
           {/* Zoomed-in Track Browser */}
           <div className="bg-slate-900/50 border border-slate-800/80 p-5 rounded-2xl backdrop-blur-md">
             <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
-              <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
-                🔍 {activeChrom.name} 상세 물리 트랙 브라우저
-              </h3>
+              <div className="flex items-center gap-4">
+                <h3 className="text-sm font-bold text-slate-300 flex items-center gap-2">
+                  🔍 {activeChrom.name} 상세 물리 트랙 브라우저
+                </h3>
+                {/* Viewport Zoom Control UI */}
+                <div className="flex bg-slate-950/60 p-1 border border-slate-800 rounded-lg gap-1">
+                  <button
+                    onClick={() => setTrackZoom((prev) => Math.max(1.0, prev - 1.0))}
+                    disabled={trackZoom <= 1.0}
+                    className="px-2 py-0.5 text-xs font-bold text-slate-400 hover:text-slate-200 disabled:opacity-40 disabled:hover:text-slate-400 transition-colors"
+                    title="축소"
+                  >
+                    －
+                  </button>
+                  <span className="text-[10px] font-mono font-bold text-amber-400 px-1 select-none">
+                    {trackZoom.toFixed(1)}x
+                  </span>
+                  <button
+                    onClick={() => setTrackZoom((prev) => Math.min(10.0, prev + 1.0))}
+                    disabled={trackZoom >= 10.0}
+                    className="px-2 py-0.5 text-xs font-bold text-slate-400 hover:text-slate-200 disabled:opacity-40 disabled:hover:text-slate-400 transition-colors"
+                    title="확대"
+                  >
+                    ＋
+                  </button>
+                </div>
+              </div>
 
               {/* Upload user VCF file */}
               <div className="flex items-center bg-slate-950/80 px-3 py-1.5 rounded-xl border border-slate-800 gap-3">
@@ -565,9 +633,13 @@ export default function GenomeBrowser({ species, onSpeciesChange }: GenomeBrowse
             {/* Scrollable Track container */}
             <div
               ref={trackViewerRef}
+              onScroll={handleScrollOrZoom}
               className="w-full bg-slate-950/60 border border-slate-900 rounded-xl p-5 overflow-x-auto relative"
             >
-              <div className="flex flex-col gap-6 min-w-[800px] relative">
+              <div
+                className="flex flex-col gap-6 relative"
+                style={{ width: `${Math.max(800, 800 * trackZoom)}px` }}
+              >
                 {/* Vertical Focus line helper */}
                 {focusLineLeft !== null && (
                   <div
@@ -583,6 +655,7 @@ export default function GenomeBrowser({ species, onSpeciesChange }: GenomeBrowse
                     {Array.from({ length: Math.ceil(activeChrom.size / 1000000) + 1 }).map((_, idx) => {
                       const posBp = idx * 1000000;
                       if (posBp > activeChrom.size) return null;
+                      if (posBp < visibleStart - 1000000 || posBp > visibleEnd + 1000000) return null;
                       const pct = (posBp / activeChrom.size) * 100;
 
                       return (
@@ -608,7 +681,7 @@ export default function GenomeBrowser({ species, onSpeciesChange }: GenomeBrowse
                   <div className="w-[120px] text-xs font-bold text-slate-400 tracking-wider">QTL REGIONS</div>
                   <div className="flex-1 h-full relative bg-slate-900/10 border border-dashed border-slate-900/40 rounded">
                     {qtls
-                      .filter((q: any) => q.chrom === activeChrom.name)
+                      .filter((q: any) => q.chrom === activeChrom.name && q.end >= visibleStart && q.start <= visibleEnd)
                       .map((qtl: any) => {
                         const left = (qtl.start / activeChrom.size) * 100;
                         const width = ((qtl.end - qtl.start) / activeChrom.size) * 100;
@@ -636,7 +709,7 @@ export default function GenomeBrowser({ species, onSpeciesChange }: GenomeBrowse
                     className="flex-1 h-full relative bg-slate-900/10 border border-dashed border-slate-900/40 rounded"
                   >
                     {genes
-                      .filter((g: any) => g.chrom === activeChrom.name)
+                      .filter((g: any) => g.chrom === activeChrom.name && g.end >= visibleStart && g.start <= visibleEnd)
                       .map((gene: any) => {
                         const left = (gene.start / activeChrom.size) * 100;
                         const width = Math.max(((gene.end - gene.start) / activeChrom.size) * 100, 0.6);
@@ -661,7 +734,7 @@ export default function GenomeBrowser({ species, onSpeciesChange }: GenomeBrowse
                   <div className="w-[120px] text-xs font-bold text-slate-400 tracking-wider">VARIANTS</div>
                   <div className="flex-1 h-full relative bg-slate-900/10 border border-dashed border-slate-900/40 rounded">
                     {variants
-                      .filter((v: any) => v.chrom === activeChrom.name)
+                      .filter((v: any) => v.chrom === activeChrom.name && v.pos >= visibleStart && v.pos <= visibleEnd)
                       .map((variant: any) => {
                         const left = (variant.pos / activeChrom.size) * 100;
 
@@ -684,7 +757,7 @@ export default function GenomeBrowser({ species, onSpeciesChange }: GenomeBrowse
                     <div className="w-[120px] text-xs font-bold text-slate-400 tracking-wider">LAB SNPS</div>
                     <div className="flex-1 h-full relative bg-slate-900/10 border border-dashed border-slate-900/40 rounded">
                       {privateVariants
-                        .filter((v) => v.chrom === activeChrom.name)
+                        .filter((v) => v.chrom === activeChrom.name && v.pos >= visibleStart && v.pos <= visibleEnd)
                         .map((pv: any, idx: number) => {
                           const left = (pv.pos / activeChrom.size) * 100;
 
