@@ -113,27 +113,7 @@ export default function AuthBar({ onAuth }: AuthBarProps) {
           {busy ? "..." : "로그인"}
         </button>
 
-        {/* Mode Toggle Link */}
-        <button
-          type="button"
-          onClick={() => {
-            window.location.href = "/register";
-          }}
-          style={{
-            background: "none",
-            border: "none",
-            color: "var(--color-gold)",
-            fontSize: "11px",
-            fontWeight: "bold",
-            cursor: "pointer",
-            textDecoration: "underline",
-            padding: "0 4px",
-            whiteSpace: "nowrap"
-          }}
-          className="auth-bar-toggle-link"
-        >
-          회원가입
-        </button>
+
       </form>
 
       {/* Floating Error Message */}
