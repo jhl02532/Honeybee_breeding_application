@@ -64,7 +64,7 @@ def sync_schema_columns(db):
                 print(f"[Schema Migration Warning] Failed to run statement '{stmt}': {e}")
 
 app = FastAPI(
-    title="MelittaBreed Central Beekeeping API",
+    title="K-BEE BANK Central Beekeeping API",
     description="PhD Beekeeping Breeding Record & Telemetry Sync Hub",
     version="2.0.0"
 )
@@ -162,7 +162,7 @@ def startup_event():
 @app.get("/")
 
 def read_root():
-    return {"name": "MelittaBreed Central API Server", "status": "Online", "version": "2.0.0"}
+    return {"name": "K-BEE BANK Central API Server", "status": "Online", "version": "2.0.0"}
 
 # Mount APIRouters
 app.include_router(auth.router)

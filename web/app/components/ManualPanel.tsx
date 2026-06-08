@@ -91,7 +91,7 @@ export default function ManualPanel() {
       >
         <div style={{ fontSize: "44px" }}>📖</div>
         <div>
-          <h2 style={{ ...styles.modalTitle, color: "#fbbf24", marginBottom: "6px" }}>멜리타브리드(MelittaBreed) 사용 안내서</h2>
+          <h2 style={{ ...styles.modalTitle, color: "#fbbf24", marginBottom: "6px" }}>K-BEE BANK 사용 안내서</h2>
           <p style={{ color: "#9ca3af", fontSize: "13px", lineHeight: "1.5" }}>
             본 시스템은 양봉 농가의 일상적인 내검 기록 관리부터, 대학 및 연구소 수준의 계통 추적과 형태학적 족보 관리를 원스톱으로 지원하는 육종 데이터 허브입니다.
           </p>
@@ -106,7 +106,7 @@ export default function ManualPanel() {
         onToggle={() => toggle("intro")}
       >
         <p style={{ marginBottom: "12px" }}>
-          멜리타브리드는 데이터의 객관성과 신뢰성을 위해 현장 농민과 분석 연구원의 전문 영역을 명확히 구분하여 처리합니다.
+          K-BEE BANK는 데이터의 객관성과 신뢰성을 위해 현장 농민과 분석 연구원의 전문 영역을 명확히 구분하여 처리합니다.
         </p>
         <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
           <li>

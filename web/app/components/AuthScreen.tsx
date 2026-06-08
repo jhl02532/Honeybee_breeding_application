@@ -95,7 +95,7 @@ export default function AuthScreen({ onAuth }: AuthScreenProps) {
             ...styles.authTitle,
             color: "#f3f4f6"
           }}>
-            MelittaBreed
+            K-BEE BANK
           </h1>
           <p style={styles.authSubtitle}>
             양봉 육종 기록 관리 시스템

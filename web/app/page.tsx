@@ -187,7 +187,7 @@ export default function Page() {
       {/* Sticky Header Navigation */}
       <header style={styles.landingHeader} className="mobile-header-padding">
         <div style={styles.landingLogo} onClick={() => scrollToSection(homeRef, "home")}>
-          <span>🐝</span> MelittaBreed
+          <span>🐝</span> K-BEE BANK
         </div>
         
         <nav style={styles.landingNav} className="mobile-nav-hide">
@@ -774,8 +774,8 @@ export default function Page() {
 
       {/* Footer */}
       <footer style={styles.landingFooter}>
-        <div style={{ fontWeight: "bold", color: "var(--text-main)" }}>MelittaBreed Beekeeping Ecosystem</div>
-        <div>© 2026 MelittaBreed Digital Breeding Center. All Rights Reserved.</div>
+        <div style={{ fontWeight: "bold", color: "var(--text-main)" }}>K-BEE BANK Beekeeping Ecosystem</div>
+        <div>© 2026 K-BEE BANK Digital Breeding Center. All Rights Reserved.</div>
         <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>
           본 플랫폼은 농림축산식품부/농촌진흥청 이상기온 대응 꿀벌 육종 유전자원 플랫폼 개발 과제(과제번호: RS-2025-0221478)의 지원을 받아 수행되었으며, 한국농업기술진흥원 및 국가 유전자원 보존 관리 가이드라인을 준수하여 가동됩니다.
         </div>

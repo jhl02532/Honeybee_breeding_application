@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "MelittaBreed Web Center",
+  title: "K-BEE BANK Web Center",
   description: "PhD Beekeeping Breeding Research Portal",
 };
 

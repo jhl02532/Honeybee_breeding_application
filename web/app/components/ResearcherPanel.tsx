@@ -144,7 +144,7 @@ export default function ResearcherPanel() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.setAttribute("href", url);
-      link.setAttribute("download", `MelittaBreed_National_BreedingData_${new Date().toISOString().split("T")[0]}.csv`);
+      link.setAttribute("download", `KBEEBANK_National_BreedingData_${new Date().toISOString().split("T")[0]}.csv`);
       link.style.visibility = "hidden";
       document.body.appendChild(link);
       link.click();

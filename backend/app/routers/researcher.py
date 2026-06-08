@@ -207,7 +207,7 @@ def export_global_csv(
         content=csv_data.encode("utf-8"),
         media_type="text/csv;charset=utf-8",
         headers={
-            "Content-Disposition": f"attachment; filename=MelittaBreed_Researcher_MasterData.csv"
+            "Content-Disposition": f"attachment; filename=KBEEBANK_Researcher_MasterData.csv"
         }
     )
 

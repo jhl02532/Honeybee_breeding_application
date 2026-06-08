@@ -248,7 +248,7 @@ export default function DashboardScreen({
           </span>
           {sidebarOpen && (
             <div style={{ animation: "fade 0.2s ease" }}>
-              <div style={styles.sidebarBrand}>MelittaBreed</div>
+              <div style={styles.sidebarBrand}>K-BEE BANK</div>
               <div style={styles.sidebarVersion}>v2.0 SaaS</div>
             </div>
           )}

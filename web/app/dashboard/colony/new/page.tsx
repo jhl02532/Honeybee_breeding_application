@@ -112,7 +112,7 @@ export default function NewColonyPage() {
     <div className="w-full min-h-screen bg-[#F8FAFC] text-slate-800 font-sans pb-12">
       <header className="w-full bg-white border-b border-slate-200 sticky top-0 z-40 px-8 py-4 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-2 text-xl font-bold text-slate-900 cursor-pointer" onClick={() => router.push("/")}>
-          <span className="text-2xl">🐝</span> MelittaBreed
+          <span className="text-2xl">🐝</span> K-BEE BANK
         </div>
         <h1 className="text-lg font-bold text-slate-800">🐝 신규 봉군 등록</h1>
         <button

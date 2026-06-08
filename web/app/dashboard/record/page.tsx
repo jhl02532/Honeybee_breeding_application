@@ -279,7 +279,7 @@ function RecordFormContent() {
       {/* Header (hidden on print) */}
       <header className="no-print w-full bg-white border-b border-slate-200 sticky top-0 z-40 px-8 py-4 flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-2 text-xl font-bold text-slate-900 cursor-pointer" onClick={() => router.push("/")}>
-          <span className="text-2xl">🐝</span> MelittaBreed
+          <span className="text-2xl">🐝</span> K-BEE BANK
         </div>
         <h1 className="text-lg font-bold text-slate-800">📋 독립형 형질 기록 및 진단 센터</h1>
         <button
@@ -561,7 +561,7 @@ function RecordFormContent() {
               📜 종봉 형질 진단 분석 검증서
             </h2>
             <p className="text-xs text-slate-500 mt-1 print:text-center">
-              MelittaBreed Digital Breeding Ecosystem
+              K-BEE BANK Digital Breeding Ecosystem
             </p>
           </div>
 
@@ -704,7 +704,7 @@ function RecordFormContent() {
 
             {/* Footer Sign-off */}
             <div className="border-t border-slate-100 pt-4 text-[10px] text-slate-400 leading-normal print:border-black print:text-black print:text-xs">
-              본 진단서는 MelittaBreed 디지털 정밀 육종 인프라에 근거하여 생성되었습니다. 
+              본 진단서는 K-BEE BANK 디지털 정밀 육종 인프라에 근거하여 생성되었습니다. 
               국가 농업 유전자원 보존 관리 기준 및 꿀벌 종봉 검증 표준을 준수합니다.
               <div className="mt-4 text-right font-bold text-slate-600 print:text-black text-xs font-semibold">
                 디지털 꿀벌 육종센터 분석관
