@@ -275,28 +275,6 @@ export default function Page() {
         </nav>
 
         <div style={styles.landingHeaderRight} className="auth-bar-header-container">
-          <button
-            onClick={handleToggleTheme}
-            style={{
-              background: "rgba(0,0,0,0.05)",
-              border: "1px solid var(--border-color)",
-              color: "var(--text-main)",
-              borderRadius: "8px",
-              width: "36px",
-              height: "36px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              fontSize: "16px",
-              transition: "all 0.2s",
-              marginRight: "4px"
-            }}
-            title={theme === "light" ? "다크 모드로 전환" : "라이트 모드로 전환"}
-          >
-            {theme === "light" ? "🌙" : "☀️"}
-          </button>
-          
           {user ? (
             /* Logged in state in header */
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }} className="auth-profile-badge-wrapper">
@@ -353,27 +331,33 @@ export default function Page() {
               </button>
             </div>
           ) : (
-            /* Unauthenticated inline form bar in header with guest genome browser button */
+            /* Unauthenticated inline form bar in header */
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }} className="auth-profile-badge-wrapper">
-              <button
-                onClick={() => handleLaunch("browser")}
-                style={{
-                  padding: "6px 12px",
-                  fontSize: "12px",
-                  fontWeight: "bold",
-                  borderRadius: "6px",
-                  border: "1px solid var(--color-gold)",
-                  background: "rgba(212,175,55,0.15)",
-                  color: "var(--color-gold)",
-                  cursor: "pointer",
-                }}
-                className="btn-outline-hover"
-              >
-                🧬 게놈 브라우저 바로가기
-              </button>
               <AuthBar onAuth={handleLogin} />
             </div>
           )}
+
+          <button
+            onClick={handleToggleTheme}
+            style={{
+              background: "rgba(0,0,0,0.05)",
+              border: "1px solid var(--border-color)",
+              color: "var(--text-main)",
+              borderRadius: "8px",
+              width: "36px",
+              height: "36px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              fontSize: "16px",
+              transition: "all 0.2s",
+              marginLeft: "4px"
+            }}
+            title={theme === "light" ? "다크 모드로 전환" : "라이트 모드로 전환"}
+          >
+            {theme === "light" ? "🌙" : "☀️"}
+          </button>
         </div>
       </header>
 
@@ -466,39 +450,20 @@ export default function Page() {
 
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", width: "100%", marginTop: "10px" }}>
             {!user ? (
-              <>
-                <div 
-                  style={{ 
-                    padding: "14px 24px", 
-                    borderRadius: "10px", 
-                    background: "rgba(255, 255, 255, 0.05)", 
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
-                  }}
-                  className="pulse-glow-tip"
-                >
-                  <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>
-                    💡 우측 상단에서 로그인 후 플랫폼 대시보드 서비스를 이용하실 수 있습니다. ↗
-                  </span>
-                </div>
-                <button
-                  onClick={() => handleLaunch("browser")}
-                  style={{
-                    padding: "12px 24px",
-                    fontSize: "15px",
-                    fontWeight: "bold",
-                    borderRadius: "10px",
-                    border: "none",
-                    background: "linear-gradient(135deg, #3b82f6, #1d4ed8)",
-                    color: "#ffffff",
-                    cursor: "pointer",
-                    boxShadow: "0 4px 15px rgba(59, 130, 246, 0.3)"
-                  }}
-                  className="btn-hover-effect"
-                >
-                  🧬 범유전체 게놈 브라우저 바로가기 (비회원 공개) ➔
-                </button>
-              </>
+              <div 
+                style={{ 
+                  padding: "14px 24px", 
+                  borderRadius: "10px", 
+                  background: "rgba(255, 255, 255, 0.05)", 
+                  border: "1px solid rgba(255, 255, 255, 0.1)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.2)"
+                }}
+                className="pulse-glow-tip"
+              >
+                <span style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)" }}>
+                  💡 우측 상단에서 로그인 후 플랫폼 대시보드 서비스를 이용하실 수 있습니다. ↗
+                </span>
+              </div>
             ) : (
               <button
                 onClick={() => setShowDashboard(true)}
