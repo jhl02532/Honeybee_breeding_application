@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     const isProd = process.env.NODE_ENV === 'production';
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 

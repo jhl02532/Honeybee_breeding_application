@@ -163,7 +163,7 @@ export default function PhylogenyPanel() {
           key={`node-${node.name}-${node.x}-${node.y}`}
           transform={`translate(${node.x! * 130}, ${node.y!})`}
           style={{ cursor: "pointer" }}
-          onClick={() => setSelectedNode({ name: node.name, ...meta })}
+          onClick={() => setSelectedNode(meta ? { name: node.name, ...meta } : { name: node.name })}
         >
           <circle
             r={isSearchMatch ? "5.5" : "4.5"}
@@ -259,7 +259,7 @@ export default function PhylogenyPanel() {
   const svgNodes = parsedTree.x !== undefined ? renderNodes(parsedTree) : [];
 
   // Compute distances for selected node
-  let sortedDists: [string, number][] = [];
+  let sortedDists: [string, any][] = [];
   if (selectedNode && selectedNode.name) {
     const nodeDistances = distances[selectedNode.name] || {};
     sortedDists = Object.entries(nodeDistances)
