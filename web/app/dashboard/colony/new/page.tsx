@@ -70,7 +70,7 @@ export default function NewColonyPage() {
     setBusy(true);
     try {
       const body = {
-        code: form.code || null,
+        code: form.code || "Auto",
         apiary_id: parseInt(form.apiary_id),
         status: form.status,
         queen_tag: form.queen_tag || "Unknown",
