@@ -84,7 +84,17 @@ export default function NewColonyPage() {
 
       if (!res.ok) {
         const errorData = await res.json();
-        alert(errorData.detail || "봉군 생성에 실패했습니다.");
+        let errorMsg = "봉군 생성에 실패했습니다.";
+        if (errorData && errorData.detail) {
+          if (typeof errorData.detail === "string") {
+            errorMsg = errorData.detail;
+          } else if (Array.isArray(errorData.detail)) {
+            errorMsg = errorData.detail.map((err: any) => `${err.loc?.join(".") || "error"}: ${err.msg}`).join("\n");
+          } else if (typeof errorData.detail === "object") {
+            errorMsg = JSON.stringify(errorData.detail);
+          }
+        }
+        alert(errorMsg);
         return;
       }
 

@@ -93,7 +93,7 @@ class TraitRecord(TraitRecordBase):
 
 # --- Colony Schemas ---
 class ColonyBase(BaseModel):
-    code: str
+    code: Optional[str] = None
     status: str = "Active"
     queen_tag: str = "Unknown"
     mother_colony_id: Optional[int] = None

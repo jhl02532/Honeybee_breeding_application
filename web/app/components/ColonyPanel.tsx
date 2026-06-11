@@ -49,7 +49,17 @@ export default function ColonyPanel({
       });
       if (!res.ok) {
         const d = await res.json();
-        alert(d.detail || "생성 실패");
+        let errorMsg = "생성 실패";
+        if (d && d.detail) {
+          if (typeof d.detail === "string") {
+            errorMsg = d.detail;
+          } else if (Array.isArray(d.detail)) {
+            errorMsg = d.detail.map((err: any) => `${err.loc?.join(".") || "error"}: ${err.msg}`).join("\n");
+          } else if (typeof d.detail === "object") {
+            errorMsg = JSON.stringify(d.detail);
+          }
+        }
+        alert(errorMsg);
         return;
       }
       setShowModal(false);
