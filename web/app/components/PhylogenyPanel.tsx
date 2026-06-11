@@ -7,56 +7,39 @@ interface TreeNode {
   name?: string;
   length?: number;
   children?: TreeNode[];
-  isUserSample?: boolean;
   x?: number;
   y?: number;
 }
 
 interface MetadataItem {
   Project_ID: string;
-  Original_Sequence_ID: string;
-  Year: string;
-  Country_Eng: string;
-  Region_Kor: string;
-  Final_Haplogroup: string;
-  Q0?: string;
-  Q1?: string;
-  Source_Group?: string;
-  Barcode?: string; // Simulated sequence barcode
+  Display_Name: string;
+  Color: string;
+  Count: number;
+  Group: string;
+  Italic: boolean;
 }
 
 export default function PhylogenyPanel() {
   const [treeData, setTreeData] = useState<{ [key: string]: string } | null>(null);
   const [metadata, setMetadata] = useState<MetadataItem[]>([]);
-  const [activeTreeKey, setActiveTreeKey] = useState<string>("korean_with_mellifera");
+  const [distances, setDistances] = useState<{ [key: string]: { [key: string]: number } }>({});
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
 
   // Search & Selection State
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [selectedNode, setSelectedNode] = useState<TreeNode | null>(null);
+  const [selectedNode, setSelectedNode] = useState<any | null>(null);
 
   // SVG Zoom & Pan State
-  const [zoom, setZoom] = useState<number>(0.8);
-  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 80, y: 40 });
+  const [zoom, setZoom] = useState<number>(0.85);
+  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 40, y: 30 });
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const dragStart = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const distanceCacheRef = useRef<Map<string, { closestRefName: string; minDistance: number }>>(new Map());
 
-  // User Sample Simulation State
-  const [isSimulating, setIsSimulating] = useState<boolean>(false);
-  const [simProgress, setSimProgress] = useState<number>(0);
-  const [isSampleInserted, setIsSampleInserted] = useState<boolean>(false);
-  const [nearestNodeName, setNearestNodeName] = useState<string>("");
-  const [hammingDistance, setHammingDistance] = useState<number>(0);
-
-  // SNP Loci selection for user sample
-  const [snp1, setSnp1] = useState<string>("A"); // Locus 1
-  const [snp2, setSnp2] = useState<string>("T"); // Locus 2
-  const [snp3, setSnp3] = useState<string>("G"); // Locus 3
-  const [snp4, setSnp4] = useState<string>("A"); // Locus 4
-  const [snp5, setSnp5] = useState<string>("T"); // Locus 5
+  // Image Modal State
+  const [showImageModal, setShowImageModal] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchPhylogeny = async () => {
@@ -68,20 +51,9 @@ export default function PhylogenyPanel() {
         }
         const json = await res.json();
         
-        // Enhance metadata with simulated genetic barcodes based on haplogroups
-        const enrichedMetadata = (json.metadata || []).map((item: MetadataItem) => {
-          let barcode = "A T G A T T A G C G"; // default
-          const hg = item.Final_Haplogroup || "K";
-          if (hg === "K") barcode = "A T G A T C A C G A";
-          else if (hg === "C") barcode = "A T G A T T A G G C";
-          else if (hg === "T") barcode = "T T A A C C G G T T";
-          else if (hg === "B") barcode = "A C G T A C G T A C";
-          else if (hg === "I") barcode = "C C G A T T A G C G";
-          return { ...item, Barcode: barcode };
-        });
-
         setTreeData(json.trees);
-        setMetadata(enrichedMetadata);
+        setMetadata(json.metadata || []);
+        setDistances(json.distances || {});
       } catch (err: any) {
         setError(err.message || "서버 통신 오류가 발생했습니다.");
       } finally {
@@ -91,7 +63,7 @@ export default function PhylogenyPanel() {
     fetchPhylogeny();
   }, []);
 
-  // Stack-based Newick String Parser (non-recursive to prevent browser call-stack overflows)
+  // Stack-based Newick String Parser
   const parseNewick = (newickStr: string): TreeNode => {
     const stack: TreeNode[] = [];
     let current: TreeNode = { children: [] };
@@ -128,51 +100,7 @@ export default function PhylogenyPanel() {
     return current;
   };
 
-  // Traversal to inject the user's sample adjacent to the closest reference node
-  const injectUserSample = (node: TreeNode, targetName: string, mismatches: number): TreeNode => {
-    if (!node) return node;
-
-    // Check if children contains the target closest reference node
-    if (node.children) {
-      const idx = node.children.findIndex(c => c.name === targetName);
-      if (idx !== -1) {
-        const targetNode = node.children[idx];
-        
-        // Calculate Hamming distance ratio (mismatches / 5 loci)
-        const ratio = mismatches / 5.0;
-
-        // Replace targetNode with a split parent node branching into target and user sample
-        const userSampleNode: TreeNode = {
-          name: "분석된 내 샘플 (User_Sample)",
-          length: ratio, // Store the calculated genetic distance ratio
-          children: [],
-          isUserSample: true
-        };
-
-        const newSplitParent: TreeNode = {
-          length: (targetNode.length || 0.0002) / 2,
-          children: [
-            { ...targetNode, length: (targetNode.length || 0.0002) / 2 },
-            userSampleNode
-          ]
-        };
-
-        const updatedChildren = [...node.children];
-        updatedChildren[idx] = newSplitParent;
-        return { ...node, children: updatedChildren };
-      }
-
-      // Recursive call on children
-      return {
-        ...node,
-        children: node.children.map(c => injectUserSample(c, targetName, mismatches))
-      };
-    }
-
-    return node;
-  };
-
-  // Compile layout coordinates recursively with Hamming-distance scaling branch steps
+  // Compile layout coordinates
   const computeCoordinates = (
     node: TreeNode, 
     depth: number = 0, 
@@ -184,45 +112,33 @@ export default function PhylogenyPanel() {
       maxDepth.val = depth;
     }
 
-    node.x = accumulatedX; // dynamic horizontal placement based on branch lengths
+    node.x = accumulatedX;
 
     if (!node.children || node.children.length === 0) {
-      node.y = leafCount.count * 16; // spacing leaves along Y
+      node.y = leafCount.count * 24; // Y line height spacing
       leafCount.count += 1;
     } else {
       node.children.forEach(c => {
-        let step = 1.0;
-        if (c.isUserSample && c.length !== undefined) {
-          // branch step scales dynamically between 0.2 (0 mismatches) and 1.8 (5 mismatches)
-          step = 0.2 + c.length * 1.6;
-        }
-        computeCoordinates(c, depth + 1, accumulatedX + step, leafCount, maxDepth);
+        computeCoordinates(c, depth + 1, accumulatedX + 1.0, leafCount, maxDepth);
       });
-      // Internal nodes are placed at the center of their children
       const ySum = node.children.reduce((sum, child) => sum + (child.y || 0), 0);
       node.y = ySum / node.children.length;
     }
   };
 
-  // Render SVG links and node elements
+  // Render SVG links
   const renderLinks = (node: TreeNode, links: JSX.Element[] = []): JSX.Element[] => {
     if (node.children) {
       node.children.forEach(c => {
-        // Draw orthogonal horizontal-vertical cladogram paths
-        const pathData = `M ${node.x! * 120} ${node.y!} H ${c.x! * 120} V ${c.y!}`;
-        const isHighlight = c.isUserSample || node.isUserSample;
+        const pathData = `M ${node.x! * 130} ${node.y!} H ${c.x! * 130} V ${c.y!}`;
         links.push(
           <path
             key={`link-${node.x}-${node.y}-${c.x}-${c.y}`}
             d={pathData}
             fill="none"
-            stroke={isHighlight ? "var(--color-gold)" : "#222222"}
-            strokeWidth={isHighlight ? "3" : "2"}
-            opacity={1}
-            style={{
-              stroke: isHighlight ? "var(--color-gold) !important" : "#222222 !important",
-              strokeWidth: isHighlight ? "3px !important" : "2px !important",
-            }}
+            stroke="#4b5563"
+            strokeWidth="1.8"
+            opacity={0.85}
           />
         );
         renderLinks(c, links);
@@ -231,56 +147,47 @@ export default function PhylogenyPanel() {
     return links;
   };
 
+  // Render SVG nodes
   const renderNodes = (node: TreeNode, nodes: JSX.Element[] = []): JSX.Element[] => {
     const isLeaf = !node.children || node.children.length === 0;
     const isSearchMatch = searchQuery && node.name && node.name.toLowerCase().includes(searchQuery.toLowerCase());
     
     if (isLeaf && node.name) {
+      const meta = metadata.find(m => m.Project_ID === node.name);
+      const nodeColor = meta?.Color || "var(--text-muted)";
+      const displayName = meta?.Display_Name || node.name;
+      const isItalic = meta?.Italic || false;
+
       nodes.push(
         <g
           key={`node-${node.name}-${node.x}-${node.y}`}
-          transform={`translate(${node.x! * 120}, ${node.y!})`}
+          transform={`translate(${node.x! * 130}, ${node.y!})`}
           style={{ cursor: "pointer" }}
-          onClick={() => {
-            const meta = metadata.find(m => m.Project_ID === node.name);
-            setSelectedNode({ ...node, ...meta });
-          }}
+          onClick={() => setSelectedNode({ name: node.name, ...meta })}
         >
-          {node.isUserSample ? (
-            // Gold Star node for user sample
-            <path
-              d="M 0,-6 L 2,-2 L 6,-2 L 3,1 L 4,5 L 0,3 L -4,5 L -3,1 L -6,-2 L -2,-2 Z"
-              fill="var(--color-gold)"
-              stroke="#ffffff"
-              strokeWidth="1.5"
-              className="pulse-effect"
-            />
-          ) : (
-            // Normal dot node
-            <circle
-              r={isSearchMatch ? "5" : "3"}
-              fill={isSearchMatch ? "#ef4444" : selectedNode?.name === node.name ? "var(--color-gold)" : "var(--text-muted)"}
-              stroke={isSearchMatch ? "#ffffff" : "none"}
-              strokeWidth={isSearchMatch ? "2" : "0"}
-            />
-          )}
+          <circle
+            r={isSearchMatch ? "5.5" : "4.5"}
+            fill={nodeColor}
+            stroke={isSearchMatch || (selectedNode && selectedNode.name === node.name) ? "#ffffff" : "none"}
+            strokeWidth={isSearchMatch || (selectedNode && selectedNode.name === node.name) ? "1.5" : "0"}
+          />
           <text
-            dx={node.isUserSample ? "10" : "8"}
+            dx="10"
             dy="4"
-            fontSize={node.isUserSample || isSearchMatch ? "11px" : "9px"}
-            fontWeight={node.isUserSample || isSearchMatch || selectedNode?.name === node.name ? "bold" : "normal"}
-            fill={node.isUserSample ? "var(--color-gold)" : isSearchMatch ? "#ef4444" : selectedNode?.name === node.name ? "var(--color-gold)" : "var(--text-muted)"}
+            fontSize={isSearchMatch || (selectedNode && selectedNode.name === node.name) ? "11px" : "10px"}
+            fontWeight={isSearchMatch || (selectedNode && selectedNode.name === node.name) ? "bold" : "normal"}
+            fill={(selectedNode && selectedNode.name === node.name) ? "var(--color-gold)" : "#e6edf3"}
+            fontStyle={isItalic ? "italic" : "normal"}
           >
-            {node.name}
+            {displayName}
           </text>
         </g>
       );
     } else {
-      // Draw internal junction dots
       nodes.push(
         <circle
           key={`int-node-${node.x}-${node.y}`}
-          cx={node.x! * 120}
+          cx={node.x! * 130}
           cy={node.y!}
           r="2.5"
           fill="rgba(255,255,255,0.15)"
@@ -315,90 +222,6 @@ export default function PhylogenyPanel() {
     setZoom(prev => Math.max(0.2, Math.min(prev * zoomFactor, 3)));
   };
 
-  // Variant Marker comparison nearest-neighbor algorithm
-  const handleRunDNAAnalysis = () => {
-    setIsSimulating(true);
-    setSimProgress(0);
-    setIsSampleInserted(false);
-
-    // Dynamic progress bar animation
-    const interval = setInterval(() => {
-      setSimProgress(p => {
-        if (p >= 100) {
-          clearInterval(interval);
-          
-          // Execute Hamming distance calculation against database barcodes with memoization
-          const userBarcode = `${snp1} ${snp2} ${snp3} ${snp4} ${snp5}`;
-          let minDistance = 999;
-          let closestRefName = "";
-
-          const cacheKey = `${snp1}_${snp2}_${snp3}_${snp4}_${snp5}_${activeTreeKey}`;
-          if (distanceCacheRef.current.has(cacheKey)) {
-            const cached = distanceCacheRef.current.get(cacheKey)!;
-            closestRefName = cached.closestRefName;
-            minDistance = cached.minDistance;
-          } else {
-            // Select reference database strains based on active tree node leaves
-            const currentTreeNodes: string[] = [];
-            const currentTreeStr = treeData ? treeData[activeTreeKey] || "" : "";
-            const matches = currentTreeStr.match(/[A-Za-z0-9_-]+/g) || [];
-            matches.forEach(m => {
-              if (m && !["Apis_mellifera_outgroup", "LC640350", "LC640349", "LC640351", "LC640352", "LC640346", "LC640345", "LC640347", "LC640348", "OR936096", "MW309837"].includes(m)) {
-                currentTreeNodes.push(m);
-              }
-            });
-
-            metadata.forEach((ref) => {
-              if (!currentTreeNodes.includes(ref.Project_ID)) return;
-              const refBarcode = ref.Barcode || "A T G A T T A G C G";
-              
-              // Compare the 5 locus variants (at corresponding positions in barcode indices 0, 2, 4, 6, 8)
-              const refParts = refBarcode.split(" ");
-              const userParts = userBarcode.split(" ");
-              
-              let mismatches = 0;
-              for (let i = 0; i < 5; i++) {
-                if (refParts[i] !== userParts[i]) mismatches += 1;
-              }
-
-              if (mismatches < minDistance) {
-                minDistance = mismatches;
-                closestRefName = ref.Project_ID;
-              }
-            });
-
-            // In case no closest match was found, pick a default reference strain
-            if (!closestRefName && currentTreeNodes.length > 0) {
-              closestRefName = currentTreeNodes[0];
-            }
-
-            // Cache the calculated result
-            distanceCacheRef.current.set(cacheKey, { closestRefName, minDistance });
-          }
-
-          setNearestNodeName(closestRefName);
-          setHammingDistance(minDistance);
-          setIsSampleInserted(true);
-          setIsSimulating(false);
-
-          // Proactively open node info panel for target matched node
-          const matchMeta = metadata.find(m => m.Project_ID === closestRefName);
-          setSelectedNode({ name: closestRefName, ...matchMeta });
-
-          return 100;
-        }
-        return p + 20;
-      });
-    }, 150);
-  };
-
-  const handleResetSimulation = () => {
-    setIsSampleInserted(false);
-    setNearestNodeName("");
-    setHammingDistance(0);
-    setSelectedNode(null);
-  };
-
   if (loading) {
     return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "300px" }}>
@@ -423,17 +246,11 @@ export default function PhylogenyPanel() {
     );
   }
 
-  // Parse and Layout the Active Tree
+  // Parse and Layout the consensus Tree
   let parsedTree: TreeNode = {};
-  const rawTreeStr = treeData ? treeData[activeTreeKey] || "" : "";
+  const rawTreeStr = treeData ? treeData["consensus"] || treeData["korean_with_mellifera"] || "" : "";
   if (rawTreeStr) {
-    let parsed = parseNewick(rawTreeStr);
-    
-    // Inject User Sample adjacent to closest reference strain leaf if analysis was completed
-    if (isSampleInserted && nearestNodeName) {
-      parsed = injectUserSample(parsed, nearestNodeName, hammingDistance);
-    }
-    
+    const parsed = parseNewick(rawTreeStr);
     computeCoordinates(parsed);
     parsedTree = parsed;
   }
@@ -441,16 +258,21 @@ export default function PhylogenyPanel() {
   const svgLinks = parsedTree.x !== undefined ? renderLinks(parsedTree) : [];
   const svgNodes = parsedTree.x !== undefined ? renderNodes(parsedTree) : [];
 
-  // Compute bounding height based on leaf count to set viewBox height dynamically
-  const leafNodesCount = rawTreeStr.match(/\(/g)?.length || 50;
-  const computedSvgHeight = Math.max(400, leafNodesCount * 16 + 80);
+  // Compute distances for selected node
+  let sortedDists: [string, number][] = [];
+  if (selectedNode && selectedNode.name) {
+    const nodeDistances = distances[selectedNode.name] || {};
+    sortedDists = Object.entries(nodeDistances)
+      .filter(([name]) => name !== selectedNode.name) // exclude self
+      .sort((a, b) => a[1] - b[1]); // sort ascending
+  }
 
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "24px" }}>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "24px", width: "100%" }}>
       
-      {/* ── LEFT SECTION: Interactive DNA Sequencer Widget ── */}
+      {/* ── LEFT SECTION: Genetic Distance & Metadata analysis panel ── */}
       <div style={{
-        flex: "1 1 300px",
+        flex: "1 1 320px",
         background: "var(--bg-surface)",
         border: "1px solid var(--border-color)",
         borderRadius: "14px",
@@ -458,177 +280,154 @@ export default function PhylogenyPanel() {
         display: "flex",
         flexDirection: "column",
         gap: "18px",
-        boxShadow: "var(--shadow-sm)"
+        boxShadow: "var(--shadow-sm)",
+        minHeight: "500px"
       }}>
-        <div>
-          <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "var(--color-gold)", margin: "0 0 4px 0" }}>
-            🧬 가상 농가 샘플 시뮬레이터
-          </h3>
-          <p style={{ fontSize: "12px", color: "var(--text-muted)", margin: 0 }}>
-            농가에서 분석한 꿀벌 mtDNA 변이 마커(SNP)를 입력하고 시뮬레이션을 작동하여 국내 핵심 계통군 내에서의 유전적 위치를 시각 분석합니다.
-          </p>
-        </div>
-
-        {/* 5 Mitochondrial SNP Loci Choices */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {[
-            { label: "Locus 3010 (Haplotype Marker)", val: snp1, setVal: setSnp1 },
-            { label: "Locus 4520 (Climate Adaptability)", val: snp2, setVal: setSnp2 },
-            { label: "Locus 7890 (CSBV Resistance Locus)", val: snp3, setVal: setSnp3 },
-            { label: "Locus 9210 (Cubital-linked Marker)", val: snp4, setVal: setSnp4 },
-            { label: "Locus 11450 (Mite Cleansing behavioral)", val: snp5, setVal: setSnp5 },
-          ].map((item, idx) => (
-            <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "11px", fontWeight: 500, color: "var(--text-muted)" }}>{item.label}</span>
-              <select
-                value={item.val}
-                onChange={(e) => item.setVal(e.target.value)}
-                style={{
-                  padding: "4px 8px",
-                  borderRadius: "6px",
-                  border: "1px solid var(--border-color)",
-                  background: "var(--bg-app)",
-                  color: "var(--text-main)",
-                  fontSize: "12px",
-                  outline: "none",
-                  fontWeight: "bold"
-                }}
-              >
-                <option value="A">A (Adenine)</option>
-                <option value="T">T (Thymine)</option>
-                <option value="G">G (Guanine)</option>
-                <option value="C">C (Cytosine)</option>
-              </select>
-            </div>
-          ))}
-        </div>
-
-        {/* Simulator controls */}
-        {isSimulating ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-            <span style={{ fontSize: "11px", color: "var(--color-gold)", fontWeight: "bold" }}>
-              🧬 분석 정렬 및 유전 거리(Hamming Distance) 계산 중... {simProgress}%
-            </span>
-            <div style={{ width: "100%", height: "6px", background: "var(--border-color)", borderRadius: "4px", overflow: "hidden" }}>
-              <div style={{ width: `${simProgress}%`, height: "100%", background: "var(--color-gold)", transition: "width 0.2s" }} />
-            </div>
-          </div>
-        ) : isSampleInserted ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <div style={{
-              background: "rgba(251, 191, 36, 0.1)",
-              border: "1px solid rgba(251, 191, 36, 0.2)",
-              borderRadius: "8px",
-              padding: "10px",
-              fontSize: "12px",
-              lineHeight: 1.5
-            }}>
-              🎯 분석 완료! 입력된 변이 마커와 유전적으로 가장 인접한 참조 샘플은{" "}
-              <strong style={{ color: "var(--color-gold)" }}>{nearestNodeName}</strong>입니다. 계통수 분기점에{" "}
-              <strong>'User_Sample'</strong> 노드가 삽입되었습니다.
-            </div>
-            <button
-              onClick={handleResetSimulation}
-              style={{
-                width: "100%",
-                padding: "10px",
-                borderRadius: "8px",
-                border: "none",
-                background: "rgba(239, 68, 68, 0.15)",
-                color: "#f87171",
-                fontSize: "13px",
-                fontWeight: "bold",
-                cursor: "pointer"
-              }}
-            >
-              시뮬레이션 초기화
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={handleRunDNAAnalysis}
-            style={{
-              width: "100%",
-              padding: "12px",
-              borderRadius: "8px",
-              border: "none",
-              background: "linear-gradient(135deg, var(--color-gold), var(--color-gold-hover))",
-              color: "#ffffff",
-              fontSize: "13px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              boxShadow: "var(--shadow-glow)"
-            }}
-          >
-            🧬 계통 판별 DNA 분석 작동
-          </button>
-        )}
-
-        {/* Selected node metadata display panel */}
-        {selectedNode && (
-          <div style={{
-            borderTop: "1px solid var(--border-color)",
-            paddingTop: "16px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px"
-          }}>
-            <h4 style={{ fontSize: "14px", fontWeight: "bold", color: "var(--color-gold)", margin: 0 }}>
-              {selectedNode.name === "분석된 내 샘플 (User_Sample)" ? "📍 내 샘플 유전 분석 정보" : "📋 선택된 꿀벌 개체 정보"}
-            </h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "11px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--text-muted)" }}>시료 코드</span>
-                <span style={{ fontWeight: "bold", color: "#f3f4f6" }}>{selectedNode.name}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--text-muted)" }}>수집 연도</span>
-                <span>{(selectedNode as any).Year || "2025/2026"}년</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--text-muted)" }}>국가 (Country)</span>
-                <span>{(selectedNode as any).Country_Eng || "Rep. Korea"}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--text-muted)" }}>수집 권역 (Region)</span>
-                <span>{(selectedNode as any).Region_Kor || "격리육종장/농가"}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ color: "var(--text-muted)" }}>미토콘드리아 Haplogroup</span>
-                <span style={{
-                  color: "var(--color-gold)",
-                  fontWeight: "bold",
-                  background: "var(--color-gold-glow)",
-                  padding: "0px 6px",
-                  borderRadius: "4px"
-                }}>{(selectedNode as any).Final_Haplogroup || "K"}</span>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "4px" }}>
-                <span style={{ color: "var(--text-muted)" }}>변이 SNP Loci Barcode</span>
-                <span style={{
-                  fontFamily: "monospace",
-                  background: "var(--bg-app)",
-                  padding: "6px",
-                  borderRadius: "6px",
-                  fontSize: "10px",
-                  textAlign: "center",
-                  letterSpacing: "1px",
-                  color: "var(--color-gold)",
-                  border: "1px solid var(--border-color)"
-                }}>
-                  {selectedNode.name === "분석된 내 샘플 (User_Sample)" 
-                    ? `${snp1} ${snp2} ${snp3} ${snp4} ${snp5}` 
-                    : (selectedNode as any).Barcode || "A T G A T T A G C G"}
+        
+        {selectedNode ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {/* Selected Node Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", paddingBottom: "12px", borderBottom: "1px solid var(--border-color)" }}>
+              <span style={{
+                width: "12px",
+                height: "12px",
+                borderRadius: "50%",
+                backgroundColor: selectedNode.Color || "var(--text-muted)"
+              }} />
+              <div>
+                <h4 style={{ fontSize: "16px", fontWeight: "bold", color: "#ffffff", margin: 0 }}>
+                  {selectedNode.Display_Name || selectedNode.name}
+                </h4>
+                <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+                  {selectedNode.Group === "cerana" ? "🐝 토종벌 하플로그룹" : (selectedNode.Group === "ref" ? "🍯 해외 참조 품종" : "🦟 외집단 (Outgroup)")}
                 </span>
               </div>
             </div>
+
+            {/* Info grid */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "12px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--text-muted)" }}>계통/종 코드</span>
+                <span style={{ fontWeight: "bold", fontFamily: "monospace", color: "#f3f4f6" }}>{selectedNode.name}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "var(--text-muted)" }}>분석 샘플 수</span>
+                <span style={{ fontWeight: "bold", color: "var(--color-gold)" }}>{selectedNode.Count} 개체</span>
+              </div>
+            </div>
+
+            {/* Genetic Distance Analysis */}
+            {sortedDists.length > 0 && (
+              <div style={{ marginTop: "4px" }}>
+                <h5 style={{ fontSize: "12px", fontWeight: "bold", color: "var(--color-gold)", margin: "0 0 8px 0" }}>
+                  📊 유전 거리(ML Distance) 판별 결과
+                </h5>
+                <div style={{
+                  background: "var(--bg-app)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "10px",
+                  overflow: "hidden"
+                }}>
+                  <div style={{ display: "flex", background: "rgba(255,255,255,0.03)", padding: "8px 12px", fontSize: "11px", fontWeight: "bold", borderBottom: "1px solid var(--border-color)" }}>
+                    <span style={{ flex: 1, color: "var(--text-muted)" }}>비교 계통군</span>
+                    <span style={{ width: "80px", textAlign: "right", color: "var(--text-muted)" }}>유전 거리</span>
+                  </div>
+                  <div style={{ maxHeight: "220px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+                    {sortedDists.map(([otherName, dist], idx) => {
+                      const otherMeta = metadata.find(m => m.Project_ID === otherName);
+                      const otherDisp = otherMeta?.Display_Name || otherName;
+                      const otherColor = otherMeta?.Color || "var(--text-muted)";
+                      
+                      return (
+                        <div
+                          key={otherName}
+                          style={{
+                            display: "flex",
+                            padding: "8px 12px",
+                            fontSize: "11px",
+                            borderBottom: idx === sortedDists.length - 1 ? "none" : "1px solid rgba(255,255,255,0.03)",
+                            alignItems: "center"
+                          }}
+                        >
+                          <span style={{
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "50%",
+                            backgroundColor: otherColor,
+                            marginRight: "8px",
+                            flexShrink: 0
+                          }} />
+                          <span style={{ flex: 1, color: "#e6edf3", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>
+                            {otherDisp}
+                          </span>
+                          <span style={{
+                            width: "80px",
+                            textAlign: "right",
+                            fontFamily: "monospace",
+                            fontWeight: "bold",
+                            color: idx < 3 ? "var(--color-gold)" : "#8b949e"
+                          }}>
+                            {dist.toFixed(5)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "center", justifyContent: "center", height: "100%", minHeight: "240px", color: "var(--text-muted)", textAlign: "center" }}>
+            <span style={{ fontSize: "28px" }}>🧬</span>
+            <div style={{ fontSize: "13px", fontWeight: "bold" }}>노드 분석 대기 중</div>
+            <p style={{ fontSize: "11px", margin: 0, padding: "0 20px", lineHeight: 1.5 }}>
+              오른쪽 계통수에서 원형 노드나 계통 이름을 클릭하시면 상세 유전 분석 정보 및 타 품종과의 유전 거리 판별 행렬이 활성화됩니다.
+            </p>
           </div>
         )}
+
+        {/* Publication-Ready Visualization Image Card */}
+        <div style={{ marginTop: "auto", paddingTop: "16px", borderTop: "1px solid var(--border-color)" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <span style={{ fontSize: "9px", fontWeight: "bold", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Publication-Ready Tree Report
+            </span>
+            <h5 style={{ fontSize: "13px", fontweight: "bold", color: "#e6edf3", margin: 0 }}>
+              고해상도 시각화 계통수 리포트
+            </h5>
+            <p style={{ fontSize: "11px", color: "var(--text-muted)", margin: 0, lineHeight: 1.4 }}>
+              IQ-TREE 및 Ultrafast Bootstrap 지지도(1000회)가 포함된 고화질 시각화 차트 결과 분석 리포트를 확인하세요.
+            </p>
+            <button
+              onClick={() => setShowImageModal(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "1px solid var(--color-gold)",
+                background: "rgba(251, 191, 36, 0.05)",
+                color: "var(--color-gold)",
+                fontSize: "12px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                marginTop: "4px"
+              }}
+            >
+              🖼️ 고해상도 분석 이미지 보기
+            </button>
+          </div>
+        </div>
+
       </div>
 
       {/* ── RIGHT SECTION: Interactive SVG Tree Canvas ── */}
       <div style={{
-        flex: "2 1 600px",
+        flex: "2 1 500px",
         background: "var(--bg-surface)",
         border: "1px solid var(--border-color)",
         borderRadius: "14px",
@@ -640,41 +439,21 @@ export default function PhylogenyPanel() {
         minHeight: "500px"
       }}>
         
-        {/* Tree selectors & search */}
+        {/* Tree Header & Search */}
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
-          <div style={{ display: "flex", gap: "6px" }}>
-            {[
-              { key: "korean_with_mellifera", label: "국내 꿀벌 중심 계통수" },
-              { key: "korean_only", label: "국내 토종벌 전용 계통수" },
-              { key: "balanced", label: "글로벌 참조 균형 계통수" }
-            ].map(t => (
-              <button
-                key={t.key}
-                onClick={() => {
-                  setActiveTreeKey(t.key);
-                  setSelectedNode(null);
-                }}
-                style={{
-                  padding: "6px 12px",
-                  borderRadius: "6px",
-                  border: "1px solid var(--border-color)",
-                  background: activeTreeKey === t.key ? "var(--color-gold-glow)" : "var(--bg-app)",
-                  color: activeTreeKey === t.key ? "var(--color-gold)" : "var(--text-muted)",
-                  fontSize: "12px",
-                  fontWeight: activeTreeKey === t.key ? "bold" : "normal",
-                  cursor: "pointer",
-                  transition: "all 0.15s"
-                }}
-              >
-                {t.label}
-              </button>
-            ))}
+          <div>
+            <h3 style={{ fontSize: "16px", fontWeight: "bold", color: "#ffffff", margin: 0 }}>
+              🧬 mtDNA 합의 계통수 및 참조 서열 계통 분석
+            </h3>
+            <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
+              IQ-TREE GTR+G 모델 분석 결과 (Outgroup: Bombus ignitus)
+            </span>
           </div>
 
           <div style={{ width: "200px" }}>
             <input
               type="text"
-              placeholder="시료명 검색 및 강조..."
+              placeholder="계통명 검색 및 강조..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
@@ -693,12 +472,10 @@ export default function PhylogenyPanel() {
 
         {/* Tree canvas instruction guide */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "11px", color: "var(--text-muted)" }}>
-          <span>💡 마우스 드래그로 화면 이동, 휠 스크롤로 확대/축소가 가능합니다.</span>
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button onClick={() => { setZoom(0.8); setPan({ x: 80, y: 40 }); }} style={{ background: "transparent", border: "none", color: "var(--color-gold)", cursor: "pointer", fontWeight: "bold" }}>
-              [화면 리셋]
-            </button>
-          </div>
+          <span>💡 마우스 드래그로 화면 이동, 마우스 휠로 확대/축소가 가능합니다.</span>
+          <button onClick={() => { setZoom(0.85); setPan({ x: 40, y: 30 }); }} style={{ background: "transparent", border: "none", color: "var(--color-gold)", cursor: "pointer", fontWeight: "bold" }}>
+            [화면 리셋]
+          </button>
         </div>
 
         {/* SVG Wrapper */}
@@ -710,7 +487,7 @@ export default function PhylogenyPanel() {
             background: "var(--bg-app)",
             overflow: "hidden",
             position: "relative",
-            minHeight: "400px"
+            minHeight: "420px"
           }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
@@ -732,12 +509,71 @@ export default function PhylogenyPanel() {
             </svg>
           ) : (
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%", color: "var(--text-muted)", fontSize: "13px" }}>
-              선택한 계통수 Newick 데이터를 로드하지 못했습니다.
+              합의 계통수 데이터를 로드하지 못했습니다.
             </div>
           )}
         </div>
       </div>
-      
+
+      {/* ── HIGH RESOLUTION IMAGE MODAL ── */}
+      {showImageModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(13, 17, 23, 0.96)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+            padding: "20px"
+          }}
+          onClick={() => setShowImageModal(false)}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: "20px",
+              right: "20px",
+              fontSize: "24px",
+              color: "#ffffff",
+              cursor: "pointer",
+              background: "rgba(255,255,255,0.1)",
+              borderRadius: "50%",
+              width: "40px",
+              height: "40px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "1px solid rgba(255,255,255,0.2)"
+            }}
+            onClick={() => setShowImageModal(false)}
+          >
+            ✕
+          </div>
+          <img
+            src="/mtDNA_phylo_tree.png"
+            alt="mtDNA Phylogenetic Tree Analysis"
+            style={{
+              maxWidth: "95%",
+              maxHeight: "85%",
+              objectFit: "contain",
+              borderRadius: "8px",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+              border: "1px solid #30363d"
+            }}
+            onClick={(e) => e.stopPropagation()} // prevent close when clicking image
+          />
+          <div style={{ color: "#8b949e", fontSize: "12px", marginTop: "14px", textAlign: "center" }}>
+            <strong>Honeybee mtDNA Phylogenetic Tree Analysis</strong> - IQ-TREE GTR+G (1000 bootstrap replicates)
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

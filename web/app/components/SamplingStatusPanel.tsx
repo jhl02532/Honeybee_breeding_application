@@ -91,6 +91,7 @@ function filterReducer(state: FilterState, action: FilterAction): FilterState {
         return {
           ...state,
           mode: "domestic",
+          sourceFilter: "project",
           regionFilter: "all",
           countryFilter: null,
           countrySearch: ""
@@ -99,6 +100,7 @@ function filterReducer(state: FilterState, action: FilterAction): FilterState {
         return {
           ...state,
           mode: "global",
+          sourceFilter: "all",
           regionFilter: null,
           countryFilter: "all",
           countrySearch: ""

@@ -385,50 +385,85 @@ def get_sampling_status(
 
 @router.get("/phylogeny-data")
 def get_phylogeny_data():
-    """mtDNA 계통수 Newick 파일 및 TSV 메타데이터를 상대경로로 읽어 일괄 조회"""
-    mt_dna_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "mtDNA")
+    """consensus_tree 폴더의 합의 계통수 및 유전 거리(ML Distance) 일괄 조회"""
+    consensus_dir = "/Users/jeonghyeonlee/Desktop/Ongoing/2026/2026_육종과제/data/mtDNA/consensus_tree"
     
-    trees = {}
-    tree_files = {
-        "korean_with_mellifera": "korean_with_mellifera_tree_rooted.treefile",
-        "korean_only": "korean_only_tree_rooted.treefile",
-        "balanced": "balanced_mtDNA_tree.treefile"
-    }
-    
-    for key, fname in tree_files.items():
-        path = os.path.join(mt_dna_dir, fname)
-        try:
-            if os.path.exists(path):
-                with open(path, "r", encoding="utf-8") as f:
-                    trees[key] = f.read().strip()
-            else:
-                # Try unrooted fallback if rooted file is missing
-                unrooted_fname = fname.replace("_rooted", "")
-                unrooted_path = os.path.join(mt_dna_dir, unrooted_fname)
-                if os.path.exists(unrooted_path):
-                    with open(unrooted_path, "r", encoding="utf-8") as f:
-                        trees[key] = f.read().strip()
-                else:
-                    trees[key] = ""
-        except Exception as e:
-            print(f"Error reading tree file {fname}: {str(e)}")
-            trees[key] = ""
-            
-    # Read metadata TSV
-    metadata = []
-    tsv_path = os.path.join(mt_dna_dir, "mtDNA_metadata.tsv")
+    # 1. Read the Newick tree string
+    tree_path = os.path.join(consensus_dir, "consensus_tree.treefile")
+    tree_str = ""
     try:
-        if os.path.exists(tsv_path):
-            with open(tsv_path, "r", encoding="utf-8") as f:
-                reader = csv.DictReader(f, delimiter="\t")
-                for row in reader:
-                    metadata.append(dict(row))
+        if os.path.exists(tree_path):
+            with open(tree_path, "r", encoding="utf-8") as f:
+                tree_str = f.read().strip()
     except Exception as e:
-        print(f"Error reading TSV metadata: {str(e)}")
-        
+        print(f"Error reading consensus treefile: {e}")
+
+    # 2. Parse the distance matrix (consensus_tree.mldist)
+    dist_path = os.path.join(consensus_dir, "consensus_tree.mldist")
+    distances = {}
+    try:
+        if os.path.exists(dist_path):
+            with open(dist_path, "r", encoding="utf-8") as f:
+                lines = [line.strip() for line in f if line.strip()]
+            if lines:
+                num_species = int(lines[0])
+                labels = []
+                matrix_data = {}
+                for line in lines[1:]:
+                    parts = line.split()
+                    if parts:
+                        label = parts[0]
+                        labels.append(label)
+                        dists = [float(x) for x in parts[1:]]
+                        matrix_data[label] = dists
+                
+                # Map each list of floats to a dict of labels
+                for label, dists in matrix_data.items():
+                    distances[label] = {labels[i]: dists[i] for i in range(len(labels))}
+    except Exception as e:
+        print(f"Error parsing consensus mldist file: {e}")
+
+    # 3. Define metadata based on NODE_INFO in plot_phylo_tree.py
+    node_info = {
+        'Hap_N_n284':    ('Hap-N  (n=284)',     '#ffb74d', 284, 'cerana', False),
+        'Hap_K_n139':    ('Hap-K  (n=139)',     '#4fc3f7', 139, 'cerana', False),
+        'Hap_B_n52':     ('Hap-B  (n=52)',      '#ce93d8',  52, 'cerana', False),
+        'Hap_C_n31':     ('Hap-C  (n=31)',      '#81c784',  31, 'cerana', False),
+        'Hap_T_n11':     ('Hap-T  (n=11)',      '#f06292',  11, 'cerana', False),
+        'Hap_L_n6':      ('Hap-L  (n=6)',       '#80deea',   6, 'cerana', False),
+        'Hap_I_n1':      ('Hap-I  (n=1)',       '#a5d6a7',   1, 'cerana', False),
+        'Hap_S_n1':      ('Hap-S  (n=1)',       '#fff176',   1, 'cerana', False),
+        'mellifera':     ('A. mellifera',        '#ff9800',   1, 'ref',    True),
+        'dorsata':       ('A. dorsata',          '#e91e63',   1, 'ref',    True),
+        'florea':        ('A. florea',           '#4caf50',   1, 'ref',    True),
+        'andreniformis': ('A. andreniformis',    '#9c27b0',   1, 'ref',    True),
+        'nuluensis':     ('A. nuluensis',        '#00bcd4',   1, 'ref',    True),
+        'nigrocincta':   ('A. nigrocincta',      '#f44336',   1, 'ref',    True),
+        'koschevnikovi': ('A. koschevnikovi',    '#3f51b5',   1, 'ref',    True),
+        'laboriosa':     ('A. laboriosa',        '#78909c',   1, 'ref',    True),
+        'Bombus_ignitus':('Bombus ignitus',      '#795548',   1, 'outgroup',True),
+    }
+
+    metadata = []
+    for key, val in node_info.items():
+        metadata.append({
+            "Project_ID": key,
+            "Display_Name": val[0],
+            "Color": val[1],
+            "Count": val[2],
+            "Group": val[3],
+            "Italic": val[4]
+        })
+
     return {
-        "trees": trees,
-        "metadata": metadata
+        "trees": {
+            "consensus": tree_str,
+            "korean_with_mellifera": tree_str,  # fallback for existing client-side selectors
+            "korean_only": tree_str,
+            "balanced": tree_str
+        },
+        "metadata": metadata,
+        "distances": distances
     }
 
 
