@@ -63,7 +63,7 @@ type FilterAction =
 const initialFilterState: FilterState = {
   mode: "domestic",
   speciesFilter: "all",
-  sourceFilter: "all",
+  sourceFilter: "project",
   regionFilter: "all",
   countryFilter: null,
   countrySearch: "",
@@ -119,14 +119,14 @@ function filterReducer(state: FilterState, action: FilterAction): FilterState {
         return {
           ...state,
           speciesFilter: "all",
-          sourceFilter: "all",
+          sourceFilter: "project",
           regionFilter: "all"
         };
       } else {
         return {
           ...state,
           speciesFilter: "all",
-          sourceFilter: "all",
+          sourceFilter: "project",
           countryFilter: "all",
           countrySearch: ""
         };
