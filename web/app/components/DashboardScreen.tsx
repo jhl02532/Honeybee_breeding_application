@@ -176,9 +176,7 @@ export default function DashboardScreen({
     if (user.role === "researcher" || user.role === "admin") {
       navItems.push(
         { key: "browser", label: "게놈 브라우저", icon: "🧬" },
-        { key: "synteny", label: "비교 유전체 분석", icon: "🔀" },
-        { key: "chemo", label: "화학수용체 탐색기", icon: "👃" },
-        { key: "marker", label: "분자 마커 설계", icon: "🏷️" }
+        { key: "synteny", label: "비교 유전체 분석", icon: "🔀" }
       );
     }
 
@@ -262,7 +260,7 @@ export default function DashboardScreen({
           }}
         >
           {navItems.map((item) => {
-            const isDisabled = item.key === "chemo" || item.key === "marker";
+            const isDisabled = false;
             return (
               <button
                 key={item.key}

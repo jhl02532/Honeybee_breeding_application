@@ -204,12 +204,15 @@ function RecordFormContent() {
       }
 
       setSaved(true);
-      alert("💾 형질 기록이 백엔드 DB에 정상 동기화되었습니다! 진단서를 발행합니다.");
-      
-      // Open print prompt
-      setTimeout(() => {
-        window.print();
-      }, 500);
+      if (user?.role === "farmer") {
+        alert("💾 형질 기록이 백엔드 DB에 정상 동기화되었습니다!");
+      } else {
+        alert("💾 형질 기록이 백엔드 DB에 정상 동기화되었습니다! 진단서를 발행합니다.");
+        // Open print prompt
+        setTimeout(() => {
+          window.print();
+        }, 500);
+      }
       
     } catch (err: any) {
       alert(err.message || "기록 저장 실패");
@@ -281,7 +284,9 @@ function RecordFormContent() {
         <div className="flex items-center gap-2 text-xl font-bold text-slate-900 cursor-pointer" onClick={() => router.push("/")}>
           <span className="text-2xl">🐝</span> K-BEE BANK
         </div>
-        <h1 className="text-lg font-bold text-slate-800">📋 독립형 형질 기록 및 진단 센터</h1>
+        <h1 className="text-lg font-bold text-slate-800">
+          {user?.role === "farmer" ? "📋 독립형 형질 기록 센터" : "📋 독립형 형질 기록 및 진단 센터"}
+        </h1>
         <button
           onClick={() => router.push("/")}
           className="px-4 py-2 border border-slate-200 rounded-xl hover:bg-slate-50 transition text-sm font-semibold flex items-center gap-1.5"
@@ -294,7 +299,7 @@ function RecordFormContent() {
       <div className="max-w-7xl mx-auto p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left Form: Inputs (hidden on print) */}
-        <form onSubmit={handleSave} className="no-print lg:col-span-7 bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col gap-6">
+        <form onSubmit={handleSave} className={`no-print ${user?.role === "farmer" ? "lg:col-span-12" : "lg:col-span-7"} bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col gap-6`}>
           <div className="border-b border-slate-100 pb-4">
             <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
               📝 표현형 형질 기입 폼
@@ -549,169 +554,175 @@ function RecordFormContent() {
               disabled={busy}
               className="flex-2 py-3 px-6 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 text-sm font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/10 cursor-pointer"
             >
-              {busy ? "기록 저장 중..." : "💾 최종 형질 기록 저장 및 진단서 발행"}
+              {busy
+                ? "기록 저장 중..."
+                : user?.role === "farmer"
+                  ? "💾 최종 형질 기록 저장"
+                  : "💾 최종 형질 기록 저장 및 진단서 발행"}
             </button>
           </div>
         </form>
 
         {/* Right Preview Card: Radar Chart Diagnostic Certificate (Visible always on screen & print) */}
-        <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col gap-6 print-card print-only">
-          <div className="border-b border-slate-100 pb-4 print:border-black">
-            <h2 className="text-lg font-bold text-slate-900 print:text-2xl print:text-center print:w-full">
-              📜 종봉 형질 진단 분석 검증서
-            </h2>
-            <p className="text-xs text-slate-500 mt-1 print:text-center">
-              K-BEE BANK Digital Breeding Ecosystem
-            </p>
+        {user?.role !== "farmer" && (
+          <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col gap-6 print-card print-only">
+            <div className="border-b border-slate-100 pb-4 print:border-black">
+              <h2 className="text-lg font-bold text-slate-900 print:text-2xl print:text-center print:w-full">
+                📜 종봉 형질 진단 분석 검증서
+              </h2>
+              <p className="text-xs text-slate-500 mt-1 print:text-center">
+                K-BEE BANK Digital Breeding Ecosystem
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Visual Vector SVG Chart */}
+              <div className="flex justify-center bg-slate-50 p-4 border border-slate-100 rounded-2xl print:bg-white print:border-none">
+                <svg
+                  width={320}
+                  height={240}
+                  viewBox="0 0 320 240"
+                  className="block overflow-visible"
+                >
+                  {/* 1. Grid level diamonds */}
+                  {[20, 40, 60, 80, 100].map((lvl) => {
+                    const size = lvl * 0.9;
+                    const x0 = 160;
+                    const y0 = 120 - size;
+                    const x1 = 160 + size;
+                    const y1 = 120;
+                    const x2 = 160;
+                    const y2 = 120 + size;
+                    const x3 = 160 - size;
+                    const y3 = 120;
+
+                    return (
+                      <polygon
+                        key={lvl}
+                        points={`${x0},${y0} ${x1},${y1} ${x2},${y2} ${x3},${y3}`}
+                        fill="none"
+                        stroke="#E2E8F0"
+                        strokeWidth="1"
+                        className="print:stroke-slate-200"
+                      />
+                    );
+                  })}
+
+                  {/* 2. Grid axial lines */}
+                  <line x1={160} y1={20} x2={160} y2={220} stroke="#E2E8F0" className="print:stroke-slate-200" />
+                  <line x1={60} y1={120} x2={260} y2={120} stroke="#E2E8F0" className="print:stroke-slate-200" />
+
+                  {/* 3. Radial labels */}
+                  <text x={160} y={15} fill="#64748B" className="print:fill-slate-800" fontSize="9" fontWeight="bold" textAnchor="middle">
+                    수밀력 ({form.honey_production})
+                  </text>
+                  <text x={265} y={123} fill="#64748B" className="print:fill-slate-800" fontSize="9" fontWeight="bold" textAnchor="start">
+                    질병저항성 ({form.vsh_rate})
+                  </text>
+                  <text x={160} y={230} fill="#64748B" className="print:fill-slate-800" fontSize="9" fontWeight="bold" textAnchor="middle">
+                    온순성 ({parseInt(form.temperament) * 20})
+                  </text>
+                  <text x={55} y={123} fill="#64748B" className="print:fill-slate-800" fontSize="9" fontWeight="bold" textAnchor="end">
+                    번식력 ({form.overwintering_survival})
+                  </text>
+
+                  {/* 4. Score polygon data */}
+                  <polygon
+                    points={getPoints()}
+                    fill="rgba(212, 175, 55, 0.15)"
+                    stroke="#D4AF37"
+                    strokeWidth="2.5"
+                    className="print:fill-amber-500/10 print:stroke-amber-600"
+                  />
+
+                  {/* Vertices dot highlights */}
+                  <circle cx={160} cy={120 - parseFloat(form.honey_production) * 0.9} r="3.5" fill="#D4AF37" />
+                  <circle cx={160 + parseFloat(form.vsh_rate) * 0.9} cy={120} r="3.5" fill="#D4AF37" />
+                  <circle cx={160} cy={120 + (parseInt(form.temperament) * 20) * 0.9} r="3.5" fill="#D4AF37" />
+                  <circle cx={160 - parseFloat(form.overwintering_survival) * 0.9} cy={120} r="3.5" fill="#D4AF37" />
+                </svg>
+              </div>
+
+              {/* Target information */}
+              <div className="bg-slate-50 p-4 border border-slate-100 rounded-xl space-y-2 text-xs print:bg-white print:border-black print:text-sm">
+                <div className="grid grid-cols-2 gap-1">
+                  <div><span className="font-semibold text-slate-500 print:text-black">검증 시료 ID:</span> <span className="font-bold">{form.sample_id || "-"}</span></div>
+                  <div><span className="font-semibold text-slate-500 print:text-black">진단 일자:</span> <span className="font-bold">{form.date}</span></div>
+                  <div><span className="font-semibold text-slate-500 print:text-black">품종 대분류:</span> <span className="font-bold">{form.species}</span></div>
+                  <div><span className="font-semibold text-slate-500 print:text-black">수집 구분:</span> <span className="font-bold">{form.source_type}</span></div>
+                  {selectedColonyObject && (
+                    <div className="col-span-2"><span className="font-semibold text-slate-500 print:text-black">연동 벌통코드:</span> <span className="font-bold text-amber-600 print:text-black">{selectedColonyObject.code} ({selectedColonyObject.queen_tag})</span></div>
+                  )}
+                  {form.address && (
+                    <div className="col-span-2"><span className="font-semibold text-slate-500 print:text-black">수집 주소:</span> <span className="font-bold">{form.address}</span></div>
+                  )}
+                </div>
+              </div>
+
+              {/* Prescriptions */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider print:text-black print:text-sm">
+                  🩺 종합 소견 및 행동학적 처방전
+                </h4>
+                <div className="text-xs text-slate-600 bg-slate-50 p-4 border border-slate-100 rounded-xl space-y-3 leading-relaxed print:bg-white print:border-none print:p-0 print:text-slate-800 print:text-sm">
+                  <div>
+                    {parseFloat(form.vsh_rate) >= 80 ? (
+                      <span className="text-emerald-600 font-bold">✓ VSH 응애 방어인자 완벽 고정군:</span>
+                    ) : parseFloat(form.vsh_rate) < 40 ? (
+                      <span className="text-red-500 font-bold">⚠ 응애 감수 붕괴 위험군:</span>
+                    ) : (
+                      <span className="text-slate-700 font-bold">• 행동 위생 활성 보통군:</span>
+                    )}
+                    {" "}
+                    {parseFloat(form.vsh_rate) >= 80 
+                      ? "바로아응애 청소행동율이 매우 높습니다. 친환경 방제가 가능하며 저항성 수벌 양성용 모본으로 추천합니다."
+                      : parseFloat(form.vsh_rate) < 40
+                        ? "응애 자극 감지율이 매우 낮으므로 기생충 감염 예방을 위해 유기산/티몰 집중 긴급 방제가 요구됩니다."
+                        : "보편적인 응애 방어력을 유지하고 있습니다. 봄벌 양성 시기 기온 변화 관찰 및 추가 위생 모니터링이 필요합니다."
+                    }
+                  </div>
+                  <div>
+                    {parseFloat(form.honey_production) >= 70 ? (
+                      <span className="text-emerald-600 font-bold">✓ 다량 수밀 특화종:</span>
+                    ) : (
+                      <span className="text-slate-700 font-bold">• 채집 생산력 양호군:</span>
+                    )}
+                    {" "}
+                    {parseFloat(form.honey_production) >= 70
+                      ? "아카시아 유밀기 수밀력이 매우 뛰어납니다. 다량의 채밀 성과를 기대할 수 있는 우수 품종입니다."
+                      : "일반적인 꿀 채집 활동량을 유지하고 있습니다. 안정적인 식량 축적 및 내부 사양 관리를 병행하십시오."
+                    }
+                  </div>
+                  <div>
+                    {parseInt(form.temperament) >= 4 ? (
+                      <span className="text-emerald-600 font-bold">✓ 극온순 관리 용이성 확증:</span>
+                    ) : parseInt(form.temperament) <= 2 ? (
+                      <span className="text-red-500 font-bold">⚠ 관리 경계 및 방어공격 강세:</span>
+                    ) : (
+                      <span className="text-slate-700 font-bold">• 봉군 성향 보통군:</span>
+                    )}
+                    {" "}
+                    {parseInt(form.temperament) >= 4
+                      ? "벌의 방어 자극 공격성이 적어 방충복 없이도 내검 조작이 매우 쾌적한 최상위 온순 봉군입니다."
+                      : parseInt(form.temperament) <= 2
+                        ? "외부 침입에 대한 공격 성향이 높으므로 내검 시 보호장구를 철저히 착용하고 충격을 피하십시오."
+                        : "보통의 사나움을 보이며 기상 악화 혹은 기온 급강하 시 일시적으로 공격 행동이 늘어날 수 있습니다."
+                    }
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Sign-off */}
+              <div className="border-t border-slate-100 pt-4 text-[10px] text-slate-400 leading-normal print:border-black print:text-black print:text-xs">
+                본 진단서는 K-BEE BANK 디지털 정밀 육종 인프라에 근거하여 생성되었습니다. 
+                국가 농업 유전자원 보존 관리 기준 및 꿀벌 종봉 검증 표준을 준수합니다.
+                <div className="mt-4 text-right font-bold text-slate-600 print:text-black text-xs font-semibold">
+                  디지털 꿀벌 육종센터 분석관
+                </div>
+              </div>
+            </div>
           </div>
-
-          <div className="space-y-6">
-            {/* Visual Vector SVG Chart */}
-            <div className="flex justify-center bg-slate-50 p-4 border border-slate-100 rounded-2xl print:bg-white print:border-none">
-              <svg
-                width={320}
-                height={240}
-                viewBox="0 0 320 240"
-                className="block overflow-visible"
-              >
-                {/* 1. Grid level diamonds */}
-                {[20, 40, 60, 80, 100].map((lvl) => {
-                  const size = lvl * 0.9;
-                  const x0 = 160;
-                  const y0 = 120 - size;
-                  const x1 = 160 + size;
-                  const y1 = 120;
-                  const x2 = 160;
-                  const y2 = 120 + size;
-                  const x3 = 160 - size;
-                  const y3 = 120;
-
-                  return (
-                    <polygon
-                      key={lvl}
-                      points={`${x0},${y0} ${x1},${y1} ${x2},${y2} ${x3},${y3}`}
-                      fill="none"
-                      stroke="#E2E8F0"
-                      strokeWidth="1"
-                      className="print:stroke-slate-200"
-                    />
-                  );
-                })}
-
-                {/* 2. Grid axial lines */}
-                <line x1={160} y1={20} x2={160} y2={220} stroke="#E2E8F0" className="print:stroke-slate-200" />
-                <line x1={60} y1={120} x2={260} y2={120} stroke="#E2E8F0" className="print:stroke-slate-200" />
-
-                {/* 3. Radial labels */}
-                <text x={160} y={15} fill="#64748B" className="print:fill-slate-800" fontSize="9" fontWeight="bold" textAnchor="middle">
-                  수밀력 ({form.honey_production})
-                </text>
-                <text x={265} y={123} fill="#64748B" className="print:fill-slate-800" fontSize="9" fontWeight="bold" textAnchor="start">
-                  질병저항성 ({form.vsh_rate})
-                </text>
-                <text x={160} y={230} fill="#64748B" className="print:fill-slate-800" fontSize="9" fontWeight="bold" textAnchor="middle">
-                  온순성 ({parseInt(form.temperament) * 20})
-                </text>
-                <text x={55} y={123} fill="#64748B" className="print:fill-slate-800" fontSize="9" fontWeight="bold" textAnchor="end">
-                  번식력 ({form.overwintering_survival})
-                </text>
-
-                {/* 4. Score polygon data */}
-                <polygon
-                  points={getPoints()}
-                  fill="rgba(212, 175, 55, 0.15)"
-                  stroke="#D4AF37"
-                  strokeWidth="2.5"
-                  className="print:fill-amber-500/10 print:stroke-amber-600"
-                />
-
-                {/* Vertices dot highlights */}
-                <circle cx={160} cy={120 - parseFloat(form.honey_production) * 0.9} r="3.5" fill="#D4AF37" />
-                <circle cx={160 + parseFloat(form.vsh_rate) * 0.9} cy={120} r="3.5" fill="#D4AF37" />
-                <circle cx={160} cy={120 + (parseInt(form.temperament) * 20) * 0.9} r="3.5" fill="#D4AF37" />
-                <circle cx={160 - parseFloat(form.overwintering_survival) * 0.9} cy={120} r="3.5" fill="#D4AF37" />
-              </svg>
-            </div>
-
-            {/* Target information */}
-            <div className="bg-slate-50 p-4 border border-slate-100 rounded-xl space-y-2 text-xs print:bg-white print:border-black print:text-sm">
-              <div className="grid grid-cols-2 gap-1">
-                <div><span className="font-semibold text-slate-500 print:text-black">검증 시료 ID:</span> <span className="font-bold">{form.sample_id || "-"}</span></div>
-                <div><span className="font-semibold text-slate-500 print:text-black">진단 일자:</span> <span className="font-bold">{form.date}</span></div>
-                <div><span className="font-semibold text-slate-500 print:text-black">품종 대분류:</span> <span className="font-bold">{form.species}</span></div>
-                <div><span className="font-semibold text-slate-500 print:text-black">수집 구분:</span> <span className="font-bold">{form.source_type}</span></div>
-                {selectedColonyObject && (
-                  <div className="col-span-2"><span className="font-semibold text-slate-500 print:text-black">연동 벌통코드:</span> <span className="font-bold text-amber-600 print:text-black">{selectedColonyObject.code} ({selectedColonyObject.queen_tag})</span></div>
-                )}
-                {form.address && (
-                  <div className="col-span-2"><span className="font-semibold text-slate-500 print:text-black">수집 주소:</span> <span className="font-bold">{form.address}</span></div>
-                )}
-              </div>
-            </div>
-
-            {/* Prescriptions */}
-            <div className="space-y-2">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider print:text-black print:text-sm">
-                🩺 종합 소견 및 행동학적 처방전
-              </h4>
-              <div className="text-xs text-slate-600 bg-slate-50 p-4 border border-slate-100 rounded-xl space-y-3 leading-relaxed print:bg-white print:border-none print:p-0 print:text-slate-800 print:text-sm">
-                <div>
-                  {parseFloat(form.vsh_rate) >= 80 ? (
-                    <span className="text-emerald-600 font-bold">✓ VSH 응애 방어인자 완벽 고정군:</span>
-                  ) : parseFloat(form.vsh_rate) < 40 ? (
-                    <span className="text-red-500 font-bold">⚠ 응애 감수 붕괴 위험군:</span>
-                  ) : (
-                    <span className="text-slate-700 font-bold">• 행동 위생 활성 보통군:</span>
-                  )}
-                  {" "}
-                  {parseFloat(form.vsh_rate) >= 80 
-                    ? "바로아응애 청소행동율이 매우 높습니다. 친환경 방제가 가능하며 저항성 수벌 양성용 모본으로 추천합니다."
-                    : parseFloat(form.vsh_rate) < 40
-                      ? "응애 자극 감지율이 매우 낮으므로 기생충 감염 예방을 위해 유기산/티몰 집중 긴급 방제가 요구됩니다."
-                      : "보편적인 응애 방어력을 유지하고 있습니다. 봄벌 양성 시기 기온 변화 관찰 및 추가 위생 모니터링이 필요합니다."
-                  }
-                </div>
-                <div>
-                  {parseFloat(form.honey_production) >= 70 ? (
-                    <span className="text-emerald-600 font-bold">✓ 다량 수밀 특화종:</span>
-                  ) : (
-                    <span className="text-slate-700 font-bold">• 채집 생산력 양호군:</span>
-                  )}
-                  {" "}
-                  {parseFloat(form.honey_production) >= 70
-                    ? "아카시아 유밀기 수밀력이 매우 뛰어납니다. 다량의 채밀 성과를 기대할 수 있는 우수 품종입니다."
-                    : "일반적인 꿀 채집 활동량을 유지하고 있습니다. 안정적인 식량 축적 및 내부 사양 관리를 병행하십시오."
-                  }
-                </div>
-                <div>
-                  {parseInt(form.temperament) >= 4 ? (
-                    <span className="text-emerald-600 font-bold">✓ 극온순 관리 용이성 확증:</span>
-                  ) : parseInt(form.temperament) <= 2 ? (
-                    <span className="text-red-500 font-bold">⚠ 관리 경계 및 방어공격 강세:</span>
-                  ) : (
-                    <span className="text-slate-700 font-bold">• 봉군 성향 보통군:</span>
-                  )}
-                  {" "}
-                  {parseInt(form.temperament) >= 4
-                    ? "벌의 방어 자극 공격성이 적어 방충복 없이도 내검 조작이 매우 쾌적한 최상위 온순 봉군입니다."
-                    : parseInt(form.temperament) <= 2
-                      ? "외부 침입에 대한 공격 성향이 높으므로 내검 시 보호장구를 철저히 착용하고 충격을 피하십시오."
-                      : "보통의 사나움을 보이며 기상 악화 혹은 기온 급강하 시 일시적으로 공격 행동이 늘어날 수 있습니다."
-                  }
-                </div>
-              </div>
-            </div>
-
-            {/* Footer Sign-off */}
-            <div className="border-t border-slate-100 pt-4 text-[10px] text-slate-400 leading-normal print:border-black print:text-black print:text-xs">
-              본 진단서는 K-BEE BANK 디지털 정밀 육종 인프라에 근거하여 생성되었습니다. 
-              국가 농업 유전자원 보존 관리 기준 및 꿀벌 종봉 검증 표준을 준수합니다.
-              <div className="mt-4 text-right font-bold text-slate-600 print:text-black text-xs font-semibold">
-                디지털 꿀벌 육종센터 분석관
-              </div>
-            </div>
-          </div>
-        </div>
+        )}
 
       </div>
     </div>
