@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -11,7 +13,16 @@ router = APIRouter(
     tags=["Authentication"]
 )
 
-@router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
+
+def require_self_registration():
+    """회원가입은 막고 관리자가 계정을 발급한다(scripts/seed_users.py). ALLOW_SELF_REGISTRATION=1 일 때만 연다."""
+    if os.getenv("ALLOW_SELF_REGISTRATION") != "1":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="회원가입이 비활성화되어 있습니다. 관리자에게 계정 발급을 요청하세요."
+        )
+
+@router.post("/register", response_model=schemas.Token, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_self_registration)])
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     """회원 가입 - 유저 생성 후 JWT 토큰 발급"""
     if user.role == schemas.UserRole.ADMIN:
@@ -27,7 +38,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer", "user": db_user}
 
 
-@router.post("/register/farmer", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
+@router.post("/register/farmer", response_model=schemas.Token, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_self_registration)])
 def register_farmer(farmer_data: schemas.FarmerRegister, db: Session = Depends(get_db)):
     """농가 회원 가입 - 유저 생성 + 양봉장 생성 + 초기 벌통 생성 원스톱 트랜잭션"""
     existing = crud.get_user_by_username(db, username=farmer_data.username)

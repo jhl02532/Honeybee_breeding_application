@@ -17,7 +17,15 @@ from .database import get_db
 from . import models
 
 # --- Configuration ---
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", "melitta-breed-secret-key-2026-change-me")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    # 운영 DB(PostgreSQL)에서는 반드시 JWT_SECRET_KEY 를 설정해야 한다.
+    # 로컬 SQLite 개발 환경에서만 프로세스마다 임의 키를 만든다(재시작하면 토큰 무효).
+    if os.getenv("DATABASE_URL", "sqlite").startswith("sqlite"):
+        import secrets
+        SECRET_KEY = secrets.token_urlsafe(48)
+    else:
+        raise RuntimeError("JWT_SECRET_KEY 환경변수가 설정되지 않았습니다.")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 

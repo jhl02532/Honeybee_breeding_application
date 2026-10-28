@@ -114,7 +114,9 @@ def startup_event():
         print("Schema columns synced successfully.")
     except Exception as e:
         print(f"Failed to sync schema columns on startup: {str(e)}")
-    crud.seed_database_if_empty(db)
+    # 데모 계정·데이터는 SEED_DEMO_DATA=1 일 때만 넣는다(운영 서버에서는 켜지 않음)
+    if os.getenv("SEED_DEMO_DATA") == "1":
+        crud.seed_database_if_empty(db)
 
     # Pre-load sampling TSV master databases to memory cache using thread-safe DataManager Singleton
     try:
