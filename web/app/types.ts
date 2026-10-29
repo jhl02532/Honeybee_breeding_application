@@ -36,19 +36,20 @@ export interface TraitRecord {
   id: number;
   colony_id: number;
   date: string;
-  honey_production: number;
-  propolis_production: number;
-  royal_jelly_production: number;
-  temperament: number;
-  virus_resistance: number;
-  mite_resistance: number;
-  swarming_rate: number;
-  overwintering_survival: number;
-  climate_adaptation: number;
+  // 측정하지 않은 형질은 null
+  honey_production: number | null;
+  propolis_production: number | null;
+  royal_jelly_production: number | null;
+  temperament: number | null;
+  virus_resistance: number | null;
+  mite_resistance: number | null;
+  swarming_rate: number | null;
+  overwintering_survival: number | null;
+  climate_adaptation: number | null;
   temperature: number | null;
   humidity: number | null;
-  vsh_rate?: number;
-  hygienic_rate?: number;
+  vsh_rate?: number | null;
+  hygienic_rate?: number | null;
   notes: string | null;
 }
 

@@ -46,22 +46,22 @@ export default function BreedingMatchmaker({ apiaries }: BreedingMatchmakerProps
     let sumVirus = 0, countVirus = 0;
 
     records.forEach((r) => {
-      if (r.vsh_rate !== undefined) {
+      if (r.vsh_rate != null) {
         sumVsh += r.vsh_rate;
         countVsh++;
       }
-      if (r.hygienic_rate !== undefined) {
+      if (r.hygienic_rate != null) {
         sumHygienic += r.hygienic_rate;
         countHygienic++;
       }
-      if (r.virus_resistance !== undefined) {
+      if (r.virus_resistance != null) {
         sumVirus += r.virus_resistance;
         countVirus++;
       }
     });
 
     const avgVsh = countVsh > 0 ? sumVsh / countVsh : 50;
-    const avgHygienic = countHygienic > 0 ? sumHygienic / countHygienic : 50;
+    const avgHygienic = countHygienic > 0 ? sumHygienic / countHygienic : avgVsh; // 핀테스트 기록이 없으면 VSH 값만 사용
     const avgVirus = countVirus > 0 ? sumVirus / countVirus : 3;
 
     // Set Queen genotypes based on DB record averages

@@ -35,11 +35,11 @@ function RecordFormContent() {
     longitude: "",
     date: new Date().toISOString().split("T")[0],
     colony_id: "",
-    // Sliders
-    honey_production: "10",
-    vsh_rate: "50",
-    temperament: "3",
-    overwintering_survival: "80",
+    // Sliders — "" 는 측정 안 함(null 로 저장)
+    honey_production: "",
+    vsh_rate: "",
+    temperament: "",
+    overwintering_survival: "",
     // Env
     temperature: "",
     humidity: "",
@@ -170,23 +170,30 @@ function RecordFormContent() {
       return;
     }
 
+    const traitKeys = ["honey_production", "vsh_rate", "temperament", "overwintering_survival"] as const;
+    if (traitKeys.every((k) => form[k] === "")) {
+      alert("형질을 하나 이상 입력해주세요. (측정하지 않은 형질은 비워 두면 됩니다)");
+      return;
+    }
+    const num = (v: string) => (v === "" ? null : parseFloat(v));
+
     setBusy(true);
     try {
+      // 이 화면에서 입력한 형질만 보낸다. 나머지는 측정 안 함(null) — 다른 값으로 추정해 채우지 않는다.
       const body = {
         colony_id: parseInt(form.colony_id),
         date: form.date,
-        honey_production: parseFloat(form.honey_production),
-        vsh_rate: parseFloat(form.vsh_rate),
-        hygienic_rate: parseFloat(form.vsh_rate),
-        temperament: parseInt(form.temperament),
-        overwintering_survival: parseFloat(form.overwintering_survival),
-        // Other fields set to default
-        propolis_production: 0,
-        royal_jelly_production: 0,
-        swarming_rate: 0,
-        virus_resistance: Math.max(1, Math.min(5, Math.round(parseFloat(form.vsh_rate) / 20))),
-        mite_resistance: Math.max(1, Math.min(5, Math.round(parseFloat(form.vsh_rate) / 20))),
-        climate_adaptation: 3,
+        honey_production: num(form.honey_production),
+        vsh_rate: num(form.vsh_rate),
+        hygienic_rate: null,
+        temperament: form.temperament === "" ? null : parseInt(form.temperament),
+        overwintering_survival: num(form.overwintering_survival),
+        propolis_production: null,
+        royal_jelly_production: null,
+        swarming_rate: null,
+        virus_resistance: null,
+        mite_resistance: null,
+        climate_adaptation: null,
         temperature: form.temperature ? parseFloat(form.temperature) : null,
         humidity: form.humidity ? parseFloat(form.humidity) : null,
         notes: form.notes || null,
@@ -284,22 +291,24 @@ function RecordFormContent() {
             <h3 className="text-xs font-bold text-amber-600 uppercase tracking-wider">
               1. 시료 및 수집처 정보 (Master Metadata)
             </h3>
+            <p className="text-[11px] text-slate-500 -mt-4">
+              시료 ID·종·수집 구분·좌표는 시료 대장에서 불러온 참고 정보이며 이 화면에서 저장되지 않습니다. 저장되는 것은 기록 날짜와 아래 형질입니다.
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">시료 ID *</label>
+                <label className="text-xs font-semibold text-slate-500">시료 ID (참고)</label>
                 <input
                   type="text"
-                  required
+                  readOnly
                   value={form.sample_id}
-                  onChange={(e) => setForm({ ...form, sample_id: e.target.value })}
-                  placeholder="예: AC-GG-MEL-26-01"
-                  className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-amber-500 focus:bg-white transition"
+                  placeholder="시료 대장에서 선택 시 표시"
+                  className="px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm outline-none text-slate-500 cursor-not-allowed"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">채집 날짜 *</label>
+                <label className="text-xs font-semibold text-slate-500">기록 날짜 *</label>
                 <input
                   type="date"
                   required
@@ -312,11 +321,11 @@ function RecordFormContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">종 선택 (Species) *</label>
+                <label className="text-xs font-semibold text-slate-500">종 (참고)</label>
                 <select
+                  disabled
                   value={form.species}
-                  onChange={(e) => setForm({ ...form, species: e.target.value })}
-                  className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none cursor-pointer focus:border-amber-500 focus:bg-white transition"
+                  className="px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm outline-none text-slate-500 cursor-not-allowed"
                 >
                   <option value="Apis mellifera">서양벌 (Apis mellifera)</option>
                   <option value="Apis cerana">토종벌 / 동양벌 (Apis cerana)</option>
@@ -324,11 +333,11 @@ function RecordFormContent() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">수집 구분 (Collection Type) *</label>
+                <label className="text-xs font-semibold text-slate-500">수집 구분 (참고)</label>
                 <select
+                  disabled
                   value={form.source_type}
-                  onChange={(e) => setForm({ ...form, source_type: e.target.value })}
-                  className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none cursor-pointer focus:border-amber-500 focus:bg-white transition"
+                  className="px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm outline-none text-slate-500 cursor-not-allowed"
                 >
                   <option value="프로젝트 자체 생산">프로젝트 자체 생산</option>
                   <option value="공공 데이터 수집">공공 데이터 수집</option>
@@ -336,39 +345,26 @@ function RecordFormContent() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-500">채집 상세 주소</label>
-              <input
-                type="text"
-                value={form.address}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
-                placeholder="예: 경상남도 산청군 시천면"
-                className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-amber-500 focus:bg-white transition"
-              />
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">위도 (GPS Latitude)</label>
+                <label className="text-xs font-semibold text-slate-500">위도 (참고)</label>
                 <input
-                  type="number"
-                  step="any"
+                  type="text"
+                  readOnly
                   value={form.latitude}
-                  onChange={(e) => setForm({ ...form, latitude: e.target.value })}
-                  placeholder="예: 35.3369"
-                  className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-amber-500 focus:bg-white transition"
+                  placeholder="-"
+                  className="px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm outline-none text-slate-500 cursor-not-allowed"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">경도 (GPS Longitude)</label>
+                <label className="text-xs font-semibold text-slate-500">경도 (참고)</label>
                 <input
-                  type="number"
-                  step="any"
+                  type="text"
+                  readOnly
                   value={form.longitude}
-                  onChange={(e) => setForm({ ...form, longitude: e.target.value })}
-                  placeholder="예: 127.7306"
-                  className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-amber-500 focus:bg-white transition"
+                  placeholder="-"
+                  className="px-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm outline-none text-slate-500 cursor-not-allowed"
                 />
               </div>
             </div>
@@ -399,6 +395,9 @@ function RecordFormContent() {
             <h3 className="text-xs font-bold text-amber-600 uppercase tracking-wider">
               2. 4대 주요 경제 형질 기입 (Economic Traits)
             </h3>
+            <p className="text-[11px] text-slate-500 -mt-4">
+              측정한 형질만 입력하세요. 슬라이더를 누르거나 움직이면 입력되고, 비워 둔 형질은 &quot;미입력&quot;으로 저장됩니다.
+            </p>
 
             {/* Slider 1: Honey Production */}
             <div className="flex flex-col gap-2 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
@@ -415,6 +414,7 @@ function RecordFormContent() {
                       const val = e.target.value;
                       setForm({ ...form, honey_production: val });
                     }}
+                    placeholder="미입력"
                     className="w-20 px-2 py-1 text-right border border-slate-200 rounded-lg text-xs font-semibold focus:border-amber-500 outline-none"
                   />
                   <span className="text-xs font-bold text-slate-500">kg</span>
@@ -427,7 +427,8 @@ function RecordFormContent() {
                 step="0.1"
                 value={parseFloat(form.honey_production) > 20 ? "20" : form.honey_production || "0"}
                 onChange={(e) => setForm({ ...form, honey_production: e.target.value })}
-                className="w-full accent-amber-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
+                onPointerUp={(e) => setForm((f) => ({ ...f, honey_production: e.currentTarget.value }))}
+                className={`w-full accent-amber-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none ${form.honey_production === "" ? "opacity-40" : ""}`}
               />
             </div>
 
@@ -435,16 +436,24 @@ function RecordFormContent() {
             <div className="flex flex-col gap-2 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
               <div className="flex justify-between items-center">
                 <label className="text-xs font-bold text-slate-700">🧬 질병저항성 (VSH 청소율, %)</label>
-                <span className="text-sm font-bold text-amber-600">{form.vsh_rate}%</span>
+                {form.vsh_rate === "" ? (
+                  <span className="text-sm font-semibold text-slate-400">미입력</span>
+                ) : (
+                  <span className="text-sm font-bold text-amber-600">
+                    {form.vsh_rate}%
+                    <button type="button" onClick={() => setForm({ ...form, vsh_rate: "" })} className="ml-2 text-[11px] font-medium text-slate-400 underline">지우기</button>
+                  </span>
+                )}
               </div>
               <input
                 type="range"
                 min="0"
                 max="100"
                 step="5"
-                value={form.vsh_rate}
+                value={form.vsh_rate || "50"}
                 onChange={(e) => setForm({ ...form, vsh_rate: e.target.value })}
-                className="w-full accent-amber-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
+                onPointerUp={(e) => setForm((f) => ({ ...f, vsh_rate: e.currentTarget.value }))}
+                className={`w-full accent-amber-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none ${form.vsh_rate === "" ? "opacity-40" : ""}`}
               />
             </div>
 
@@ -452,16 +461,24 @@ function RecordFormContent() {
             <div className="flex flex-col gap-2 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
               <div className="flex justify-between items-center">
                 <label className="text-xs font-bold text-slate-700">🛡️ 온순성 (Temperament Index)</label>
-                <span className="text-sm font-bold text-amber-600">{form.temperament} / 5</span>
+                {form.temperament === "" ? (
+                  <span className="text-sm font-semibold text-slate-400">미입력</span>
+                ) : (
+                  <span className="text-sm font-bold text-amber-600">
+                    {form.temperament} / 5
+                    <button type="button" onClick={() => setForm({ ...form, temperament: "" })} className="ml-2 text-[11px] font-medium text-slate-400 underline">지우기</button>
+                  </span>
+                )}
               </div>
               <input
                 type="range"
                 min="1"
                 max="5"
                 step="1"
-                value={form.temperament}
+                value={form.temperament || "3"}
                 onChange={(e) => setForm({ ...form, temperament: e.target.value })}
-                className="w-full accent-amber-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
+                onPointerUp={(e) => setForm((f) => ({ ...f, temperament: e.currentTarget.value }))}
+                className={`w-full accent-amber-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none ${form.temperament === "" ? "opacity-40" : ""}`}
               />
             </div>
 
@@ -469,16 +486,24 @@ function RecordFormContent() {
             <div className="flex flex-col gap-2 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
               <div className="flex justify-between items-center">
                 <label className="text-xs font-bold text-slate-700">👑 번식력 (월동 생존율, %)</label>
-                <span className="text-sm font-bold text-amber-600">{form.overwintering_survival}%</span>
+                {form.overwintering_survival === "" ? (
+                  <span className="text-sm font-semibold text-slate-400">미입력</span>
+                ) : (
+                  <span className="text-sm font-bold text-amber-600">
+                    {form.overwintering_survival}%
+                    <button type="button" onClick={() => setForm({ ...form, overwintering_survival: "" })} className="ml-2 text-[11px] font-medium text-slate-400 underline">지우기</button>
+                  </span>
+                )}
               </div>
               <input
                 type="range"
                 min="0"
                 max="100"
                 step="5"
-                value={form.overwintering_survival}
+                value={form.overwintering_survival || "80"}
                 onChange={(e) => setForm({ ...form, overwintering_survival: e.target.value })}
-                className="w-full accent-amber-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none"
+                onPointerUp={(e) => setForm((f) => ({ ...f, overwintering_survival: e.currentTarget.value }))}
+                className={`w-full accent-amber-500 cursor-pointer h-1.5 bg-slate-200 rounded-lg appearance-none ${form.overwintering_survival === "" ? "opacity-40" : ""}`}
               />
             </div>
           </div>

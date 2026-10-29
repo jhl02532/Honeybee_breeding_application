@@ -49,6 +49,12 @@ export async function authFetch(path: string, opts: RequestInit = {}) {
   return res;
 }
 
-export function renderStars(n: number): string {
+export function renderStars(n: number | null | undefined): string {
+  if (n == null) return "-";
   return "★".repeat(n) + "☆".repeat(5 - n);
+}
+
+// 측정하지 않은 값(null)은 "-" 로 표시
+export function fmtTrait(v: number | null | undefined, unit = ""): string {
+  return v == null ? "-" : `${v}${unit}`;
 }

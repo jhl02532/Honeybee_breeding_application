@@ -62,18 +62,18 @@ class TraitRecord(Base):
     colony_id = Column(Integer, ForeignKey("colonies.id", ondelete="CASCADE"), nullable=False, index=True)
     date = Column(String, nullable=False, index=True)  # YYYY-MM-DD
     
-    # Traits (형질 기록)
-    honey_production = Column(Float, default=0.0)      # 꿀 생산량 (Kg)
-    propolis_production = Column(Float, default=0.0)   # 프로폴리스 생산량 (g)
-    royal_jelly_production = Column(Float, default=0.0) # 로얄젤리 생산량 (g)
-    temperament = Column(Integer, default=3)            # 온순함 (1-5)
-    virus_resistance = Column(Integer, default=3)       # 바이러스 저항성 (1-5)
-    mite_resistance = Column(Integer, default=3)        # 응애 저항성 (1-5)
-    swarming_rate = Column(Float, default=0.0)          # 분봉률 (%)
-    overwintering_survival = Column(Float, default=100.0) # 월동 생존율 (%)
-    climate_adaptation = Column(Integer, default=3)     # 기후 적응성 (1-5)
-    vsh_rate = Column(Float, default=0.0)                # VSH 행동 발현율 (%) [farmer log]
-    hygienic_rate = Column(Float, default=0.0)           # 핀테스트 청소율 (%) [farmer log]
+    # Traits (형질 기록) — 측정하지 않은 형질은 NULL 로 남긴다 (기본값을 채우지 않음)
+    honey_production = Column(Float, nullable=True)      # 꿀 생산량 (Kg)
+    propolis_production = Column(Float, nullable=True)   # 프로폴리스 생산량 (g)
+    royal_jelly_production = Column(Float, nullable=True) # 로얄젤리 생산량 (g)
+    temperament = Column(Integer, nullable=True)            # 온순함 (1-5)
+    virus_resistance = Column(Integer, nullable=True)       # 바이러스 저항성 (1-5)
+    mite_resistance = Column(Integer, nullable=True)        # 응애 저항성 (1-5)
+    swarming_rate = Column(Float, nullable=True)          # 분봉률 (%)
+    overwintering_survival = Column(Float, nullable=True) # 월동 생존율 (%)
+    climate_adaptation = Column(Integer, nullable=True)     # 기후 적응성 (1-5)
+    vsh_rate = Column(Float, nullable=True)                # VSH 행동 발현율 (%) [farmer log]
+    hygienic_rate = Column(Float, nullable=True)           # 핀테스트 청소율 (%) [farmer log]
     
     # Environment telemetry (기상/환경 데이터)
     temperature = Column(Float, nullable=True)          # 온도 (°C)

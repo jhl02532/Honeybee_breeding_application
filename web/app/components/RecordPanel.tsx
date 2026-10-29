@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { styles } from "../styles";
 import { Apiary, Colony, TraitRecord } from "../types";
-import { authFetch, renderStars } from "../utils";
+import { authFetch, renderStars, fmtTrait } from "../utils";
 interface RecordPanelProps {
   apiaries: Apiary[];
   selectedColony: Colony | null;
@@ -77,16 +77,17 @@ export default function RecordPanel({
         r.swarming_rate,
         r.overwintering_survival,
         r.climate_adaptation,
-        r.vsh_rate ?? 0,
-        r.hygienic_rate ?? 0,
-        r.temperature ?? "",
-        r.humidity ?? "",
+        r.vsh_rate,
+        r.hygienic_rate,
+        r.temperature,
+        r.humidity,
         (r.notes || "").replace(/"/g, '""')
       ];
     });
-    const csvContent = 
-      "\uFEFF" + 
-      [headers.join(","), ...rows.map(row => row.map(v => `"${v}"`).join(","))].join("\n");
+    // \uCE21\uC815\uD558\uC9C0 \uC54A\uC740 \uAC12(null)\uC740 \uBE48 \uCE78\uC73C\uB85C \uB0B4\uBCF4\uB0B8\uB2E4
+    const csvContent =
+      "\uFEFF" +
+      [headers.join(","), ...rows.map(row => row.map(v => `"${v ?? ""}"`).join(","))].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -201,15 +202,15 @@ export default function RecordPanel({
                   <tr key={r.id} style={styles.tr}>
                     <td style={styles.td}>{r.date}</td>
                     <td style={styles.td}>{colony?.code || r.colony_id}</td>
-                    <td style={styles.td}>{r.honey_production}</td>
-                    <td style={styles.td}>{r.propolis_production}</td>
-                    <td style={styles.td}>{r.royal_jelly_production}</td>
+                    <td style={styles.td}>{fmtTrait(r.honey_production)}</td>
+                    <td style={styles.td}>{fmtTrait(r.propolis_production)}</td>
+                    <td style={styles.td}>{fmtTrait(r.royal_jelly_production)}</td>
                     <td style={styles.td}>{renderStars(r.temperament)}</td>
                     <td style={styles.td}>{renderStars(r.virus_resistance)}</td>
                     <td style={styles.td}>{renderStars(r.mite_resistance)}</td>
-                    <td style={styles.td}>{r.overwintering_survival}</td>
-                    <td style={styles.td}>{r.vsh_rate ?? 0}%</td>
-                    <td style={styles.td}>{r.hygienic_rate ?? 0}%</td>
+                    <td style={styles.td}>{fmtTrait(r.overwintering_survival)}</td>
+                    <td style={styles.td}>{fmtTrait(r.vsh_rate, "%")}</td>
+                    <td style={styles.td}>{fmtTrait(r.hygienic_rate, "%")}</td>
                     <td style={{ ...styles.td, maxWidth: "150px", overflow: "hidden", textOverflow: "ellipsis" }}>
                       {r.notes || "-"}
                     </td>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { styles } from "../styles";
-import { authFetch } from "../utils";
+import { authFetch, fmtTrait } from "../utils";
 
 interface AdminStats {
   total_users: number;
@@ -618,9 +618,9 @@ export default function AdminPanel() {
                       <td style={{ ...styles.td, color: "#a78bfa" }}>{t.colony_code}</td>
                       <td style={styles.td}>{t.date}</td>
                       <td style={styles.td}>{t.owner}</td>
-                      <td style={styles.td}>{t.honey_production}kg / {t.propolis_production}g / {t.royal_jelly_production}g</td>
-                      <td style={styles.td}>⭐{t.temperament} / ⭐{t.virus_resistance} / ⭐{t.mite_resistance}</td>
-                      <td style={styles.td}>{t.vsh_rate}% / {t.hygienic_rate}%</td>
+                      <td style={styles.td}>{fmtTrait(t.honey_production, "kg")} / {fmtTrait(t.propolis_production, "g")} / {fmtTrait(t.royal_jelly_production, "g")}</td>
+                      <td style={styles.td}>⭐{fmtTrait(t.temperament)} / ⭐{fmtTrait(t.virus_resistance)} / ⭐{fmtTrait(t.mite_resistance)}</td>
+                      <td style={styles.td}>{fmtTrait(t.vsh_rate, "%")} / {fmtTrait(t.hygienic_rate, "%")}</td>
                       <td style={{ ...styles.td, maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis" }}>{t.notes || "-"}</td>
                       <td style={styles.td}>
                         <button style={styles.deleteBtnSmall} onClick={() => handleDataDelete("traits", t.id)}>🗑 삭제</button>

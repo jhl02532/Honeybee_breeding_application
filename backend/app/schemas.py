@@ -65,19 +65,20 @@ class Token(BaseModel):
 # --- Trait Record Schemas ---
 class TraitRecordBase(BaseModel):
     date: str
-    honey_production: float = Field(default=0.0, ge=0.0)
-    propolis_production: float = Field(default=0.0, ge=0.0)
-    royal_jelly_production: float = Field(default=0.0, ge=0.0)
-    temperament: int = Field(default=3, ge=1, le=5)
-    virus_resistance: int = Field(default=3, ge=1, le=5)
-    mite_resistance: int = Field(default=3, ge=1, le=5)
-    swarming_rate: float = Field(default=0.0, ge=0.0, le=100.0)
-    overwintering_survival: float = Field(default=100.0, ge=0.0, le=100.0)
-    climate_adaptation: int = Field(default=3, ge=1, le=5)
+    # 측정하지 않은 형질은 None (기본값으로 채우지 않는다)
+    honey_production: Optional[float] = Field(None, ge=0.0)
+    propolis_production: Optional[float] = Field(None, ge=0.0)
+    royal_jelly_production: Optional[float] = Field(None, ge=0.0)
+    temperament: Optional[int] = Field(None, ge=1, le=5)
+    virus_resistance: Optional[int] = Field(None, ge=1, le=5)
+    mite_resistance: Optional[int] = Field(None, ge=1, le=5)
+    swarming_rate: Optional[float] = Field(None, ge=0.0, le=100.0)
+    overwintering_survival: Optional[float] = Field(None, ge=0.0, le=100.0)
+    climate_adaptation: Optional[int] = Field(None, ge=1, le=5)
     temperature: Optional[float] = Field(None, ge=-50.0, le=60.0)
     humidity: Optional[float] = Field(None, ge=0.0, le=100.0)
-    vsh_rate: float = Field(default=0.0, ge=0.0, le=100.0)
-    hygienic_rate: float = Field(default=0.0, ge=0.0, le=100.0)
+    vsh_rate: Optional[float] = Field(None, ge=0.0, le=100.0)
+    hygienic_rate: Optional[float] = Field(None, ge=0.0, le=100.0)
     notes: Optional[str] = None
 
 class TraitRecordCreate(TraitRecordBase):
