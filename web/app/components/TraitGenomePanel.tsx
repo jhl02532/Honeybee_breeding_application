@@ -322,7 +322,7 @@ function QueenProfile({ profile, onOpen, onClose }: { profile: any; onOpen: (id:
       <div style={{ fontSize: "12px", color: "var(--text-main)", marginBottom: "12px", lineHeight: 1.7 }}>
         <div>모계: {profile.mother ? <a style={{ color: "var(--color-gold)", cursor: "pointer" }} onClick={() => onOpen(profile.mother.id)}>{profile.mother.tag}</a> : "미상"}</div>
         <div>
-          부계(수벌을 낸 여왕):{" "}
+          교미 상대(수벌을 낸 여왕, 이 여왕 딸들의 부계):{" "}
           {sireLinks.length === 0
             ? profile.matings.length ? "교미 기록 있음, 수벌 출처 미상" : "기록 없음"
             : sireLinks.map((s: any, i: number) => (
@@ -470,7 +470,7 @@ function PedigreeView({ queenId, onOpen }: { queenId: number; onOpen: (id: numbe
   return (
     <div style={{ margin: "12px 0" }}>
       <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>
-        계통도 <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 400 }}>(3대, 부계 = 수벌을 낸 여왕)</span>
+        계통도 <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 400 }}>(3대, 부계 = 어미와 교미한 수벌을 낸 여왕 — 실제 아비 수벌은 그중 하나)</span>
       </div>
       <div style={{ display: "flex", gap: "8px", overflowX: "auto" }}>
         {gens.map((g) => (

@@ -1,11 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { Apiary, Colony } from "../types";
+import CrossPlanner from "./CrossPlanner";
 
 interface BreedingMatchmakerProps {
   apiaries: Apiary[];
 }
 
+// 탭: v2 유전형 기반 교배 예측(기본) / 단일 유전자 개념 설명(기존 화면)
 export default function BreedingMatchmaker({ apiaries }: BreedingMatchmakerProps) {
+  const [tab, setTab] = useState<"v2" | "concept">("v2");
+  const tabBtn = (key: "v2" | "concept", label: string) => (
+    <button
+      onClick={() => setTab(key)}
+      style={{
+        padding: "8px 14px", borderRadius: "999px", fontSize: "13px", fontWeight: 600, cursor: "pointer",
+        border: `1px solid ${tab === key ? "var(--color-gold)" : "var(--border-color)"}`,
+        background: tab === key ? "var(--color-gold-glow)" : "transparent", color: "var(--text-main)",
+      }}
+    >
+      {label}
+    </button>
+  );
+  return (
+    <div>
+      <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
+        {tabBtn("v2", "유전형 기반 교배 예측")}
+        {tabBtn("concept", "개념 설명: 단일 유전자 모델")}
+      </div>
+      {tab === "v2" ? <CrossPlanner /> : <ConceptMatchmaker apiaries={apiaries} />}
+    </div>
+  );
+}
+
+function ConceptMatchmaker({ apiaries }: BreedingMatchmakerProps) {
   // Queen Genotypes (Maternal)
   const [queenCsbv, setQueenCsbv] = useState<string>("Aa");
   const [queenVsh, setQueenVsh] = useState<string>("Aa");

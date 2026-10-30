@@ -500,3 +500,171 @@ def ancestry_dict(q: models.Queen) -> Optional[dict]:
         return json.loads(q.ancestry_json)
     except ValueError:
         return None
+
+
+# ========== 교배 예측 ==========
+# 꿀벌: 딸(여왕·일벌) = 어미 여왕의 생식세포(감수분열) × 수벌(반수체, 수벌을 낳은 여왕의 생식세포 그대로).
+# 마커별로 어미 쪽 대립유전자 1 확률 pd = dosage(어미)/2, 수벌 쪽 pq = Σ 비율 × dosage(수벌 생산 여왕)/2.
+# 수벌 쪽 유전형이 없으면 마커의 집단 빈도(allele_freq)로 대신하고 그 수를 따로 센다.
+
+def _dosage(gt: Optional[str], af: Optional[float]) -> Optional[float]:
+    if gt:
+        alleles = gt.replace("|", "/").split("/")
+        return float(sum(1 for a in alleles if a == "1")) * (2 / len(alleles))  # 수벌(반수체) 1 → 2 로 환산
+    if af is not None:
+        return 2 * af
+    return None
+
+
+def queen_dosages(db: Session, queen_ids: List[int], panel: Optional[str] = None) -> Dict[int, Dict[Tuple[str, str], float]]:
+    """여왕별 {(panel, marker_code): 대립유전자 1 개수(0–2)}. 여왕 시료(queen) 를 먼저, 없으면 다른 시료를 쓴다."""
+    q = (db.query(models.Sample.queen_id, models.Sample.sample_type, models.Marker.panel, models.Marker.marker_code,
+                  models.SampleGenotype.gt, models.SampleGenotype.af)
+         .join(models.SampleGenotype, models.SampleGenotype.sample_id == models.Sample.id)
+         .join(models.Marker, models.Marker.id == models.SampleGenotype.marker_id)
+         .filter(models.Sample.queen_id.in_(queen_ids)))
+    if panel:
+        q = q.filter(models.Marker.panel == panel)
+    out: Dict[int, Dict[Tuple[str, str], float]] = {}
+    rank: Dict[Tuple[int, Tuple[str, str]], int] = {}
+    for qid, st, pnl, code, gt, af in q.all():
+        d = _dosage(gt, af)
+        if d is None:
+            continue
+        key = (pnl, code)
+        r = 0 if st == "queen" else 1
+        if (qid, key) in rank and rank[(qid, key)] <= r:
+            continue
+        rank[(qid, key)] = r
+        out.setdefault(qid, {})[key] = d
+    return out
+
+
+def queen_parents(db: Session, q: Optional[models.Queen]) -> List[Tuple[int, str]]:
+    """여왕의 부모: 모계(어미 여왕) + 부계(어미와 교미한 수벌을 낸 여왕들).
+
+    여왕 자신의 교미 상대는 그 여왕 '딸들'의 부계이지 자신의 부계가 아니다.
+    실제 아비 수벌은 어미의 교미 상대 중 하나지만 어느 것인지 모르므로 모두 부계 후보로 둔다.
+    """
+    if q is None or not q.mother_queen_id:
+        return []
+    out = [(q.mother_queen_id, "dam")]
+    for m in db.query(models.Mating).filter(models.Mating.queen_id == q.mother_queen_id).all():
+        out += [(s.sire_queen_id, "sire") for s in m.sires if s.sire_queen_id]
+    return out
+
+
+def ancestors(db: Session, queen_id: int, depth: int = 3) -> Dict[int, int]:
+    """{조상 여왕 id: 몇 대 위} (모계와 부계 후보 모두)"""
+    found: Dict[int, int] = {}
+    frontier = [queen_id]
+    for gen in range(1, depth + 1):
+        nxt = []
+        for qid in frontier:
+            for p, _ in queen_parents(db, db.query(models.Queen).get(qid)):
+                if p not in found:
+                    found[p] = gen
+                    nxt.append(p)
+        frontier = nxt
+    return found
+
+
+def predict_cross(db: Session, dam_id: int, sires: List[Tuple[int, float]], panel: Optional[str] = None) -> dict:
+    """어미 여왕 × 수벌 생산 여왕들(비율) → 딸의 마커별 유전형 분포와 형질별 기대 마커 점수"""
+    total = sum(s for _, s in sires) or 1.0
+    sires = [(sid, s / total) for sid, s in sires]
+    dos = queen_dosages(db, [dam_id] + [sid for sid, _ in sires], panel)
+    dam = dos.get(dam_id, {})
+    mq = db.query(models.Marker)
+    if panel:
+        mq = mq.filter(models.Marker.panel == panel)
+    markers = [m for m in mq.all() if (m.panel, m.marker_code) in dam and m.effect is not None]
+    rows, scores = [], {}
+    for m in markers:
+        key = (m.panel, m.marker_code)
+        pd = dam[key] / 2
+        pq, fallback = 0.0, 0.0
+        for sid, share in sires:
+            d = dos.get(sid, {}).get(key)
+            if d is None:
+                pq += share * (m.allele_freq if m.allele_freq is not None else 0.5)
+                fallback += share
+            else:
+                pq += share * d / 2
+        p11, p00 = pd * pq, (1 - pd) * (1 - pq)
+        expected = m.effect * (pd + pq)
+        sc = scores.setdefault(m.trait_code, {"trait_code": m.trait_code, "dam_score": 0.0, "expected_daughter_score": 0.0,
+                                              "n_markers": 0, "n_markers_sire_fallback": 0})
+        sc["dam_score"] += m.effect * dam[key]
+        sc["expected_daughter_score"] += expected
+        sc["n_markers"] += 1
+        sc["n_markers_sire_fallback"] += 1 if fallback > 0.5 else 0
+        rows.append({"marker_code": m.marker_code, "panel": m.panel, "trait_code": m.trait_code, "effect": m.effect,
+                     "dam_dosage": dam[key], "p_dam": round(pd, 4), "p_drone": round(pq, 4),
+                     "p_00": round(p00, 4), "p_01": round(1 - p11 - p00, 4), "p_11": round(p11, 4),
+                     "expected_contribution": round(expected, 5), "sire_fallback_share": round(fallback, 3)})
+    rows.sort(key=lambda r: -abs(r["effect"]))
+    # 공통 조상(3대): 어미 쪽과 수벌 생산 여왕 쪽 조상(본인 포함)이 겹치면 근친
+    dam_anc = {**ancestors(db, dam_id), dam_id: 0}
+    warnings = []
+    for sid, share in sires:
+        sire_anc = {**ancestors(db, sid), sid: 0}
+        common = set(dam_anc) & set(sire_anc)
+        if common:
+            closest = min(common, key=lambda a: dam_anc[a] + sire_anc[a])
+            q = db.query(models.Queen).get(closest)
+            warnings.append({"sire_queen_id": sid, "share": round(share, 3), "n_common": len(common),
+                             "closest_common": q.tag if q else closest,
+                             "dam_gen": dam_anc[closest], "sire_gen": sire_anc[closest]})
+    for sc in scores.values():
+        sc["dam_score"] = round(sc["dam_score"], 4)
+        sc["expected_daughter_score"] = round(sc["expected_daughter_score"], 4)
+    return {"dam_id": dam_id, "sires": [{"queen_id": sid, "share": round(s, 3), "has_genotype": sid in dos} for sid, s in sires],
+            "dam_has_genotype": bool(dam), "traits": sorted(scores.values(), key=lambda r: r["trait_code"] or ""),
+            "markers": rows, "inbreeding_warnings": warnings}
+
+
+def recorded_sires(db: Session, queen_id: int) -> List[Tuple[int, float]]:
+    """여왕의 교미 기록에서 (수벌 생산 여왕, 비율). 비율이 없으면 같게 나눈다."""
+    out: List[Tuple[int, float]] = []
+    for m in db.query(models.Mating).filter(models.Mating.queen_id == queen_id).all():
+        sires = [s for s in m.sires if s.sire_queen_id]
+        for s in sires:
+            out.append((s.sire_queen_id, s.share if s.share is not None else 1.0 / len(sires)))
+    return out
+
+
+def daughters_summary(db: Session, dam_id: int, panel: Optional[str] = None) -> dict:
+    """어미의 실제 딸 여왕들(mother_queen_id) 마커 점수·참값 여왕 효과 평균 — 예측 검증용"""
+    ds = [q.id for q in db.query(models.Queen).filter(models.Queen.mother_queen_id == dam_id).all()]
+    if not ds:
+        return {"n": 0}
+    dos = queen_dosages(db, ds, panel)
+    mq = db.query(models.Marker)
+    if panel:
+        mq = mq.filter(models.Marker.panel == panel)
+    markers = [m for m in mq.all() if m.effect is not None]
+    per_trait: Dict[str, List[float]] = {}
+    freq: Dict[Tuple[str, str], List[float]] = {}
+    for d in ds:
+        g = dos.get(d)
+        if not g:
+            continue
+        sc: Dict[str, float] = {}
+        for m in markers:
+            v = g.get((m.panel, m.marker_code))
+            if v is None:
+                continue
+            sc[m.trait_code] = sc.get(m.trait_code, 0.0) + m.effect * v
+            freq.setdefault((m.panel, m.marker_code), []).append(v / 2)
+        for t, v in sc.items():
+            per_trait.setdefault(t, []).append(v)
+    bv: Dict[str, List[float]] = {}
+    for b in db.query(models.BreedingValue).filter(models.BreedingValue.queen_id.in_(ds),
+                                                   models.BreedingValue.model_version == "queen_effect").all():
+        bv.setdefault(b.trait_code, []).append(b.value)
+    mean = lambda xs: round(sum(xs) / len(xs), 4) if xs else None
+    return {"n": len(ds), "n_genotyped": sum(1 for d in ds if dos.get(d)),
+            "mean_marker_score": {t: mean(v) for t, v in per_trait.items()},
+            "mean_true_queen_effect": {t: mean(v) for t, v in bv.items()},
+            "allele_freq": {f"{k[0]}|{k[1]}": mean(v) for k, v in freq.items()}}

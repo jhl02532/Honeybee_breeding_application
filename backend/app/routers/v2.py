@@ -1,9 +1,11 @@
 import csv
 import io
 import math
-from typing import Optional
+import statistics
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from pydantic import BaseModel, Field
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -226,21 +228,14 @@ def read_queen(queen_id: int, db: Session = Depends(get_db), current: models.Use
 @router.get("/queens/{queen_id}/pedigree")
 def read_pedigree(queen_id: int, depth: int = 4, db: Session = Depends(get_db),
                   current: models.User = Depends(get_current_user)):
-    """모계(어미 여왕)와 부계(수벌을 낸 여왕)를 depth 대까지 거슬러 올라간 노드·간선"""
+    """모계(어미 여왕)와 부계 후보(어미와 교미한 수벌을 낸 여왕)를 depth 대까지 거슬러 올라간 노드·간선"""
     root = _queen_or_404(db, current, queen_id)
     depth = max(1, min(depth, 8))
     nodes, edges, frontier = {root.id: {**_queen_brief(root), "generation": 0}}, [], [root]
     for gen in range(1, depth + 1):
         nxt = []
         for q in frontier:
-            parents = []
-            if q.mother_queen_id:
-                parents.append((q.mother_queen_id, "dam"))
-            for m in db.query(models.Mating).filter(models.Mating.queen_id == q.id).all():
-                for s in m.sires:
-                    if s.sire_queen_id:
-                        parents.append((s.sire_queen_id, "sire"))
-            for pid, kind in parents:
+            for pid, kind in v2_service.queen_parents(db, q):
                 edges.append({"child": q.id, "parent": pid, "kind": kind})
                 if pid not in nodes:
                     p = db.query(models.Queen).get(pid)
@@ -319,3 +314,99 @@ async def import_rows(kind: str, request: Request, dataset: Optional[str] = None
 def migrate_legacy(db: Session = Depends(get_db), current: models.User = Depends(get_current_admin)):
     """v1 기록(queen_tag·mother_colony_id·sample_id·trait_records)을 v2 테이블에 잇는다."""
     return v2_service.migrate_legacy(db)
+
+
+# ========== 교배 예측 ==========
+
+class SireIn(BaseModel):
+    queen_id: int
+    share: float = Field(1.0, gt=0)
+
+
+class CrossIn(BaseModel):
+    dam_queen_id: int
+    sires: Optional[List[SireIn]] = None   # 비우면 어미의 교미 기록을 쓴다
+    panel: Optional[str] = None
+
+
+@router.post("/cross/predict")
+def cross_predict(body: CrossIn, db: Session = Depends(get_db), current: models.User = Depends(get_current_researcher)):
+    """어미 여왕 × 수벌 생산 여왕들 → 딸의 마커별 유전형 분포, 형질별 기대 마커 점수, 공통 조상 경고"""
+    dam = _queen_or_404(db, current, body.dam_queen_id)
+    if body.sires:
+        for s in body.sires:
+            _queen_or_404(db, current, s.queen_id)
+        sires = [(s.queen_id, s.share) for s in body.sires]
+        source = "manual"
+    else:
+        sires = v2_service.recorded_sires(db, dam.id)
+        source = "recorded"
+    if not sires:
+        raise HTTPException(status_code=400, detail="수벌 쪽 여왕이 없습니다(교미 기록 없음). 수벌 생산 여왕을 직접 골라 주세요.")
+    out = v2_service.predict_cross(db, dam.id, sires, body.panel)
+    tags = {q.id: q.tag for q in db.query(models.Queen).filter(models.Queen.id.in_([dam.id] + [s for s, _ in sires])).all()}
+    out["dam_tag"] = dam.tag
+    for s in out["sires"]:
+        s["tag"] = tags.get(s["queen_id"])
+    out["sire_source"] = source
+    # 실제 교미 기록으로 예측했을 때만 실제 딸과 비교할 수 있다
+    out["actual_daughters"] = v2_service.daughters_summary(db, dam.id, body.panel) if source == "recorded" else None
+    return out
+
+
+@router.get("/cross/validate")
+def cross_validate(dataset: str, panel: Optional[str] = None, db: Session = Depends(get_db),
+                   current: models.User = Depends(get_current_researcher)):
+    """데이터 세트의 모든 어미(교미 기록·유전형 있음, 딸 2마리 이상)에 대해 예측과 실제 딸을 비교"""
+    ds = v2_service.get_dataset(db, dataset)
+    if ds is None or ds.id not in _visible_ids(db, current):
+        raise HTTPException(status_code=404, detail="데이터 세트를 찾을 수 없습니다")
+    dam_ids = [r[0] for r in db.query(models.Queen.mother_queen_id)
+               .filter(models.Queen.dataset_id == ds.id, models.Queen.mother_queen_id.isnot(None))
+               .group_by(models.Queen.mother_queen_id).having(func.count(models.Queen.id) >= 2).all()]
+    pairs: dict = {}
+    bv_pairs: dict = {}
+    freq_pred, freq_obs = [], []
+    n_fam = 0
+    for dam_id in dam_ids:
+        sires = v2_service.recorded_sires(db, dam_id)
+        if not sires:
+            continue
+        pred = v2_service.predict_cross(db, dam_id, sires, panel)
+        if not pred["dam_has_genotype"]:
+            continue
+        act = v2_service.daughters_summary(db, dam_id, panel)
+        if not act.get("n_genotyped"):
+            continue
+        n_fam += 1
+        for t in pred["traits"]:
+            a = act["mean_marker_score"].get(t["trait_code"])
+            if a is not None:
+                pairs.setdefault(t["trait_code"], []).append((t["expected_daughter_score"], a))
+            b = act["mean_true_queen_effect"].get(t["trait_code"])
+            if b is not None:
+                bv_pairs.setdefault(t["trait_code"], []).append((t["expected_daughter_score"], b))
+        for m in pred["markers"]:
+            o = act["allele_freq"].get(f"{m['panel']}|{m['marker_code']}")
+            if o is not None:
+                freq_pred.append((m["p_dam"] + m["p_drone"]) / 2)
+                freq_obs.append(o)
+
+    def corr(xs):
+        if len(xs) < 3:
+            return None
+        a, b = [x for x, _ in xs], [y for _, y in xs]
+        try:
+            return round(statistics.correlation(a, b), 3)
+        except statistics.StatisticsError:
+            return None
+
+    return {
+        "dataset": dataset, "n_families": n_fam,
+        "marker_score": [{"trait_code": t, "n": len(v), "r_pred_vs_daughter_mean": corr(v),
+                          "mean_abs_error": round(sum(abs(x - y) for x, y in v) / len(v), 4)} for t, v in sorted(pairs.items())],
+        "true_queen_effect": [{"trait_code": t, "n": len(v), "r_pred_vs_daughter_true_effect": corr(v)}
+                              for t, v in sorted(bv_pairs.items())],
+        "allele_freq": {"n": len(freq_pred), "r_pred_vs_observed": corr(list(zip(freq_pred, freq_obs))),
+                        "mean_abs_error": round(sum(abs(x - y) for x, y in zip(freq_pred, freq_obs)) / len(freq_pred), 4) if freq_pred else None},
+    }
