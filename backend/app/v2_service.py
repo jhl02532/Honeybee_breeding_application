@@ -569,6 +569,135 @@ def ancestors(db: Session, queen_id: int, depth: int = 3) -> Dict[int, int]:
     return found
 
 
+# ========== 근연계수·근교계수 (반수이배체 계통) ==========
+# 계통은 여왕만으로 적는다. 여왕 X 의 대립유전자는 반은 어미 D 의 생식세포, 반은 수벌에서 오며,
+# 수벌은 수벌 생산 여왕 P 의 생식세포 그대로이므로 θ(수벌, Y) = θ(P, Y).
+# X 의 아비 수벌이 어느 P 에서 왔는지는 모르므로 어미의 교미 기록 비율 w 로 평균한다.
+#   θ(X, Y) = ½ θ(D, Y) + ½ Σ w θ(P, Y)          (X 가 Y 보다 뒤 세대)
+#   θ(X, X) = ½ (1 + F_X),   F_X = Σ w θ(D, P)
+# 같은 어미의 딸끼리는 같은 수벌을 받았을 확률(1 / (w·교미 수벌 수))만큼 부계 대립유전자가 같다.
+# 근연계수 θ 는 두 여왕에서 무작위로 뽑은 대립유전자가 같은 조상에서 온 확률, 딸의 근교계수는 θ(어미, 수벌 생산 여왕).
+# 계통이 끊긴 여왕(어미 미상)은 서로 무관한 기초 개체로 본다.
+
+class Kinship:
+    def __init__(self, db: Session, queen_ids: Iterable[int] = ()):
+        self.db = db
+        self._dam: Dict[int, Optional[int]] = {}
+        self._pat: Dict[int, Tuple[List[Tuple[int, float]], Optional[int]]] = {}
+        self._gen: Dict[int, int] = {}
+        self._memo: Dict[Tuple[int, int], float] = {}
+        ids = list(queen_ids)
+        if ids:
+            ds = {r[0] for r in db.query(models.Queen.dataset_id).filter(models.Queen.id.in_(ids)).all()}
+            self._load(db.query(models.Queen.id, models.Queen.mother_queen_id).filter(models.Queen.dataset_id.in_(ds)).all())
+
+    def _load(self, rows) -> None:
+        for qid, mid in rows:
+            self._dam[qid] = mid
+        dams = {m for _, m in rows if m}
+        ms = self.db.query(models.Mating).filter(models.Mating.queen_id.in_(dams)).all() if dams else []
+        by_dam: Dict[int, List[models.Mating]] = {}
+        for m in ms:
+            by_dam.setdefault(m.queen_id, []).append(m)
+        for d in dams:
+            self._pat[d] = self._mixture(by_dam.get(d, []))
+
+    @staticmethod
+    def _mixture(matings: List[models.Mating]) -> Tuple[List[Tuple[int, float]], Optional[int]]:
+        """어미의 교미 기록 → ([(수벌 생산 여왕, 비율)], 교미 수벌 수). 출처 미상 수벌은 분모에만 들어간다."""
+        raw: List[Tuple[Optional[int], float]] = []
+        n_drones = 0
+        for m in matings:
+            if not m.sires:
+                continue
+            known = [s.share for s in m.sires if s.share is not None]
+            fill = (sum(known) / len(known)) if known else 1.0 / len(m.sires)
+            raw += [(s.sire_queen_id, s.share if s.share is not None else fill) for s in m.sires]
+            n_drones = n_drones + m.est_n_drones if (n_drones is not None and m.est_n_drones) else None
+        total = sum(w for _, w in raw)
+        if total <= 0:
+            return [], None
+        mix: Dict[int, float] = {}
+        for sid, w in raw:
+            if sid:
+                mix[sid] = mix.get(sid, 0.0) + w / total
+        return list(mix.items()), (n_drones or None)
+
+    def dam(self, qid: int) -> Optional[int]:
+        if qid not in self._dam:
+            q = self.db.query(models.Queen).get(qid)
+            self._dam[qid] = q.mother_queen_id if q else None
+        return self._dam[qid]
+
+    def paternal(self, qid: int) -> Tuple[List[Tuple[int, float]], Optional[int]]:
+        """여왕 qid 의 부계 후보 = 어미의 교미 상대"""
+        d = self.dam(qid)
+        if not d:
+            return [], None
+        if d not in self._pat:
+            self._pat[d] = self._mixture(self.db.query(models.Mating).filter(models.Mating.queen_id == d).all())
+        return self._pat[d]
+
+    def generation(self, qid: int) -> int:
+        if qid not in self._gen:
+            self._gen[qid] = 0  # 순환 기록 방지
+            d = self.dam(qid)
+            if d:
+                self._gen[qid] = 1 + max([self.generation(d)] + [self.generation(p) for p, _ in self.paternal(qid)[0]])
+        return self._gen[qid]
+
+    def inbreeding(self, qid: int) -> float:
+        d = self.dam(qid)
+        if not d:
+            return 0.0
+        return sum(w * self.theta(d, p) for p, w in self.paternal(qid)[0])
+
+    def theta(self, a: int, b: int) -> float:
+        if a == b:
+            return 0.5 * (1 + self.inbreeding(a))
+        key = (a, b) if a < b else (b, a)
+        if key in self._memo:
+            return self._memo[key]
+        if self.generation(a) < self.generation(b):
+            a, b = b, a
+        da = self.dam(a)
+        if not da:
+            v = 0.0  # 두 여왕 모두 기초 개체
+        elif da == self.dam(b):
+            v = self._sisters(a)
+        else:
+            v = 0.5 * self.theta(da, b) + 0.5 * sum(w * self.theta(p, b) for p, w in self.paternal(a)[0])
+        self._memo[key] = v
+        return v
+
+    def _sisters(self, a: int) -> float:
+        """같은 어미의 두 딸: ¼[θ(D,D) + 2 Σ w θ(D,P) + θ(수벌, 수벌)]"""
+        d = self.dam(a)
+        mix, n = self.paternal(a)
+        dd = self.theta(d, d)
+        dp = sum(w * self.theta(d, p) for p, w in mix)
+        pp = sum(wi * wj * self.theta(pi, pj) for pi, wi in mix for pj, wj in mix)
+        if n:
+            for p, w in mix:
+                same = min(1.0, 1.0 / (w * n))  # 같은 수벌일 확률
+                pp += w * w * same * (1 - self.theta(p, p))
+        return 0.25 * (dd + 2 * dp + pp)
+
+    def cross_inbreeding(self, dam_id: int, sires: List[Tuple[int, float]]) -> float:
+        """어미 × 수벌 생산 여왕들(비율 합 1) → 딸(여왕·일벌)의 기대 근교계수"""
+        return sum(w * self.theta(dam_id, s) for s, w in sires)
+
+
+INBREEDING_LEVELS = [(0.125, "high"), (0.0625, "moderate")]  # 반형제 교배 F=0.125, 사촌 F≈0.0625
+
+
+def inbreeding_level(f: float) -> str:
+    for cut, label in INBREEDING_LEVELS:
+        if f >= cut:
+            return label
+    return "low"
+
+
 def predict_cross(db: Session, dam_id: int, sires: List[Tuple[int, float]], panel: Optional[str] = None) -> dict:
     """어미 여왕 × 수벌 생산 여왕들(비율) → 딸의 마커별 유전형 분포와 형질별 기대 마커 점수"""
     total = sum(s for _, s in sires) or 1.0
@@ -616,12 +745,18 @@ def predict_cross(db: Session, dam_id: int, sires: List[Tuple[int, float]], pane
             warnings.append({"sire_queen_id": sid, "share": round(share, 3), "n_common": len(common),
                              "closest_common": q.tag if q else closest,
                              "dam_gen": dam_anc[closest], "sire_gen": sire_anc[closest]})
+    kin = Kinship(db, [dam_id] + [sid for sid, _ in sires])
+    f_daughter = kin.cross_inbreeding(dam_id, sires)
+    inbreeding = {"expected_daughter_f": round(f_daughter, 4), "level": inbreeding_level(f_daughter),
+                  "dam_f": round(kin.inbreeding(dam_id), 4),
+                  "per_sire": [{"sire_queen_id": sid, "share": round(s, 3), "kinship": round(kin.theta(dam_id, sid), 4)}
+                               for sid, s in sires]}
     for sc in scores.values():
         sc["dam_score"] = round(sc["dam_score"], 4)
         sc["expected_daughter_score"] = round(sc["expected_daughter_score"], 4)
     return {"dam_id": dam_id, "sires": [{"queen_id": sid, "share": round(s, 3), "has_genotype": sid in dos} for sid, s in sires],
             "dam_has_genotype": bool(dam), "traits": sorted(scores.values(), key=lambda r: r["trait_code"] or ""),
-            "markers": rows, "inbreeding_warnings": warnings}
+            "markers": rows, "inbreeding": inbreeding, "inbreeding_warnings": warnings}
 
 
 def recorded_sires(db: Session, queen_id: int) -> List[Tuple[int, float]]:

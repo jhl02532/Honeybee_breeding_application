@@ -195,7 +195,13 @@ def _queen_profile(db: Session, queen: models.Queen) -> dict:
                 .join(models.Colony, models.Colony.id == models.ColonyQueen.colony_id)
                 .filter(models.ColonyQueen.queen_id == queen.id).all())
     daughters = db.query(models.Queen).filter(models.Queen.mother_queen_id == queen.id).limit(100).all()
+    kin = v2_service.Kinship(db, [queen.id])
+    sires = v2_service.recorded_sires(db, queen.id)
+    total = sum(w for _, w in sires)
+    offspring_f = kin.cross_inbreeding(queen.id, [(s, w / total) for s, w in sires]) if total > 0 else None
     return {
+        "inbreeding": {"f": round(kin.inbreeding(queen.id), 4), "pedigree_generations": kin.generation(queen.id),
+                       "offspring_f": round(offspring_f, 4) if offspring_f is not None else None},
         "queen": {**_queen_brief(queen), "birth_date": queen.birth_date, "origin": queen.origin,
                   "external_id": queen.external_id, "ancestry": v2_service.ancestry_dict(queen)},
         "mother": _queen_brief(queen.mother),
@@ -392,6 +398,20 @@ def cross_validate(dataset: str, panel: Optional[str] = None, db: Session = Depe
                 freq_pred.append((m["p_dam"] + m["p_drone"]) / 2)
                 freq_obs.append(o)
 
+    # 근교계수: 여왕마다 (자신 × 교미 상대) 딸의 기대 F ↔ 그 여왕 봉군의 동형 봉아 비율
+    queens = db.query(models.Queen).filter(models.Queen.dataset_id == ds.id).all()
+    kin = v2_service.Kinship(db, [q.id for q in queens[:1]])
+    hom = {o.queen_id: o.value for o in db.query(models.TraitObservation)
+           .filter(models.TraitObservation.dataset_id == ds.id, models.TraitObservation.trait_code == "hom_brood_pct").all()}
+    f_hom, f_by_year = [], {}
+    for q in queens:
+        if q.birth_date and kin.dam(q.id):
+            f_by_year.setdefault(q.birth_date[:4], []).append(kin.inbreeding(q.id))
+        sires = v2_service.recorded_sires(db, q.id)
+        total = sum(w for _, w in sires)
+        if total > 0 and q.id in hom:
+            f_hom.append((kin.cross_inbreeding(q.id, [(s, w / total) for s, w in sires]), hom[q.id]))
+
     def corr(xs):
         if len(xs) < 3:
             return None
@@ -407,6 +427,10 @@ def cross_validate(dataset: str, panel: Optional[str] = None, db: Session = Depe
                           "mean_abs_error": round(sum(abs(x - y) for x, y in v) / len(v), 4)} for t, v in sorted(pairs.items())],
         "true_queen_effect": [{"trait_code": t, "n": len(v), "r_pred_vs_daughter_true_effect": corr(v)}
                               for t, v in sorted(bv_pairs.items())],
+        "inbreeding": {"n": len(f_hom), "r_offspring_f_vs_hom_brood": corr(f_hom),
+                       "mean_offspring_f": round(sum(x for x, _ in f_hom) / len(f_hom), 4) if f_hom else None,
+                       "mean_f_by_birth_year": [{"year": y, "n": len(v), "mean_f": round(sum(v) / len(v), 4)}
+                                                for y, v in sorted(f_by_year.items())]},
         "allele_freq": {"n": len(freq_pred), "r_pred_vs_observed": corr(list(zip(freq_pred, freq_obs))),
                         "mean_abs_error": round(sum(abs(x - y) for x, y in zip(freq_pred, freq_obs)) / len(freq_pred), 4) if freq_pred else None},
     }

@@ -333,6 +333,13 @@ function QueenProfile({ profile, onOpen, onClose }: { profile: any; onOpen: (id:
                 </span>
               ))}
         </div>
+        {profile.inbreeding && (
+          <div>
+            근교계수 F = {fmtNum(profile.inbreeding.f, 3)}
+            <span style={{ color: "var(--text-muted)" }}> (계통 {profile.inbreeding.pedigree_generations}대)</span>
+            {profile.inbreeding.offspring_f != null && <> · 이 교미로 낳는 딸의 기대 F = {fmtNum(profile.inbreeding.offspring_f, 3)}</>}
+          </div>
+        )}
         {profile.daughters.length > 0 && <div>딸 여왕: {profile.daughters.map((d: any) => d.tag).join(", ")}</div>}
         {profile.colonies.length > 0 && <div>소속 봉군: {profile.colonies.map((c: any) => c.code).join(", ")}</div>}
       </div>

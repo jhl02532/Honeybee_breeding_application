@@ -185,15 +185,16 @@ function CrossResult({ r }: { r: any }) {
       </div>
 
       <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)", margin: "8px 0" }}>
-        근친 점검 <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 400 }}>(3대 안 공통 조상)</span>
+        근친 점검 <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 400 }}>(계통 기반 근교계수)</span>
       </div>
+      <InbreedingCard ib={r.inbreeding} sireTag={sireTag} />
       {warn.length === 0 ? (
         <div style={muted}>3대 안에 어미와 수벌 쪽 공통 조상이 없습니다.</div>
       ) : (
         <div style={{ fontSize: "12px", color: "var(--text-main)", lineHeight: 1.7 }}>
-          {close.length > 0 && (
-            <div style={{ ...styles.errorBanner, marginBottom: "6px" }}>
-              가까운 친척 교배 {close.length}건 — 공통 조상이 어미·수벌 쪽 합쳐 2대 안에 있습니다. csd 동형(이배체 수벌) 봉아가 늘 수 있습니다.
+          {close.length > 0 && r.inbreeding.level === "low" && (
+            <div style={{ ...muted, marginBottom: "6px" }}>
+              공통 조상이 어미·수벌 쪽 합쳐 2대 안에 있지만, 그 수벌 생산 여왕의 비율이 작거나 관계가 멀어 딸의 근교계수는 낮습니다.
             </div>
           )}
           {warn.slice(0, 6).map((w: any) => (
@@ -239,6 +240,37 @@ function CrossResult({ r }: { r: any }) {
   );
 }
 
+const IB_LABEL: Record<string, string> = { high: "높음", moderate: "주의", low: "낮음" };
+
+function InbreedingCard({ ib, sireTag }: { ib: any; sireTag: Record<number, string> }) {
+  const top = [...ib.per_sire].sort((a: any, b: any) => b.kinship * b.share - a.kinship * a.share).slice(0, 5);
+  const color = ib.level === "high" ? "#ef4444" : ib.level === "moderate" ? "var(--color-gold)" : "var(--text-main)";
+  return (
+    <div style={{ border: "1px solid var(--border-color)", borderRadius: "10px", padding: "12px", marginBottom: "8px" }}>
+      <div style={{ display: "flex", gap: "24px", flexWrap: "wrap", fontSize: "12px", color: "var(--text-main)" }}>
+        <div>딸(여왕·일벌)의 기대 근교계수 <b style={{ fontSize: "16px", color }}>{fmt(ib.expected_daughter_f, 3)}</b> <span style={{ color }}>({IB_LABEL[ib.level]})</span></div>
+        <div>어미 자신의 근교계수 <b>{fmt(ib.dam_f, 3)}</b></div>
+      </div>
+      {ib.level !== "low" && (
+        <div style={{ ...styles.errorBanner, margin: "8px 0 0" }}>
+          {ib.level === "high" ? "반형제 교배 수준(F ≥ 0.125) 이상입니다." : "사촌 교배 수준(F ≥ 0.0625)입니다."} csd 동형(이배체 수벌) 봉아가 늘어 봉판이 빌 수 있습니다.
+        </div>
+      )}
+      <div style={{ fontSize: "12px", color: "var(--text-main)", marginTop: "8px", lineHeight: 1.7 }}>
+        {top.filter((s: any) => s.kinship > 0).map((s: any) => (
+          <div key={s.sire_queen_id}>
+            수벌 생산 여왕 {sireTag[s.sire_queen_id] || `#${s.sire_queen_id}`} ({pct(s.share)}): 어미와의 근연계수 {fmt(s.kinship, 3)}
+          </div>
+        ))}
+      </div>
+      <div style={{ ...muted, marginTop: "6px", lineHeight: 1.6 }}>
+        근교계수 = 어미와 수벌 생산 여왕들의 근연계수를 수벌 비율로 평균한 값. 수벌은 수벌 생산 여왕의 생식세포 그대로라는 반수이배체 계통으로 계산합니다.
+        계통 기록이 없는 조상은 서로 무관하다고 보므로, 기록이 짧으면 실제보다 낮게 나옵니다.
+      </div>
+    </div>
+  );
+}
+
 function ValidationResult({ v }: { v: any }) {
   return (
     <div style={box}>
@@ -268,6 +300,14 @@ function ValidationResult({ v }: { v: any }) {
       <div style={{ fontSize: "12px", color: "var(--text-main)", marginTop: "8px" }}>
         마커별 대립유전자 빈도: 예측↔실제 딸 r = {fmt(v.allele_freq.r_pred_vs_observed, 2)}, 평균 절대 오차 {fmt(v.allele_freq.mean_abs_error, 3)} ({v.allele_freq.n}쌍)
       </div>
+      {v.inbreeding?.n > 0 && (
+        <div style={{ fontSize: "12px", color: "var(--text-main)", marginTop: "8px", lineHeight: 1.7 }}>
+          근교계수: 여왕 {v.inbreeding.n}마리의 딸 기대 근교계수 ↔ 그 봉군의 동형 봉아 비율 r = {fmt(v.inbreeding.r_offspring_f_vs_hom_brood, 2)}
+          <div style={muted}>
+            출생 연도별 여왕 근교계수 평균: {v.inbreeding.mean_f_by_birth_year.map((y: any) => `${y.year} ${fmt(y.mean_f, 3)}`).join(" · ")}
+          </div>
+        </div>
+      )}
       <div style={{ ...muted, marginTop: "6px", lineHeight: 1.6 }}>
         마커 점수 예측이 잘 맞아도 참 여왕 효과와의 상관이 낮으면, 등록된 마커가 그 형질의 유전 효과를 적게 설명한다는 뜻입니다.
       </div>
