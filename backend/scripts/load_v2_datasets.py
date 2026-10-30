@@ -6,12 +6,14 @@
     DATABASE_URL=... python -m scripts.load_v2_datasets eynard --dir <eynard2025_PRJNA1083455 폴더>
     DATABASE_URL=... python -m scripts.load_v2_datasets calfee --file <pgen.1009038.s001.txt>
     DATABASE_URL=... python -m scripts.load_v2_datasets gwas --dir <상위 마커 TSV 폴더>
+    DATABASE_URL=... python -m scripts.load_v2_datasets sim --dir <simulate_kbee.R 출력 폴더>
 
 - legacy: v1 기록(queen_tag·mother_colony_id·sample_id·trait_records)을 잇는다.
 - inu: backend/app/data/sampling/*.tsv(인천대 2026 채집 시료)를 samples 로 넣는다.
 - eynard: Eynard et al. 2025 봉군 형질(data.csv)·SRA 대응표(sample_SRA.tab).
 - calfee: Calfee et al. 2020 S1 Table(개체 날개 길이).
 - gwas: Eynard GEMMA 요약 통계에서 뽑은 상위 마커(hpc 에서 p_wald 순 200개씩 뽑은 TSV).
+- sim: SIMplyBee 시뮬레이션(scripts/simulate_kbee.R) 출력 CSV 7개 — 계통·교미·유전형·참값 유전가치.
 
 모두 여러 번 돌려도 결과가 같다(같은 코드는 갱신).
 """
@@ -177,9 +179,35 @@ def load_gwas(db, folder, max_p=1e-5):
     _commit_report(db, "gwas markers", n, errors)
 
 
+def load_sim(db, folder):
+    ds = v2_service.ensure_dataset(
+        db, "sim_simplybee_v1", "SIMplyBee 시뮬레이션 육종 집단 v1", "simulated",
+        citation="SIMplyBee 0.4.1 (Obšteter et al. 2023 Genet Sel Evol) / AlphaSimR 2.1.0; backend/scripts/simulate_kbee.R",
+        doi="10.1186/s12711-023-00798-y", license="자체 생성 데이터",
+        notes="실제 꿀벌이 아닌 시뮬레이션. 2021–2026 6세대 × 60봉군, 교미장 다중 교미, 형질 2개(채밀량·위생 행동, 유전력 약 0.27). "
+              "육종가는 참값(model=true_value: colony_gv 봉군 유전가치, queen_effect 여왕 효과). 유전형은 효과 상위 QTL 형질별 30개.")
+    v2_service.ensure_trait_definition(db, "hom_brood_pct", "동형 봉아 기대 비율", "Homozygous brood (csd)", "%",
+                                       "continuous", "colony", "other", 0, 100,
+                                       protocol="SIMplyBee calcQueensPHomBrood: 여왕·수벌 csd 대립유전자가 같아 생기는 이배체 수벌 봉아의 기대 비율")
+
+    def read(name):
+        with open(os.path.join(folder, name), encoding="utf-8") as fh:
+            return list(csv.DictReader(fh))
+
+    for kind, name in (("queens", "queens.csv"), ("matings", "matings.csv"), ("samples", "samples.csv"),
+                       ("traits", "traits.csv"), ("markers", "markers.csv"), ("genotypes", "genotypes.csv"),
+                       ("breeding_values", "breeding_values.csv")):
+        rows = read(name)
+        if kind == "markers":
+            n, errors = v2_service.import_markers(db, rows)
+        else:
+            n, errors = v2_service.IMPORTERS[kind](db, ds, rows)
+        _commit_report(db, f"sim {kind}", n, errors)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["legacy", "inu", "eynard", "calfee", "gwas"])
+    ap.add_argument("what", choices=["legacy", "inu", "eynard", "calfee", "gwas", "sim"])
     ap.add_argument("--dir")
     ap.add_argument("--file")
     args = ap.parse_args()
@@ -197,6 +225,8 @@ def main():
             load_calfee(db, args.file)
         elif args.what == "gwas":
             load_gwas(db, args.dir)
+        elif args.what == "sim":
+            load_sim(db, args.dir)
     finally:
         db.close()
 

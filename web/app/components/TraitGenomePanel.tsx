@@ -361,27 +361,140 @@ function QueenProfile({ profile, onOpen, onClose }: { profile: any; onOpen: (id:
         </div>
       ))}
 
-      <div style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "12px" }}>
-        유전형 {profile.genotypes.length}건 · 육종가 {profile.breeding_values.length}건
-        {profile.genotypes.length === 0 && " — 시료 유전형이 적재되면 여기에 마커별 값이 나옵니다."}
+      <PedigreeView queenId={q.id} onOpen={onOpen} />
+
+      <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)", margin: "12px 0 8px" }}>
+        유전형 {profile.genotypes.length}
       </div>
-      {profile.breeding_values.length > 0 && (
-        <div style={{ ...styles.tableWrapper, marginTop: "8px" }}>
+      {profile.genotypes.length === 0 ? (
+        <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>시료 유전형이 적재되면 여기에 마커별 값이 나옵니다.</div>
+      ) : (
+        <GenotypeTable genotypes={profile.genotypes} />
+      )}
+
+      <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)", margin: "12px 0 8px" }}>육종가 {profile.breeding_values.length}</div>
+      {profile.breeding_values.length === 0 ? (
+        <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>육종가 계산 결과가 없습니다.</div>
+      ) : (
+        <div style={styles.tableWrapper}>
           <table style={styles.table}>
-            <thead><tr>{["형질", "육종가", "정확도", "모델"].map((h) => <th key={h} style={styles.th}>{h}</th>)}</tr></thead>
+            <thead><tr>{["형질", "값", "정확도", "모델"].map((h) => <th key={h} style={styles.th}>{h}</th>)}</tr></thead>
             <tbody>
               {profile.breeding_values.map((b: any, i: number) => (
                 <tr key={i} style={styles.tr}>
                   <td style={styles.td}>{b.trait_code}</td>
                   <td style={styles.td}>{fmtNum(b.value, 3)}</td>
                   <td style={styles.td}>{fmtNum(b.accuracy, 2)}</td>
-                  <td style={styles.td}>{b.model}{b.model_version ? ` ${b.model_version}` : ""}</td>
+                  <td style={styles.td}>{BV_MODEL_LABEL[`${b.model}/${b.model_version}`] || `${b.model}${b.model_version ? ` ${b.model_version}` : ""}`}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+    </div>
+  );
+}
+
+const BV_MODEL_LABEL: Record<string, string> = {
+  "true_value/colony_gv": "참값 · 봉군 유전가치(시뮬레이션)",
+  "true_value/queen_effect": "참값 · 여왕 효과(시뮬레이션)",
+};
+
+// 대립유전자 1 의 개수(0/0=0, 0/1=1, 1/1=2, 수벌 1=1)
+const dosage = (gt: string | null) => (gt ? gt.split("/").filter((a) => a === "1").length : null);
+
+function GenotypeTable({ genotypes }: { genotypes: any[] }) {
+  const [showAll, setShowAll] = useState(false);
+  // 형질별 마커 점수 = Σ 효과 × (효과 대립유전자 수). 혼합 시료(af)는 2 × af 로 센다.
+  const scores: Record<string, { sum: number; n: number }> = {};
+  genotypes.forEach((g) => {
+    if (!g.trait_code || g.effect == null) return;
+    const d = g.gt != null ? dosage(g.gt) : g.af != null ? 2 * g.af : null;
+    if (d == null) return;
+    scores[g.trait_code] = scores[g.trait_code] || { sum: 0, n: 0 };
+    scores[g.trait_code].sum += g.effect * d;
+    scores[g.trait_code].n += 1;
+  });
+  const sorted = [...genotypes].sort((a, b) => Math.abs(b.effect ?? 0) - Math.abs(a.effect ?? 0));
+  const rows = showAll ? sorted : sorted.slice(0, 10);
+  return (
+    <div>
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "8px" }}>
+        {Object.entries(scores).map(([t, v]) => (
+          <span key={t} style={{ fontSize: "12px", padding: "4px 10px", borderRadius: "999px", border: "1px solid var(--border-color)", color: "var(--text-main)" }}>
+            {t} 마커 점수 <b>{fmtNum(v.sum, 3)}</b> <span style={{ color: "var(--text-muted)" }}>({v.n}개)</span>
+          </span>
+        ))}
+      </div>
+      <div style={{ ...styles.tableWrapper, maxHeight: "260px", overflowY: "auto" }}>
+        <table style={styles.table}>
+          <thead><tr>{["마커", "형질", "유전형", "효과"].map((h) => <th key={h} style={styles.th}>{h}</th>)}</tr></thead>
+          <tbody>
+            {rows.map((g, i) => (
+              <tr key={i} style={styles.tr}>
+                <td style={styles.td}>{g.marker_code}</td>
+                <td style={styles.td}>{g.trait_code || "-"}</td>
+                <td style={styles.td}>{g.gt ?? (g.af != null ? `빈도 ${fmtNum(g.af, 3)}` : "-")}</td>
+                <td style={styles.td}>{fmtNum(g.effect, 4)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {genotypes.length > 10 && (
+        <button style={{ ...styles.clearFilter, marginTop: "6px" }} onClick={() => setShowAll(!showAll)}>
+          {showAll ? "효과 큰 10개만" : `전체 ${genotypes.length}개 보기`}
+        </button>
+      )}
+      <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "6px" }}>
+        마커 점수는 등록된 마커 효과의 단순 합으로, 육종가 추정치가 아닙니다.
+      </div>
+    </div>
+  );
+}
+
+function PedigreeView({ queenId, onOpen }: { queenId: number; onOpen: (id: number) => void }) {
+  const [ped, setPed] = useState<{ root: number; nodes: any[]; edges: any[] } | null>(null);
+  useEffect(() => {
+    setPed(null);
+    authFetch(`/api/v2/queens/${queenId}/pedigree?depth=3`).then((r) => (r.ok ? r.json() : null)).then(setPed).catch(() => setPed(null));
+  }, [queenId]);
+  if (!ped || ped.edges.length === 0) return null;
+  const byId: Record<number, any> = {};
+  ped.nodes.forEach((n) => { byId[n.id] = n; });
+  const gens = Array.from(new Set(ped.nodes.map((n) => n.generation))).sort((a, b) => a - b);
+  // 노드마다 자기(자식) 쪽에서 본 관계(모계/부계)를 붙인다
+  const role: Record<number, string> = {};
+  ped.edges.forEach((e) => { if (!role[e.parent]) role[e.parent] = e.kind === "dam" ? "모계" : "부계"; });
+  return (
+    <div style={{ margin: "12px 0" }}>
+      <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>
+        계통도 <span style={{ fontSize: "11px", color: "var(--text-muted)", fontWeight: 400 }}>(3대, 부계 = 수벌을 낸 여왕)</span>
+      </div>
+      <div style={{ display: "flex", gap: "8px", overflowX: "auto" }}>
+        {gens.map((g) => (
+          <div key={g} style={{ minWidth: "130px", flex: "0 0 auto" }}>
+            <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "4px" }}>{g === 0 ? "본인" : `${g}대 위`}</div>
+            {ped.nodes.filter((n) => n.generation === g).slice(0, 12).map((n) => (
+              <div
+                key={n.id}
+                onClick={() => n.id !== ped.root && onOpen(n.id)}
+                style={{
+                  fontSize: "11px", padding: "4px 6px", marginBottom: "4px", borderRadius: "6px",
+                  border: `1px solid ${role[n.id] === "모계" ? "var(--color-gold)" : role[n.id] === "부계" ? "var(--color-gene)" : "var(--border-color)"}`,
+                  color: "var(--text-main)", cursor: n.id !== ped.root ? "pointer" : "default", whiteSpace: "nowrap",
+                }}
+              >
+                {n.tag}{role[n.id] && <span style={{ color: "var(--text-muted)" }}> · {role[n.id]}</span>}
+              </div>
+            ))}
+            {ped.nodes.filter((n) => n.generation === g).length > 12 && (
+              <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>외 {ped.nodes.filter((n) => n.generation === g).length - 12}마리</div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
