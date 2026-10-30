@@ -10,8 +10,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from sqlalchemy import text
 from .database import engine, Base, get_db
-from . import crud
-from .routers import auth, apiaries, colonies, traits, stats, sync, researcher, admin
+from . import crud, v2_service
+from .routers import auth, apiaries, colonies, traits, stats, sync, researcher, admin, v2
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -114,6 +114,12 @@ def startup_event():
         print("Schema columns synced successfully.")
     except Exception as e:
         print(f"Failed to sync schema columns on startup: {str(e)}")
+    # v2 기준 데이터(데이터 세트·형질 정의)
+    try:
+        v2_service.ensure_reference_data(db)
+    except Exception as e:
+        db.rollback()
+        print(f"Failed to seed v2 reference data: {str(e)}")
     # 데모 계정·데이터는 SEED_DEMO_DATA=1 일 때만 넣는다(운영 서버에서는 켜지 않음)
     if os.getenv("SEED_DEMO_DATA") == "1":
         crud.seed_database_if_empty(db)
@@ -175,3 +181,4 @@ app.include_router(stats.router)
 app.include_router(sync.router)
 app.include_router(researcher.router)
 app.include_router(admin.router)
+app.include_router(v2.router)

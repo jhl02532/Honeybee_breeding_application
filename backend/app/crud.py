@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from . import models, schemas
+from . import models, schemas, v2_service
 from .auth import get_password_hash
 
 
@@ -282,11 +282,15 @@ def create_trait_record(db: Session, record: schemas.TraitRecordCreate):
     db.add(db_record)
     db.commit()
     db.refresh(db_record)
+    # v2 형질 테이블에도 같은 값을 쓴다(이중 기록)
+    v2_service.sync_trait_record(db, db_record)
+    db.commit()
     return db_record
 
 def delete_trait_record(db: Session, record_id: int):
     db_record = db.query(models.TraitRecord).filter(models.TraitRecord.id == record_id).first()
     if db_record:
+        db.query(models.TraitObservation).filter(models.TraitObservation.legacy_record_id == record_id).delete()
         db.delete(db_record)
         db.commit()
         return True
@@ -355,6 +359,7 @@ def bulk_sync_data(db: Session, owner_id: int, payload: schemas.BulkSyncPayload)
     created_apiaries_count = 0
     created_colonies_count = 0
     created_records_count = 0
+    new_records = []
     
     # 1. Process Apiaries
     apiary_name_to_id = {}
@@ -465,7 +470,11 @@ def bulk_sync_data(db: Session, owner_id: int, payload: schemas.BulkSyncPayload)
         )
         db.add(db_record)
         created_records_count += 1
+        new_records.append(db_record)
         
+    db.commit()
+    for r in new_records:
+        v2_service.sync_trait_record(db, r)
     db.commit()
     return {
         "success": True,

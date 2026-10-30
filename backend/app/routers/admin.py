@@ -250,6 +250,7 @@ def delete_system_trait_record(
     record = db.query(models.TraitRecord).filter(models.TraitRecord.id == record_id).first()
     if not record:
         raise HTTPException(status_code=404, detail="형질 기록을 찾을 수 없습니다.")
+    db.query(models.TraitObservation).filter(models.TraitObservation.legacy_record_id == record_id).delete()
     db.delete(record)
     db.commit()
     return {"message": f"Trait Record {record_id} successfully deleted."}
