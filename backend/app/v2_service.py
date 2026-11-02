@@ -412,6 +412,7 @@ def import_genotypes(db: Session, ds: models.Dataset, rows: Iterable[dict]) -> T
     n, errors = 0, []
     sample_cache: Dict[str, Optional[models.Sample]] = {}
     marker_cache: Dict[Tuple[str, str], Optional[int]] = {}
+    existing: Dict[int, Dict[int, models.SampleGenotype]] = {}  # 시료별 기존 행 (행마다 조회하면 대량 적재가 느리다)
     for i, r in enumerate(rows, start=2):
         sc = r.get("sample_code")
         if sc not in sample_cache:
@@ -433,9 +434,11 @@ def import_genotypes(db: Session, ds: models.Dataset, rows: Iterable[dict]) -> T
         if af is not None and not 0 <= af <= 1:
             errors.append(f"{i}행: af {af} 가 0~1 밖")
             continue
-        g = (db.query(models.SampleGenotype).filter(models.SampleGenotype.sample_id == s.id,
-                                                    models.SampleGenotype.marker_id == mid).first()
-             or models.SampleGenotype(sample_id=s.id, marker_id=mid))
+        if s.id not in existing:
+            existing[s.id] = {g.marker_id: g for g in db.query(models.SampleGenotype).filter(models.SampleGenotype.sample_id == s.id).all()}
+        g = existing[s.id].get(mid)
+        if g is None:
+            g = existing[s.id][mid] = models.SampleGenotype(sample_id=s.id, marker_id=mid)
         g.gt, g.af = gt, af
         d = _f(r.get("depth"))
         g.depth = int(d) if d is not None else None
@@ -538,6 +541,11 @@ def queen_dosages(db: Session, queen_ids: List[int], panel: Optional[str] = None
         rank[(qid, key)] = r
         out.setdefault(qid, {})[key] = d
     return out
+
+
+def _pool_only(db: Session, queen_id: int) -> bool:
+    """여왕 유전형 없이 일벌 혼합 시료만 있으면 빈도를 유전형 대신 쓴 것이다"""
+    return db.query(models.Sample).filter(models.Sample.queen_id == queen_id, models.Sample.sample_type == "queen").first() is None
 
 
 def queen_parents(db: Session, q: Optional[models.Queen]) -> List[Tuple[int, str]]:
@@ -722,8 +730,10 @@ def predict_cross(db: Session, dam_id: int, sires: List[Tuple[int, float]], pane
                 pq += share * d / 2
         p11, p00 = pd * pq, (1 - pd) * (1 - pq)
         expected = m.effect * (pd + pq)
-        sc = scores.setdefault(m.trait_code, {"trait_code": m.trait_code, "dam_score": 0.0, "expected_daughter_score": 0.0,
-                                              "n_markers": 0, "n_markers_sire_fallback": 0})
+        # 마커 효과는 집단별 GWAS 추정치이므로 집단끼리 더하지 않는다
+        sc = scores.setdefault((m.trait_code, m.population), {
+            "trait_code": m.trait_code, "population": m.population, "dam_score": 0.0, "expected_daughter_score": 0.0,
+            "n_markers": 0, "n_markers_sire_fallback": 0})
         sc["dam_score"] += m.effect * dam[key]
         sc["expected_daughter_score"] += expected
         sc["n_markers"] += 1
@@ -755,7 +765,8 @@ def predict_cross(db: Session, dam_id: int, sires: List[Tuple[int, float]], pane
         sc["dam_score"] = round(sc["dam_score"], 4)
         sc["expected_daughter_score"] = round(sc["expected_daughter_score"], 4)
     return {"dam_id": dam_id, "sires": [{"queen_id": sid, "share": round(s, 3), "has_genotype": sid in dos} for sid, s in sires],
-            "dam_has_genotype": bool(dam), "traits": sorted(scores.values(), key=lambda r: r["trait_code"] or ""),
+            "dam_has_genotype": bool(dam), "dam_is_pool": bool(dam) and _pool_only(db, dam_id),
+            "traits": sorted(scores.values(), key=lambda r: (r["trait_code"] or "", r["population"] or "")),
             "markers": rows, "inbreeding": inbreeding, "inbreeding_warnings": warnings}
 
 

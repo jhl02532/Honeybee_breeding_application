@@ -220,7 +220,7 @@ def _queen_profile(db: Session, queen: models.Queen) -> dict:
                      "platform": s.platform, "biosample": s.biosample, "run_accessions": s.run_accessions,
                      "collected_date": s.collected_date, "status": s.status} for s in samples],
         "genotypes": [{"sample_id": g.sample_id, "panel": m.panel, "marker_code": m.marker_code, "trait_code": m.trait_code,
-                       "effect": m.effect, "effect_allele": m.effect_allele, "gt": g.gt, "af": g.af} for g, m in genos],
+                       "effect": m.effect, "effect_allele": m.effect_allele, "population": m.population, "gt": g.gt, "af": g.af} for g, m in genos],
         "breeding_values": [{"trait_code": b.trait_code, "value": b.value, "accuracy": b.accuracy, "model": b.model,
                              "model_version": b.model_version, "run_date": b.run_date} for b in bvs],
     }

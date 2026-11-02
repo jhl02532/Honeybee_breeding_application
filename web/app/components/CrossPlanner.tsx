@@ -162,14 +162,21 @@ function CrossResult({ r }: { r: any }) {
     <div style={box}>
       <h3 style={subTitle}>예측 결과: {r.dam_tag} × {r.sire_source === "recorded" ? "실제 교미 기록" : "직접 선택"} ({r.sires.length}개 수벌 생산 여왕)</h3>
       {!r.dam_has_genotype && <div style={styles.errorBanner}>어미 여왕의 유전형이 없어 계산할 수 없습니다.</div>}
+      {r.dam_is_pool && (
+        <div style={{ ...muted, marginBottom: "8px", lineHeight: 1.6 }}>
+          어미 여왕의 유전형 대신 봉군 일벌 혼합 시료의 대립유전자 빈도를 썼습니다. 일벌 빈도는 여왕과 수벌들의 평균이므로 이 예측은 대략적인 값입니다.
+        </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px", marginBottom: "12px" }}>
         {r.traits.map((t: any) => {
           const act = r.actual_daughters?.mean_marker_score?.[t.trait_code];
           const tru = r.actual_daughters?.mean_true_queen_effect?.[t.trait_code];
           return (
-            <div key={t.trait_code} style={{ border: "1px solid var(--border-color)", borderRadius: "10px", padding: "12px" }}>
-              <div style={{ fontWeight: 700, color: "var(--text-main)", marginBottom: "6px" }}>{t.trait_code}</div>
+            <div key={`${t.trait_code}|${t.population}`} style={{ border: "1px solid var(--border-color)", borderRadius: "10px", padding: "12px" }}>
+              <div style={{ fontWeight: 700, color: "var(--text-main)", marginBottom: "6px" }}>
+                {t.trait_code}{t.population && <span style={{ color: "var(--text-muted)", fontWeight: 400 }}> · {t.population} 마커</span>}
+              </div>
               <div style={{ fontSize: "12px", color: "var(--text-main)", lineHeight: 1.8 }}>
                 <div>어미 마커 점수 <b>{fmt(t.dam_score)}</b></div>
                 <div>딸 기대 마커 점수 <b style={{ color: "var(--color-gold)" }}>{fmt(t.expected_daughter_score)}</b></div>

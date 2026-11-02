@@ -376,7 +376,7 @@ function QueenProfile({ profile, onOpen, onClose }: { profile: any; onOpen: (id:
       {profile.genotypes.length === 0 ? (
         <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>시료 유전형이 적재되면 여기에 마커별 값이 나옵니다.</div>
       ) : (
-        <GenotypeTable genotypes={profile.genotypes} />
+        <GenotypeTable genotypes={profile.genotypes} line={q.line} />
       )}
 
       <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-main)", margin: "12px 0 8px" }}>육종가 {profile.breeding_values.length}</div>
@@ -411,18 +411,24 @@ const BV_MODEL_LABEL: Record<string, string> = {
 // 대립유전자 1 의 개수(0/0=0, 0/1=1, 1/1=2, 수벌 1=1)
 const dosage = (gt: string | null) => (gt ? gt.split("/").filter((a) => a === "1").length : null);
 
-function GenotypeTable({ genotypes }: { genotypes: any[] }) {
+function GenotypeTable({ genotypes, line }: { genotypes: any[]; line?: string | null }) {
   const [showAll, setShowAll] = useState(false);
   // 형질별 마커 점수 = Σ 효과 × (효과 대립유전자 수). 혼합 시료(af)는 2 × af 로 센다.
+  // 효과는 집단별 GWAS 추정치라 여왕 계통과 같은 집단의 마커만 더한다. 맞는 집단이 없으면 집단별로 따로 보인다.
+  const ownPop = (g: any) => !!g.population && !!line && line.startsWith(g.population);
+  const hasOwnPop = genotypes.some(ownPop);
   const scores: Record<string, { sum: number; n: number }> = {};
   genotypes.forEach((g) => {
     if (!g.trait_code || g.effect == null) return;
+    if (g.population && hasOwnPop && !ownPop(g)) return;
     const d = g.gt != null ? dosage(g.gt) : g.af != null ? 2 * g.af : null;
     if (d == null) return;
-    scores[g.trait_code] = scores[g.trait_code] || { sum: 0, n: 0 };
-    scores[g.trait_code].sum += g.effect * d;
-    scores[g.trait_code].n += 1;
+    const key = g.population ? `${g.trait_code} · ${g.population}` : g.trait_code;
+    scores[key] = scores[key] || { sum: 0, n: 0 };
+    scores[key].sum += g.effect * d;
+    scores[key].n += 1;
   });
+  const fromGwas = genotypes.some((g) => g.population);
   const sorted = [...genotypes].sort((a, b) => Math.abs(b.effect ?? 0) - Math.abs(a.effect ?? 0));
   const rows = showAll ? sorted : sorted.slice(0, 10);
   return (
@@ -434,6 +440,11 @@ function GenotypeTable({ genotypes }: { genotypes: any[] }) {
           </span>
         ))}
       </div>
+      {fromGwas && (
+        <div style={{ fontSize: "11px", color: "var(--text-muted)", marginBottom: "8px", lineHeight: 1.6 }}>
+          이 시료들이 들어간 GWAS 에서 고른 마커라, 같은 시료에서는 점수와 형질의 관계가 실제보다 강하게 보입니다. 다른 집단 예측력은 검증되지 않았습니다.
+        </div>
+      )}
       <div style={{ ...styles.tableWrapper, maxHeight: "260px", overflowY: "auto" }}>
         <table style={styles.table}>
           <thead><tr>{["마커", "형질", "유전형", "효과"].map((h) => <th key={h} style={styles.th}>{h}</th>)}</tr></thead>

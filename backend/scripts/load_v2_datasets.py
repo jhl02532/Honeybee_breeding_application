@@ -6,13 +6,15 @@
     DATABASE_URL=... python -m scripts.load_v2_datasets eynard --dir <eynard2025_PRJNA1083455 폴더>
     DATABASE_URL=... python -m scripts.load_v2_datasets calfee --file <pgen.1009038.s001.txt>
     DATABASE_URL=... python -m scripts.load_v2_datasets gwas --dir <상위 마커 TSV 폴더>
+    DATABASE_URL=... python -m scripts.load_v2_datasets eynard-af --file <marker_counts.tsv>
     DATABASE_URL=... python -m scripts.load_v2_datasets sim --dir <simulate_kbee.R 출력 폴더>
 
 - legacy: v1 기록(queen_tag·mother_colony_id·sample_id·trait_records)을 잇는다.
 - inu: backend/app/data/sampling/*.tsv(인천대 2026 채집 시료)를 samples 로 넣는다.
-- eynard: Eynard et al. 2025 봉군 형질(data.csv)·SRA 대응표(sample_SRA.tab).
+- eynard: Eynard et al. 2025 봉군 형질(data.csv, 재봉개율만 data_updated.txt)·SRA 대응표(sample_SRA.tab).
 - calfee: Calfee et al. 2020 S1 Table(개체 날개 길이).
 - gwas: Eynard GEMMA 요약 통계에서 뽑은 상위 마커(hpc 에서 p_wald 순 200개씩 뽑은 TSV).
+- eynard-af: count.tar 에서 뽑은 콜로니별 GWAS 마커 읽기 수(scripts/extract_counts.py) → 대립유전자 빈도.
 - sim: SIMplyBee 시뮬레이션(scripts/simulate_kbee.R) 출력 CSV 7개 — 계통·교미·유전형·참값 유전가치.
 
 모두 여러 번 돌려도 결과가 같다(같은 코드는 갱신).
@@ -37,7 +39,8 @@ EYNARD_TRAITS = [
     # 열, code, name_ko, unit, category, min, max
     ("percent_mnr", "mnr_pct", "응애 비번식률", "%", "disease", 0, 100),
     ("eb_mmr", "eb_mnr", "응애 비번식률(경험적 베이즈 보정)", "비율(0-1)", "disease", 0, 1),
-    ("recap_inf", "recap_inf", "감염 봉방 재봉개율", "비율(0-1)", "disease", 0, 1),
+    # data.csv 의 recap_inf 는 쓰지 않는다: data_updated.txt 와 상관 -0.10, GWAS 효과 방향도 반반. 갱신판 값은 251개 중 250개 일치
+    ("rate_recaping_infested_cells", "recap_inf", "감염 봉방 재봉개율", "비율(0-1)", "disease", 0, 1),
     ("v_pho", "varroa_phoretic", "성충 부착 응애", "마리/100마리", "disease", 0, None),
     ("v_mito", "varroa_mito", "응애 mtDNA 리드 비율", "비율", "disease", 0, None),
     ("v_load", "varroa_load", "봉군 응애 총량(추정)", "마리", "disease", 0, None),
@@ -92,9 +95,13 @@ def load_eynard(db, folder):
         notes="일벌 약 500마리 혼합 시퀀싱(봉군 단위). 봉군당 여왕 1명으로 보고 형질을 여왕에 연결. 좌표 없음.")
     for col, code, name, unit, cat, lo, hi in EYNARD_TRAITS:
         v2_service.ensure_trait_definition(db, code, name, None, unit, "continuous", "colony", cat, lo, hi,
-                                           protocol=f"Eynard et al. 2025 data.csv 열 `{col}`")
+                                           protocol=f"Eynard et al. 2025 data.csv·data_updated.txt 열 `{col}`")
     with open(os.path.join(folder, "data.csv"), encoding="utf-8") as fh:
         data = list(csv.DictReader(fh, delimiter="\t"))
+    with open(os.path.join(folder, "data_updated.txt"), encoding="utf-8") as fh:
+        updated = {r["num_bs"].upper(): r for r in csv.DictReader(fh, delimiter=";")}  # num_bs 가 소문자
+    for r in data:
+        r["rate_recaping_infested_cells"] = updated[r["num_bs"]]["rate_recaping_infested_cells"]
 
     def iso(d):  # 01/08/2016 → 2016-08-01 (data_updated.txt 의 ISO 날짜와 대조해 일/월/연 확인)
         if d.count("/") != 2:
@@ -179,6 +186,38 @@ def load_gwas(db, folder, max_p=1e-5):
     _commit_report(db, "gwas markers", n, errors)
 
 
+def load_eynard_af(db, path, panel="eynard2025_gwas_p1e-5"):
+    """marker_counts.tsv(콜로니별 sync count) → GWAS 마커의 효과 대립유전자 빈도.
+
+    af = 효과 대립유전자(alt) 읽기 수 / (ref + alt 읽기 수). 일벌 혼합 시료이므로 gt 는 비운다.
+    """
+    ds = v2_service.get_dataset(db, "eynard2025")
+    code_by_tag = dict(db.query(models.Queen.tag, models.Sample.code)
+                       .join(models.Sample, models.Sample.queen_id == models.Queen.id)
+                       .filter(models.Queen.dataset_id == ds.id).all())
+    alleles = {m.marker_code: (m.ref, m.alt) for m in db.query(models.Marker).filter(models.Marker.panel == panel).all()}
+    rows, no_cover, no_sample, odd = [], 0, 0, 0
+    with open(path, encoding="utf-8") as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            code = code_by_tag.get(r["file"])
+            if code is None:
+                no_sample += 1
+                continue
+            ref, alt = alleles[r["marker"]]
+            if not {ref, alt} <= {r["ref"], *r["alt"].split(",")}:
+                odd += 1  # sync 의 대립유전자(3대립 자리는 ALT 가 'T,G')에 GWAS 마커가 없으면 쓰지 않는다
+                continue
+            n_ref, n_alt = int(r[ref]), int(r[alt])
+            if n_ref + n_alt == 0:
+                no_cover += 1
+                continue
+            rows.append({"sample_code": code, "panel": panel, "marker_code": r["marker"],
+                         "af": round(n_alt / (n_ref + n_alt), 4), "depth": n_ref + n_alt})
+    print(f"제외: 시료 없음 {no_sample}, 대립유전자 불일치 {odd}, 읽기 없음 {no_cover}")
+    n, errors = v2_service.import_genotypes(db, ds, rows)
+    _commit_report(db, "eynard af", n, errors)
+
+
 def load_sim(db, folder):
     ds = v2_service.ensure_dataset(
         db, "sim_simplybee_v1", "SIMplyBee 시뮬레이션 육종 집단 v1", "simulated",
@@ -207,7 +246,7 @@ def load_sim(db, folder):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["legacy", "inu", "eynard", "calfee", "gwas", "sim"])
+    ap.add_argument("what", choices=["legacy", "inu", "eynard", "calfee", "gwas", "eynard-af", "sim"])
     ap.add_argument("--dir")
     ap.add_argument("--file")
     args = ap.parse_args()
@@ -225,6 +264,8 @@ def main():
             load_calfee(db, args.file)
         elif args.what == "gwas":
             load_gwas(db, args.dir)
+        elif args.what == "eynard-af":
+            load_eynard_af(db, args.file)
         elif args.what == "sim":
             load_sim(db, args.dir)
     finally:
