@@ -86,13 +86,27 @@ def load_inu(db):
     _commit_report(db, "inu", n, errors)
 
 
+EYNARD_DATASET = {
+    "citation": ("Eynard SE et al. 2024, Sequence-based genome-wide association studies reveal the polygenic "
+                 "architecture of Varroa destructor resistance in Western honey bees Apis mellifera, "
+                 "Recherche Data Gouv, V4, doi:10.57745/HHE4CZ; Mol Ecol 2025; PRJNA1083455"),
+    "doi": "10.1111/mec.17637",
+    "license": "Etalab Open License 2.0 (CC-BY 2.0 호환)",
+    "notes": ("일벌 약 500마리 혼합 시퀀싱(봉군 단위). 봉군당 여왕 1명으로 보고 형질을 여왕에 연결. 좌표 없음. "
+              "가공: 재봉개율은 data_updated.txt 로 교체, GWAS p<1e-5 마커를 추려 count 파일에서 빈도 계산. "
+              "공개 참조 자료이며 한국 봉군 평가 기준이 아니다."),
+}
+
+
+def eynard_dataset(db):
+    ds = v2_service.ensure_dataset(db, "eynard2025", "Eynard 2025 BeeStrong 봉군 응애 형질", "public")
+    for field, value in EYNARD_DATASET.items():
+        setattr(ds, field, value)
+    return ds
+
+
 def load_eynard(db, folder):
-    ds = v2_service.ensure_dataset(
-        db, "eynard2025", "Eynard 2025 BeeStrong 봉군 응애 형질", "public",
-        citation="Eynard SE et al. 2025 Mol Ecol (BeeStrong varroa GWAS); PRJNA1083455",
-        doi="10.1111/mec.17637",
-        license="확인 필요 — Recherche Data Gouv doi:10.57745/HHE4CZ",
-        notes="일벌 약 500마리 혼합 시퀀싱(봉군 단위). 봉군당 여왕 1명으로 보고 형질을 여왕에 연결. 좌표 없음.")
+    ds = eynard_dataset(db)
     for col, code, name, unit, cat, lo, hi in EYNARD_TRAITS:
         v2_service.ensure_trait_definition(db, code, name, None, unit, "continuous", "colony", cat, lo, hi,
                                            protocol=f"Eynard et al. 2025 data.csv·data_updated.txt 열 `{col}`")
