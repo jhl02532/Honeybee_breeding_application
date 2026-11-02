@@ -11,7 +11,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy import text
 from .database import engine, Base, get_db
 from . import crud, v2_service
-from .routers import auth, apiaries, colonies, traits, stats, sync, researcher, admin, v2
+from .routers import auth, apiaries, colonies, traits, stats, sync, researcher, admin, v2, field
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -182,3 +182,4 @@ app.include_router(sync.router)
 app.include_router(researcher.router)
 app.include_router(admin.router)
 app.include_router(v2.router)
+app.include_router(field.router)

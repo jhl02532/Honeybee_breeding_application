@@ -9,7 +9,7 @@ from typing import Dict, Iterable, List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
-from . import models
+from . import field_traits, models
 
 
 # ========== 기준 데이터 ==========
@@ -18,6 +18,7 @@ DATASETS = [
     # code, name, kind, visible_to, citation, doi, license
     ("farm", "농가 입력 기록", "farm", "all", None, None, None),
     ("inu_2026", "인천대 2026 채집 시료", "own_research", "researcher", None, None, None),
+    ("field_2027", "2027 시범 현장 기록", "own_research", "researcher", None, None, None),
 ]
 
 # code, name_ko, name_en, unit, scale, level, category, min, max, legacy_column
@@ -46,6 +47,9 @@ def ensure_reference_data(db: Session) -> None:
                                   citation=citation, doi=doi, license=lic))
     for row in TRAIT_DEFINITIONS:
         ensure_trait_definition(db, *row)
+    for trait in field_traits.FIELD_TRAITS:
+        ensure_trait_definition(db, trait["code"], trait["name_ko"], trait["name_en"], trait["unit"], trait["scale"],
+                                "colony", trait["category"], trait["min"], trait["max"], protocol=trait["protocol"])
     db.commit()
 
 

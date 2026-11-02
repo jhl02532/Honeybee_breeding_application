@@ -198,8 +198,10 @@ class Sample(Base):
     biosample = Column(String(50), nullable=True)
     run_accessions = Column(String(500), nullable=True)                # 쉼표로 구분
     file_uri = Column(String(500), nullable=True)                      # 서버 경로 (웹에서 열지 않음)
-    status = Column(String(20), nullable=True)                         # collected, sent, sequenced, called, qc_fail
+    status = Column(String(20), nullable=True)                         # collected, stored, sent, sequenced, called, qc_fail
     attributes_json = Column(Text, nullable=True)
+    visit_id = Column(Integer, ForeignKey("field_visits.id", ondelete="SET NULL"), nullable=True, index=True)
+    storage = Column(String(100), nullable=True)                       # 냉동고·상자 위치
 
 
 class TraitDefinition(Base):
@@ -232,6 +234,7 @@ class TraitObservation(Base):
     measured_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     method_note = Column(String(200), nullable=True)
     legacy_record_id = Column(Integer, ForeignKey("trait_records.id", ondelete="CASCADE"), nullable=True, index=True)
+    visit_id = Column(Integer, ForeignKey("field_visits.id", ondelete="CASCADE"), nullable=True, index=True)
 
 
 class Marker(Base):
@@ -279,3 +282,86 @@ class BreedingValue(Base):
     model = Column(String(30), nullable=False)                         # pblup, gblup, ssgblup, marker_score, true_value
     model_version = Column(String(50), nullable=True)
     run_date = Column(String(10), nullable=True)
+
+
+class TestGroup(Base):
+    """같은 양봉장·시즌에서 함께 평가하는 봉군 묶음."""
+    __tablename__ = "test_groups"
+    __table_args__ = (UniqueConstraint("code", name="uq_test_group_code"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(50), nullable=False, index=True)
+    apiary_id = Column(Integer, ForeignKey("apiaries.id", ondelete="CASCADE"), nullable=False, index=True)
+    species = Column(String(20), nullable=False)                       # mellifera, cerana
+    year = Column(Integer, nullable=False, index=True)
+    notes = Column(String(500), nullable=True)
+
+
+class TestGroupColony(Base):
+    __tablename__ = "test_group_colonies"
+    __table_args__ = (UniqueConstraint("group_id", "colony_id", name="uq_group_colony"),
+                      UniqueConstraint("group_id", "hive_code", name="uq_group_hive"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("test_groups.id", ondelete="CASCADE"), nullable=False, index=True)
+    colony_id = Column(Integer, ForeignKey("colonies.id", ondelete="CASCADE"), nullable=False, index=True)
+    hive_code = Column(String(50), nullable=False)                     # 벌통에 붙인 영구 ID
+    position = Column(Integer, nullable=True)
+
+
+class FieldVisit(Base):
+    __tablename__ = "field_visits"
+    __table_args__ = (UniqueConstraint("group_id", "round_no", name="uq_group_round"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("test_groups.id", ondelete="CASCADE"), nullable=False, index=True)
+    round_no = Column(Integer, nullable=False)
+    date = Column(String(10), nullable=False, index=True)
+    assessor_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    weather = Column(String(100), nullable=True)
+    notes = Column(String(500), nullable=True)
+    status = Column(String(10), nullable=False, default="open")        # open, closed
+    closed_at = Column(String(32), nullable=True)
+
+
+class FieldRecord(Base):
+    """방문마다 봉군 1건. 형질 값은 trait_observations 에 둔다."""
+    __tablename__ = "field_records"
+    __table_args__ = (UniqueConstraint("visit_id", "colony_id", name="uq_visit_colony"),)
+
+    id = Column(Integer, primary_key=True, index=True)
+    visit_id = Column(Integer, ForeignKey("field_visits.id", ondelete="CASCADE"), nullable=False, index=True)
+    colony_id = Column(Integer, ForeignKey("colonies.id", ondelete="CASCADE"), nullable=False, index=True)
+    queen_id = Column(Integer, ForeignKey("queens.id", ondelete="SET NULL"), nullable=True, index=True)
+    assessor_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    queen_status = Column(String(10), nullable=True)
+    boxes = Column(Integer, nullable=True)
+    supers = Column(Integer, nullable=True)
+    drone_brood = Column(Boolean, nullable=True)
+    unknown_json = Column(Text, nullable=True)                         # 값을 알 수 없는 형질 코드 목록
+    notes = Column(String(500), nullable=True)
+
+
+class FieldEvent(Base):
+    __tablename__ = "field_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    colony_id = Column(Integer, ForeignKey("colonies.id", ondelete="CASCADE"), nullable=False, index=True)
+    event_type = Column(String(30), nullable=False, index=True)
+    date = Column(String(10), nullable=False, index=True)
+    value = Column(Float, nullable=True)                               # 채밀 kg
+    notes = Column(String(500), nullable=True)
+    recorded_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+
+
+class RecordRevision(Base):
+    __tablename__ = "record_revisions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    table_name = Column(String(50), nullable=False, index=True)
+    record_id = Column(Integer, nullable=False, index=True)
+    field = Column(String(50), nullable=False)
+    old_value = Column(String(200), nullable=True)
+    new_value = Column(String(200), nullable=True)
+    changed_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    changed_at = Column(String(32), nullable=False)

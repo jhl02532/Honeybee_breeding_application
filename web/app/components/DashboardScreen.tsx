@@ -18,6 +18,7 @@ import BreedingMatchmaker from "./BreedingMatchmaker";
 import SamplingStatusPanel from "./SamplingStatusPanel";
 import PhylogenyPanel from "./PhylogenyPanel";
 import TraitGenomePanel from "./TraitGenomePanel";
+import FieldRecordPanel from "./FieldRecordPanel";
 
 type DashView =
   | "overview"
@@ -35,6 +36,7 @@ type DashView =
   | "matchmaker"
   | "sampling"
   | "phylogeny"
+  | "fieldrecords"
   | "traitgenome";
 
 interface DashboardScreenProps {
@@ -187,6 +189,7 @@ export default function DashboardScreen({
     if (user.role === "researcher" || user.role === "admin") {
       navItems.push(
         { key: "matchmaker", label: "가상 교배 시뮬레이터", icon: "👑" },
+        { key: "fieldrecords", label: "현장 기록", icon: "📝" },
         { key: "traitgenome", label: "형질·유전체 연결", icon: "🧷" },
         { key: "researcher", label: "연구원 분석", icon: "🔬" }
       );
@@ -593,6 +596,9 @@ export default function DashboardScreen({
           )}
           {view === "matchmaker" && (
             <BreedingMatchmaker apiaries={apiaries} />
+          )}
+          {view === "fieldrecords" && (
+            <FieldRecordPanel apiaries={apiaries} />
           )}
           {view === "traitgenome" && (
             <TraitGenomePanel />
