@@ -25,7 +25,7 @@ def sync_schema_columns(db):
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS experience_years INTEGER;",
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS queen_species VARCHAR(50);",
-            "ALTER TABLE apiaries ADD COLUMN IF NOT EXISTS owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE;",
+            "ALTER TABLE apiaries ADD COLUMN IF NOT EXISTS owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL;",
             "ALTER TABLE colonies ADD COLUMN IF NOT EXISTS mother_colony_id INTEGER REFERENCES colonies(id) ON DELETE SET NULL;",
             "ALTER TABLE colonies ADD COLUMN IF NOT EXISTS sample_id VARCHAR(100);",
             "ALTER TABLE colonies ADD COLUMN IF NOT EXISTS is_pore_c BOOLEAN DEFAULT FALSE;",
@@ -40,7 +40,7 @@ def sync_schema_columns(db):
             "ALTER TABLE users ADD COLUMN phone VARCHAR(50);",
             "ALTER TABLE users ADD COLUMN experience_years INTEGER;",
             "ALTER TABLE users ADD COLUMN queen_species VARCHAR(50);",
-            "ALTER TABLE apiaries ADD COLUMN owner_id INTEGER REFERENCES users(id) ON DELETE CASCADE;",
+            "ALTER TABLE apiaries ADD COLUMN owner_id INTEGER REFERENCES users(id) ON DELETE SET NULL;",
             "ALTER TABLE colonies ADD COLUMN mother_colony_id INTEGER REFERENCES colonies(id) ON DELETE SET NULL;",
             "ALTER TABLE colonies ADD COLUMN sample_id VARCHAR(100);",
             "ALTER TABLE colonies ADD COLUMN is_pore_c BOOLEAN DEFAULT FALSE;",
@@ -60,6 +60,24 @@ def sync_schema_columns(db):
                 pass
             else:
                 print(f"[Schema Migration Warning] Failed to run statement '{stmt}': {e}")
+
+def fix_apiary_owner_fk(db):
+    """양봉장 소유자 FK 를 ON DELETE SET NULL 로 바꾼다. 계정을 지워도 양봉장·봉군·기록이 남는다(PostgreSQL 만)."""
+    if "postgresql" not in str(db.bind.url):
+        return
+    rows = db.execute(text(
+        "SELECT c.conname, c.confdeltype FROM pg_constraint c "
+        "JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey) "
+        "WHERE c.conrelid = 'apiaries'::regclass AND c.contype = 'f' AND a.attname = 'owner_id'")).fetchall()
+    if rows and all(r[1] == "n" for r in rows):
+        return
+    for name, _ in rows:
+        db.execute(text(f'ALTER TABLE apiaries DROP CONSTRAINT "{name}"'))
+    db.execute(text("ALTER TABLE apiaries ADD CONSTRAINT apiaries_owner_id_fkey "
+                    "FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE SET NULL"))
+    db.commit()
+    print("apiaries.owner_id FK changed to ON DELETE SET NULL")
+
 
 app = FastAPI(
     title="K-BEE BANK Central Beekeeping API",
@@ -109,6 +127,11 @@ def startup_event():
         print("Schema columns synced successfully.")
     except Exception as e:
         print(f"Failed to sync schema columns on startup: {str(e)}")
+    try:
+        fix_apiary_owner_fk(db)
+    except Exception as e:
+        db.rollback()
+        print(f"Failed to fix apiary owner FK: {str(e)}")
     # v2 기준 데이터(데이터 세트·형질 정의)
     try:
         v2_service.ensure_reference_data(db)

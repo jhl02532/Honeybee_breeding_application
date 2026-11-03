@@ -18,7 +18,8 @@ class User(Base):
     experience_years = Column(Integer, nullable=True)
     queen_species = Column(String(50), nullable=True, index=True)
 
-    apiaries = relationship("Apiary", back_populates="owner_user", cascade="all, delete-orphan")
+    # 계정을 지워도 양봉장과 기록은 남긴다(owner_id 만 비운다)
+    apiaries = relationship("Apiary", back_populates="owner_user")
 
 
 class Apiary(Base):
@@ -30,7 +31,7 @@ class Apiary(Base):
     location = Column(String)
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
-    owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
 
     owner_user = relationship("User", back_populates="apiaries")
     colonies = relationship("Colony", back_populates="apiary", cascade="all, delete-orphan")

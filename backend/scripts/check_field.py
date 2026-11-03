@@ -59,6 +59,23 @@ with TestClient(app) as client:
     r = client.post("/api/v1/auth/login/json", json={"username": "login_res", "password": "pw-check"})
     check("연구자 로그인", r.status_code == 200, r.text)
     check("농가 토큰으로 양봉장 조회 차단", client.get("/api/v1/apiaries", headers=far).status_code == 403)
+    db = SessionLocal()
+    gone = models.User(username="gone_res", hashed_password="x", role="researcher")
+    db.add(gone)
+    db.flush()
+    kept = models.Apiary(name="계정 삭제 시험 양봉장", owner="시험", owner_id=gone.id)
+    db.add(kept)
+    db.flush()
+    db.add(models.Colony(code="KEEP-1", apiary_id=kept.id))
+    db.commit()
+    gone_id, kept_id = gone.id, kept.id
+    db.close()
+    r = client.delete(f"/api/v1/admin/users/{gone_id}", headers=adm)
+    db = SessionLocal()
+    left = db.query(models.Apiary).get(kept_id)
+    check("계정 삭제 후 양봉장·봉군 유지", r.status_code == 200 and left is not None and left.owner_id is None
+          and db.query(models.Colony).filter(models.Colony.apiary_id == kept_id).count() == 1, r.text)
+    db.close()
     r = client.post("/api/v2/field/groups", headers=res, json={
         "code": "KR-AM-1-2027", "apiary_id": apiary_id, "species": "mellifera", "year": 2027,
         "hives": [{"colony_id": c, "hive_code": f"H{i}"} for i, c in enumerate(ids)]})

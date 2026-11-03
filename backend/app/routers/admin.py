@@ -121,7 +121,7 @@ def delete_system_user(
     db: Session = Depends(get_db),
     admin: models.User = Depends(get_current_admin)
 ):
-    """회원 영구 강제 탈퇴 및 종속된 다중 테넌트 데이터 연쇄 삭제"""
+    """계정 삭제. 양봉장·봉군·기록은 남기고 소유자 연결만 비운다."""
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
@@ -131,7 +131,7 @@ def delete_system_user(
 
     db.delete(user)
     db.commit()
-    return {"message": f"User {user_id} and all related multi-tenant records successfully purged."}
+    return {"message": f"User {user_id} deleted. Apiaries and records were kept."}
 
 
 @router.get("/apiaries")
