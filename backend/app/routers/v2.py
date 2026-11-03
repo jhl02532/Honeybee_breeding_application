@@ -1,4 +1,5 @@
 import csv
+import datetime
 import io
 from typing import Optional
 
@@ -7,7 +8,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from .. import models, v2_service
+from .. import export, models, v2_service
 from ..auth import get_current_user
 from .researcher import get_current_researcher
 
@@ -217,6 +218,17 @@ def read_colony_profile(colony_id: int, db: Session = Depends(get_db), current: 
                            "change_reason": l.change_reason} for l, q in history],
         "current": _queen_profile(db, queen),
     }
+
+
+# ========== 전체 내보내기 ==========
+
+@router.get("/export/all")
+def export_all(db: Session = Depends(get_db), current: models.User = Depends(get_current_researcher)):
+    """모든 테이블 CSV + 현장 기록 긴 표 + 코드표 zip. 비밀번호 해시는 뺀다."""
+    data = export.build_export_zip(db)
+    name = f"KBEEBANK_export_{datetime.date.today():%Y%m%d}.zip"
+    return Response(content=data, media_type="application/zip",
+                    headers={"Content-Disposition": f"attachment; filename={name}"})
 
 
 # ========== 기존 기록 이전 (관리자) ==========

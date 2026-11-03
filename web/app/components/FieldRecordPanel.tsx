@@ -202,6 +202,30 @@ export default function FieldRecordPanel({ apiaries }: { apiaries: Apiary[] }) {
     else setError(await errorText(res));
   };
 
+  const [exporting, setExporting] = useState(false);
+
+  // 모든 기록을 zip 으로 받는다(테이블 CSV, 분석용 긴 표, 코드표)
+  const exportAll = async () => {
+    setError("");
+    setExporting(true);
+    try {
+      const res = await authFetch("/api/v2/export/all");
+      if (!res.ok) {
+        setError(await errorText(res));
+        return;
+      }
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      const now = new Date();
+      a.download = `KBEEBANK_export_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}.zip`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (comparing) {
     return <CompareScreen group={comparing} onExit={() => setComparing(null)} />;
   }
@@ -264,9 +288,14 @@ export default function FieldRecordPanel({ apiaries }: { apiaries: Apiary[] }) {
           onCancel={() => setCreating(false)}
         />
       ) : (
-        <button style={button(true)} onClick={() => setCreating(true)}>
-          검정군 등록
-        </button>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button style={button(true)} onClick={() => setCreating(true)}>
+            검정군 등록
+          </button>
+          <button style={button(false)} onClick={exportAll} disabled={exporting}>
+            {exporting ? "내보내는 중…" : "전체 내보내기"}
+          </button>
+        </div>
       )}
     </div>
   );

@@ -268,4 +268,26 @@ with TestClient(app) as client:
     row = next(x for x in r["rows"] if x["hive_code"] == "C1")
     check("시료-여왕 불일치 제외, 3군 미만이면 z 없음", row["reasons"] == ["시료-여왕 불일치"] and r["rows"][0]["cells"]["frames_bees"]["z"] is None, str(row))
 
+    # 전체 내보내기
+    import csv as _csv
+    import io as _io
+    import zipfile as _zip
+    check("농가는 내보내기 불가", client.get("/api/v2/export/all", headers=far).status_code == 403)
+    r = client.get("/api/v2/export/all", headers=res)
+    z = _zip.ZipFile(_io.BytesIO(r.content)) if r.status_code == 200 else None
+    names = set(z.namelist()) if z else set()
+    need = {"README.txt", "codebook.json", "counts.csv", "field_long.csv", "tables/queens.csv", "tables/field_records.csv",
+            "tables/colony_queens.csv", "tables/matings.csv", "tables/samples.csv", "tables/record_revisions.csv"}
+    check("내보내기 zip 구성", need <= names, str(sorted(need - names)))
+    if z:
+        users_csv = z.read("tables/users.csv").decode("utf-8-sig")
+        check("내보내기에 비밀번호 해시 없음", "hashed_password" not in users_csv and "username" in users_csv)
+        long_rows = list(_csv.DictReader(_io.StringIO(z.read("field_long.csv").decode("utf-8-sig"))))
+        db = SessionLocal()
+        n_field = db.query(models.TraitObservation).filter(models.TraitObservation.visit_id.isnot(None)).count()
+        db.close()
+        check("긴 표 행 수 = 현장 형질 값 수", len(long_rows) == n_field and n_field > 0, f"{len(long_rows)} vs {n_field}")
+        check("긴 표에 벌통·여왕·회차", all(x["hive_code"] and x["round_no"] for x in long_rows)
+              and any(x["queen_tag"] for x in long_rows), str(long_rows[:1]))
+
 sys.exit(1 if check.failed else 0)
