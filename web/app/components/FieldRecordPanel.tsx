@@ -34,11 +34,25 @@ interface FieldDef {
   anchors?: Record<string, string>;
 }
 
+interface QueenInfo {
+  id: number;
+  tag: string;
+  origin: string | null;
+  birth_year: number | null;
+  mother_queen_id: number | null;
+  mother_tag: string | null;
+  introduced_date: string | null;
+  mating_method: string | null;
+  sire_queen_id: number | null;
+  sire_tag: string | null;
+}
+
 interface ColonyRow {
   colony_id: number;
   hive_code: string;
   colony_code: string | null;
   queen_tag: string | null;
+  queen: QueenInfo | null;
   missing: string[];
   record: RecordData;
   samples: { code: string; sample_type: string; n_individuals: number | null; storage: string | null }[];
@@ -64,7 +78,33 @@ interface VisitData {
   group: { id: number; code: string; species: string; year: number };
   fields: FieldDef[];
   queen_status: Record<string, string>;
+  mating_methods: Record<string, string>;
+  queen_origins: string[];
+  queen_options: { id: number; tag: string }[];
   colonies: ColonyRow[];
+}
+
+interface CompareCell {
+  value: number;
+  z: number | null;
+  rank: number | null;
+}
+
+interface CompareData {
+  visit: { id: number; round_no: number; round_label: string; date: string; status: string };
+  group: { id: number; code: string; species: string; year: number };
+  metrics: { code: string; name_ko: string; unit: string | null; better: string; n: number }[];
+  rows: {
+    colony_id: number;
+    hive_code: string;
+    queen_tag: string | null;
+    eligible: boolean;
+    reasons: string[];
+    unknown: string[];
+    cells: Record<string, CompareCell>;
+  }[];
+  n_eligible: number;
+  warnings: string[];
 }
 
 const SPECIES_LABEL: Record<string, string> = { mellifera: "양봉꿀벌", cerana: "재래꿀벌" };
@@ -131,6 +171,7 @@ export default function FieldRecordPanel({ apiaries }: { apiaries: Apiary[] }) {
   const [visit, setVisit] = useState<VisitData | null>(null);
   const [error, setError] = useState("");
   const [creating, setCreating] = useState(false);
+  const [comparing, setComparing] = useState<GroupRow | null>(null);
 
   const loadGroups = useCallback(async () => {
     const res = await authFetch("/api/v2/field/groups");
@@ -160,6 +201,10 @@ export default function FieldRecordPanel({ apiaries }: { apiaries: Apiary[] }) {
     if (res.ok) openVisit((await res.json()).id);
     else setError(await errorText(res));
   };
+
+  if (comparing) {
+    return <CompareScreen group={comparing} onExit={() => setComparing(null)} />;
+  }
 
   if (visit) {
     return (
@@ -199,6 +244,11 @@ export default function FieldRecordPanel({ apiaries }: { apiaries: Apiary[] }) {
                 </button>
               );
             })}
+            {group.visits.length > 0 && (
+              <button style={chip(false)} onClick={() => setComparing(group)}>
+                비교표
+              </button>
+            )}
           </div>
         </div>
       ))}
@@ -217,6 +267,149 @@ export default function FieldRecordPanel({ apiaries }: { apiaries: Apiary[] }) {
         <button style={button(true)} onClick={() => setCreating(true)}>
           검정군 등록
         </button>
+      )}
+    </div>
+  );
+}
+
+function CompareScreen({ group, onExit }: { group: GroupRow; onExit: () => void }) {
+  const latest = group.visits[group.visits.length - 1];
+  const [visitId, setVisitId] = useState(latest.id);
+  const [data, setData] = useState<CompareData | null>(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      setError("");
+      const res = await authFetch(`/api/v2/field/visits/${visitId}/comparison`);
+      if (!active) return;
+      if (res.ok) setData(await res.json());
+      else setError(await errorText(res));
+    })();
+    return () => {
+      active = false;
+    };
+  }, [visitId]);
+
+  const headCell: React.CSSProperties = {
+    padding: "8px",
+    fontSize: 12,
+    fontWeight: 700,
+    color: "var(--text-main)",
+    textAlign: "left",
+    borderBottom: "1px solid var(--border-color)",
+    minWidth: 84,
+    verticalAlign: "bottom",
+  };
+  const bodyCell: React.CSSProperties = {
+    padding: "8px",
+    fontSize: 13,
+    color: "var(--text-main)",
+    borderBottom: "1px solid var(--border-color)",
+    whiteSpace: "nowrap",
+  };
+  const sticky: React.CSSProperties = { position: "sticky", left: 0, background: "var(--bg-surface)", minWidth: 72 };
+  const scored = data?.rows.filter((row) => row.eligible) ?? [];
+  const excluded = data?.rows.filter((row) => !row.eligible) ?? [];
+
+  const renderRow = (row: CompareData["rows"][number]) => (
+    <tr key={row.colony_id}>
+      <td style={{ ...bodyCell, ...sticky, fontWeight: 700 }}>
+        {row.hive_code}
+        <div style={{ ...hint, marginTop: 0, fontWeight: 400 }}>{row.queen_tag || "여왕 없음"}</div>
+      </td>
+      {data!.metrics.map((metric) => {
+        const cell = row.cells[metric.code];
+        if (!cell) {
+          return (
+            <td key={metric.code} style={{ ...bodyCell, color: "var(--text-muted)" }}>
+              {row.unknown.includes(metric.code) ? "모름" : "-"}
+            </td>
+          );
+        }
+        return (
+          <td key={metric.code} style={bodyCell}>
+            {cell.value}
+            {cell.rank != null && (
+              <div style={{ ...hint, marginTop: 0 }}>
+                {cell.rank}위 · z {cell.z! > 0 ? "+" : ""}
+                {cell.z!.toFixed(2)}
+              </div>
+            )}
+          </td>
+        );
+      })}
+    </tr>
+  );
+
+  return (
+    <div style={{ maxWidth: 960 }}>
+      <button style={{ ...button(), marginBottom: 12 }} onClick={onExit}>
+        목록으로
+      </button>
+      <div style={{ ...styles.sectionTitle, marginBottom: 4 }}>{group.code} 비교표</div>
+      <p style={{ ...hint, marginBottom: 12 }}>이번 시즌 이 농가 안의 표현형 비교입니다. 육종가가 아니며 다른 농가와 비교할 수 없습니다.</p>
+
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
+        {group.visits.map((v) => (
+          <button key={v.id} style={chip(v.id === visitId)} onClick={() => setVisitId(v.id)}>
+            {v.round_no}회차
+          </button>
+        ))}
+      </div>
+
+      {error && <p style={{ color: "var(--color-danger, #dc2626)", fontSize: 14 }}>{error}</p>}
+      {data && data.visit.id === visitId && (
+        <>
+          <p style={{ ...hint, marginBottom: 8 }}>
+            {data.visit.date} · {data.visit.round_label} · 비교 가능 {data.n_eligible}/{data.rows.length}군
+          </p>
+          {data.warnings.map((warning) => (
+            <p key={warning} style={{ color: "var(--color-warning, #b45309)", fontSize: 14, margin: "4px 0" }}>
+              {warning}
+            </p>
+          ))}
+          <div style={{ ...box, padding: 0, overflowX: "auto", marginTop: 12 }}>
+            <table style={{ borderCollapse: "separate", borderSpacing: 0, width: "100%" }}>
+              <thead>
+                <tr>
+                  <th style={{ ...headCell, ...sticky }}>벌통</th>
+                  {data.metrics.map((metric) => (
+                    <th key={metric.code} style={headCell}>
+                      {metric.name_ko}
+                      <div style={{ ...hint, marginTop: 2, fontWeight: 400 }}>
+                        {metric.unit ? `${metric.unit} · ` : ""}
+                        {metric.better === "high" ? "높을수록 좋음" : "낮을수록 좋음"}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>{scored.map(renderRow)}</tbody>
+            </table>
+          </div>
+          <p style={hint}>z는 비교 가능 봉군 평균과의 거리입니다. 양수가 좋은 방향이고, 3군 미만이거나 값이 모두 같으면 표시하지 않습니다.</p>
+
+          {excluded.length > 0 && (
+            <div style={{ ...box, padding: 0, overflowX: "auto", marginTop: 12 }}>
+              <p style={{ ...subTitle, padding: "14px 16px 0" }}>비교 제외 {excluded.length}군</p>
+              <table style={{ borderCollapse: "separate", borderSpacing: 0, width: "100%" }}>
+                <tbody>
+                  {excluded.map((row) => (
+                    <tr key={row.colony_id}>
+                      <td style={{ ...bodyCell, fontWeight: 700 }}>
+                        {row.hive_code}
+                        <div style={{ ...hint, marginTop: 0, fontWeight: 400 }}>{row.queen_tag || "여왕 없음"}</div>
+                      </td>
+                      <td style={{ ...bodyCell, whiteSpace: "normal", width: "100%" }}>{row.reasons.join(", ")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -428,6 +621,8 @@ function VisitScreen({ visit, reload, onExit }: { visit: VisitData; reload: () =
         ))}
       </div>
 
+      <QueenPanel key={colony.colony_id} visit={visit} colony={colony} closed={closed} onSaved={reload} />
+
       <div style={box}>
         <p style={subTitle}>
           벌통 {colony.hive_code} · 여왕 {colony.queen_tag || "미연결"}
@@ -559,6 +754,184 @@ function VisitScreen({ visit, reload, onExit }: { visit: VisitData; reload: () =
   );
 }
 
+function QueenPanel({ visit, colony, closed, onSaved }: { visit: VisitData; colony: ColonyRow; closed: boolean; onSaved: () => void }) {
+  const queen = colony.queen;
+  const [mode, setMode] = useState<"view" | "edit" | "replace">(queen ? "view" : "edit");
+  const editing = mode === "edit" && queen;
+  const [tag, setTag] = useState(editing ? queen.tag : "");
+  const [birthYear, setBirthYear] = useState(editing && queen.birth_year ? String(queen.birth_year) : "");
+  const [motherId, setMotherId] = useState(editing && queen.mother_queen_id ? String(queen.mother_queen_id) : "");
+  const [introduced, setIntroduced] = useState(editing ? queen.introduced_date || "" : "");
+  const [origin, setOrigin] = useState(editing ? queen.origin || "" : "");
+  const [method, setMethod] = useState(editing ? queen.mating_method || "" : "");
+  const [sireId, setSireId] = useState(editing && queen.sire_queen_id ? String(queen.sire_queen_id) : "");
+  const [error, setError] = useState("");
+  const [messages, setMessages] = useState<string[]>([]);
+
+  const startMode = (next: "edit" | "replace") => {
+    const keep = next === "edit" && queen;
+    setTag(keep ? queen.tag : "");
+    setBirthYear(keep && queen.birth_year ? String(queen.birth_year) : "");
+    setMotherId(keep && queen.mother_queen_id ? String(queen.mother_queen_id) : "");
+    setIntroduced(keep ? queen.introduced_date || "" : "");
+    setOrigin(keep ? queen.origin || "" : "");
+    setMethod(keep ? queen.mating_method || "" : "");
+    setSireId(keep && queen.sire_queen_id ? String(queen.sire_queen_id) : "");
+    setError("");
+    setMode(next);
+  };
+
+  const submit = async () => {
+    setError("");
+    setMessages([]);
+    if (!tag.trim()) {
+      setError("여왕 ID를 입력하세요");
+      return;
+    }
+    const payload = {
+      tag: tag.trim(),
+      birth_year: birthYear ? Number(birthYear) : null,
+      mother_queen_id: motherId ? Number(motherId) : null,
+      introduced_date: introduced || null,
+      origin: origin || null,
+      mating_method: method || null,
+      sire_queen_id: sireId ? Number(sireId) : null,
+    };
+    const res =
+      mode === "edit" && queen
+        ? await authFetch(`/api/v2/field/queens/${queen.id}?colony_id=${colony.colony_id}`, { method: "PUT", body: JSON.stringify(payload) })
+        : await authFetch(`/api/v2/field/colonies/${colony.colony_id}/queen`, {
+            method: "POST",
+            body: JSON.stringify({ ...payload, replace: mode === "replace" }),
+          });
+    if (!res.ok) {
+      setError(await errorText(res));
+      return;
+    }
+    const body = await res.json();
+    setMessages(body.warnings);
+    setMode("view");
+    onSaved();
+  };
+
+  const notices = messages.map((message) => (
+    <p key={message} style={{ color: "var(--color-warning, #b45309)", fontSize: 14, marginTop: 8 }}>
+      {message}
+    </p>
+  ));
+
+  if (mode === "view" && queen) {
+    return (
+      <div style={box}>
+        <p style={subTitle}>여왕 {queen.tag}</p>
+        <p style={hint}>
+          출생 {queen.birth_year ?? "모름"} · 어미 {queen.mother_tag || "모름"} · 도입 {queen.introduced_date || "모름"} · {queen.origin || "출처 모름"}
+        </p>
+        <p style={hint}>
+          교미 {queen.mating_method ? visit.mating_methods[queen.mating_method] : "기록 없음"} · 수벌군 {queen.sire_tag || "모름"}
+        </p>
+        {notices}
+        {!closed && (
+          <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+            <button style={button()} onClick={() => startMode("edit")}>
+              정보 수정
+            </button>
+            <button style={button()} onClick={() => startMode("replace")}>
+              여왕 교체
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+  if (closed) {
+    return (
+      <div style={box}>
+        <p style={hint}>등록된 여왕이 없습니다.</p>
+      </div>
+    );
+  }
+
+  const options = visit.queen_options.filter((q) => q.id !== queen?.id || mode === "replace");
+
+  return (
+    <div style={box}>
+      <p style={subTitle}>{mode === "replace" ? "여왕 교체" : queen ? "여왕 정보 수정" : "여왕 등록"}</p>
+      <div style={{ display: "grid", gap: 12 }}>
+        <label>
+          <span style={fieldLabel}>여왕 ID *</span>
+          <input style={inputStyle} value={tag} onChange={(e) => setTag(e.target.value)} placeholder="AM-01-Q03" />
+        </label>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <label>
+            <span style={fieldLabel}>출생연도</span>
+            <input style={inputStyle} type="number" inputMode="numeric" value={birthYear} onChange={(e) => setBirthYear(e.target.value)} />
+          </label>
+          <label>
+            <span style={fieldLabel}>도입일{mode === "replace" ? " *" : ""}</span>
+            <input style={inputStyle} type="date" value={introduced} onChange={(e) => setIntroduced(e.target.value)} />
+          </label>
+        </div>
+        <label>
+          <span style={fieldLabel}>어미 여왕</span>
+          <select style={inputStyle} value={motherId} onChange={(e) => setMotherId(e.target.value)}>
+            <option value="">모름</option>
+            {options.map((q) => (
+              <option key={q.id} value={q.id}>
+                {q.tag}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div>
+          <span style={fieldLabel}>출처</span>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {visit.queen_origins.map((value) => (
+              <button key={value} style={chip(origin === value)} onClick={() => setOrigin(origin === value ? "" : value)}>
+                {value}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <span style={fieldLabel}>교미 방식</span>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {Object.entries(visit.mating_methods).map(([key, label]) => (
+              <button key={key} style={chip(method === key)} onClick={() => setMethod(method === key ? "" : key)}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        {method && (
+          <label>
+            <span style={fieldLabel}>수벌군 여왕</span>
+            <select style={inputStyle} value={sireId} onChange={(e) => setSireId(e.target.value)}>
+              <option value="">모름</option>
+              {options.map((q) => (
+                <option key={q.id} value={q.id}>
+                  {q.tag}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {error && <p style={{ color: "var(--color-danger, #dc2626)", fontSize: 14 }}>{error}</p>}
+        <div style={{ display: "flex", gap: 8 }}>
+          <button style={button(true)} onClick={submit}>
+            저장
+          </button>
+          {queen && (
+            <button style={button()} onClick={() => setMode("view")}>
+              취소
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TraitInput({
   field,
   value,
@@ -669,7 +1042,8 @@ function SampleForm({ visitId, colony, onSaved }: { visitId: number; colony: Col
         <input style={{ ...inputStyle, gridColumn: "1 / -1" }} placeholder="보관 위치" value={storage} onChange={(e) => setStorage(e.target.value)} />
       </div>
       {message && <p style={{ fontSize: 14, color: "var(--text-main)", marginTop: 8 }}>{message}</p>}
-      <button style={{ ...button(), marginTop: 10 }} onClick={submit}>
+      {!colony.queen && <p style={hint}>여왕을 먼저 등록해야 시료를 저장할 수 있습니다.</p>}
+      <button style={{ ...button(), marginTop: 10 }} disabled={!colony.queen} onClick={submit}>
         시료 등록
       </button>
     </div>
@@ -698,9 +1072,10 @@ function EventForm({ colony, visitDate }: { colony: ColonyRow; visitDate: string
       setMessage(await errorText(res));
       return;
     }
+    const body = await res.json();
     setValue("");
     setNotes("");
-    setMessage("사건을 기록했습니다");
+    setMessage(body.warnings.join(" ") || "사건을 기록했습니다");
   };
 
   return (

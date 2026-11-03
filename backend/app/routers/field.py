@@ -1,5 +1,6 @@
 import datetime
 import json
+import statistics
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -20,6 +21,9 @@ DATASET_CODE = "field_2027"
 REQUEUEN_WAIT_DAYS = 42
 MIN_DRONES = 6
 FRAMES_JUMP = 5
+NO_QUEEN_STATUS = ("QL", "DL")
+MIN_COMPARE = 3
+MIN_GROUP_COLONIES = 8
 
 
 def _now() -> str:
@@ -112,11 +116,14 @@ def _record_json(db: Session, visit: models.FieldVisit, record: Optional[models.
     }
 
 
-def _missing(visit: models.FieldVisit, species: str, record: Optional[models.FieldRecord], values: dict) -> List[str]:
+def _missing(visit: models.FieldVisit, species: str, record: Optional[models.FieldRecord], values: dict,
+             has_queen: bool) -> List[str]:
     if record is None:
         return ["기록 없음"]
     unknown = json.loads(record.unknown_json or "[]")
     missing = []
+    if not has_queen and record.queen_status not in NO_QUEEN_STATUS:
+        missing.append("여왕 등록")
     if not record.queen_status:
         missing.append("여왕 상태")
     if record.boxes is None:
@@ -136,6 +143,163 @@ def _previous_frames(db: Session, visit: models.FieldVisit, colony_id: int) -> O
                    models.FieldVisit.round_no < visit.round_no)
            .order_by(models.FieldVisit.round_no.desc()).first())
     return row.value if row else None
+
+
+def _current_link(db: Session, colony_id: int) -> Optional[models.ColonyQueen]:
+    return (db.query(models.ColonyQueen)
+            .filter(models.ColonyQueen.colony_id == colony_id, models.ColonyQueen.end_date.is_(None))
+            .order_by(models.ColonyQueen.id.desc()).first())
+
+
+def _mating(db: Session, queen_id: int) -> Optional[models.Mating]:
+    return db.query(models.Mating).filter(models.Mating.queen_id == queen_id).order_by(models.Mating.id).first()
+
+
+def _queen_json(db: Session, queen: models.Queen, colony_id: int) -> dict:
+    link = (db.query(models.ColonyQueen)
+            .filter(models.ColonyQueen.colony_id == colony_id, models.ColonyQueen.queen_id == queen.id)
+            .order_by(models.ColonyQueen.id.desc()).first())
+    mating = _mating(db, queen.id)
+    sire = mating.sires[0] if mating and mating.sires else None
+    sire_queen = db.query(models.Queen).filter(models.Queen.id == sire.sire_queen_id).first() if sire else None
+    return {
+        "id": queen.id, "tag": queen.tag, "origin": queen.origin,
+        "birth_year": int(queen.birth_date[:4]) if queen.birth_date else None,
+        "mother_queen_id": queen.mother_queen_id, "mother_tag": queen.mother.tag if queen.mother else None,
+        "introduced_date": link.start_date if link else None,
+        "mating_method": mating.method if mating else None,
+        "sire_queen_id": sire_queen.id if sire_queen else None, "sire_tag": sire_queen.tag if sire_queen else None,
+    }
+
+
+def _queen_options(db: Session, species: str) -> List[dict]:
+    """어미와 수벌군 여왕 후보: 같은 종 검정군의 여왕과 현장 등록 여왕."""
+    linked = (db.query(models.Queen)
+              .join(models.ColonyQueen, models.ColonyQueen.queen_id == models.Queen.id)
+              .join(models.TestGroupColony, models.TestGroupColony.colony_id == models.ColonyQueen.colony_id)
+              .join(models.TestGroup, models.TestGroup.id == models.TestGroupColony.group_id)
+              .filter(models.TestGroup.species == species).all())
+    registered = (db.query(models.Queen)
+                  .filter(models.Queen.dataset_id == _dataset(db).id, models.Queen.species == species).all())
+    queens = {q.id: q for q in linked + registered}
+    return [{"id": q.id, "tag": q.tag} for q in sorted(queens.values(), key=lambda q: q.tag)]
+
+
+def _check_queen_input(db: Session, body: "QueenIn", queen_id: Optional[int]) -> None:
+    errors = []
+    if body.origin is not None and body.origin not in field_traits.QUEEN_ORIGINS:
+        errors.append("여왕 출처가 올바르지 않습니다")
+    if body.mating_method is not None and body.mating_method not in field_traits.MATING_METHODS:
+        errors.append("교미 방식이 올바르지 않습니다")
+    if body.sire_queen_id is not None and body.mating_method is None:
+        errors.append("수벌군을 기록하려면 교미 방식도 입력하세요")
+    for label, other in [("어미", body.mother_queen_id), ("수벌군", body.sire_queen_id)]:
+        if other is not None and not db.query(models.Queen).filter(models.Queen.id == other).first():
+            errors.append(f"{label} 여왕을 찾을 수 없습니다")
+    ancestor = body.mother_queen_id
+    while ancestor is not None and queen_id is not None:
+        if ancestor == queen_id:
+            errors.append("어미 기록이 순환합니다")
+            break
+        row = db.query(models.Queen).filter(models.Queen.id == ancestor).first()
+        ancestor = row.mother_queen_id if row else None
+    if errors:
+        raise HTTPException(status_code=422, detail=errors)
+    field_id = _dataset(db).id
+    farm = v2_service.get_dataset(db, "farm")
+    clash = (db.query(models.Queen)
+             .filter(models.Queen.dataset_id.in_([field_id, farm.id if farm else field_id]),
+                     models.Queen.tag == body.tag, models.Queen.id != (queen_id or 0)).first())
+    if clash:
+        raise HTTPException(status_code=409, detail="이미 있는 여왕 ID입니다")
+
+
+def _apply_queen(db: Session, queen: models.Queen, body: "QueenIn", user_id: int) -> None:
+    birth = str(body.birth_year) if body.birth_year else None
+    for name, new in [("tag", body.tag), ("birth_date", birth), ("mother_queen_id", body.mother_queen_id),
+                      ("origin", body.origin)]:
+        _revise(db, "queens", queen.id, name, getattr(queen, name), new, user_id)
+        setattr(queen, name, new)
+    mating = _mating(db, queen.id)
+    if mating is not None:
+        old_sire = mating.sires[0].sire_queen_id if mating.sires else None
+        _revise(db, "matings", mating.id, "method", mating.method, body.mating_method, user_id)
+        _revise(db, "matings", mating.id, "sire_queen_id", old_sire, body.sire_queen_id, user_id)
+    if body.mating_method is None:
+        if mating is not None:
+            db.delete(mating)
+        return
+    if mating is None:
+        mating = models.Mating(queen_id=queen.id, method=body.mating_method)
+        db.add(mating)
+    mating.method = body.mating_method
+    mating.sires = [models.MatingSire(sire_queen_id=body.sire_queen_id)] if body.sire_queen_id else []
+
+
+def _relink(db: Session, colony_id: int, link: models.ColonyQueen) -> List[str]:
+    """기록은 날짜 기준 여왕으로 다시 잇는다. 시료는 채집 당시 여왕 값이라 바꾸지 않고 재채집을 알린다."""
+    db.flush()
+    for record, date in (db.query(models.FieldRecord, models.FieldVisit.date)
+                         .join(models.FieldVisit, models.FieldVisit.id == models.FieldRecord.visit_id)
+                         .filter(models.FieldRecord.colony_id == colony_id).all()):
+        record.queen_id = v2_service.queen_for_colony_on(db, colony_id, date)
+    for observation in (db.query(models.TraitObservation)
+                        .filter(models.TraitObservation.colony_id == colony_id,
+                                models.TraitObservation.visit_id.isnot(None)).all()):
+        observation.queen_id = v2_service.queen_for_colony_on(db, colony_id, observation.date)
+    if not link.start_date:
+        return []
+    stale = (db.query(models.Sample)
+             .filter(models.Sample.colony_id == colony_id, models.Sample.visit_id.isnot(None),
+                     models.Sample.queen_id != link.queen_id, models.Sample.collected_date >= link.start_date).all())
+    return [f"시료 {s.code} 는 이전 여왕 기준입니다. 새 여왕 기준으로 다시 채집하세요" for s in stale]
+
+
+def _exclusions(db: Session, visit: models.FieldVisit, colony_id: int, record: Optional[models.FieldRecord],
+                queen_id: Optional[int]) -> List[str]:
+    """기록은 남기되 비교표에서 빼는 사유."""
+    reasons = []
+    if record is None:
+        reasons.append("기록 없음")
+    if queen_id is None:
+        reasons.append("여왕 미확정")
+    if record is not None and record.queen_status == "QL":
+        reasons.append("무왕")
+    if record is not None and record.queen_status == "DL":
+        reasons.append("일벌 산란")
+    if _requeen_warning(db, colony_id, visit.date):
+        reasons.append("도입 42일 미만")
+    samples = (db.query(models.Sample)
+               .filter(models.Sample.colony_id == colony_id, models.Sample.visit_id.isnot(None),
+                       models.Sample.collected_date <= visit.date).all())
+    if any(s.queen_id != v2_service.queen_for_colony_on(db, colony_id, s.collected_date) for s in samples):
+        reasons.append("시료-여왕 불일치")
+    return reasons
+
+
+def _rank_scores(values: Dict[int, float], better: str) -> Dict[int, dict]:
+    """같은 검정군의 비교 대상 안에서만 z 와 순위를 낸다. 좋은 방향이 양수다."""
+    if len(values) < MIN_COMPARE:
+        return {}
+    spread = statistics.stdev(values.values())
+    if spread == 0:
+        return {}
+    center = statistics.mean(values.values())
+    sign = 1 if better == "high" else -1
+    return {key: {"z": round(sign * (value - center) / spread, 2),
+                  "rank": 1 + sum(sign * other > sign * value for other in values.values())}
+            for key, value in values.items()}
+
+
+def _honey_totals(db: Session, colony_ids: List[int], date: str) -> Dict[int, float]:
+    """방문일까지의 채밀 합계. 채밀 기록이 없는 봉군은 값이 없다."""
+    rows = (db.query(models.FieldEvent)
+            .filter(models.FieldEvent.colony_id.in_(colony_ids), models.FieldEvent.event_type == "honey_harvest",
+                    models.FieldEvent.date >= date[:4], models.FieldEvent.date <= date).all())
+    totals: Dict[int, float] = {}
+    for row in rows:
+        totals[row.colony_id] = totals.get(row.colony_id, 0) + (row.value or 0)
+    return totals
 
 
 class GroupHive(BaseModel):
@@ -178,6 +342,20 @@ class SampleIn(BaseModel):
     storage: Optional[str] = Field(default=None, max_length=100)
 
 
+class QueenIn(BaseModel):
+    tag: str = Field(min_length=1, max_length=100)
+    birth_year: Optional[int] = Field(default=None, ge=2000, le=2100)
+    mother_queen_id: Optional[int] = None
+    introduced_date: Optional[datetime.date] = None
+    origin: Optional[str] = None
+    mating_method: Optional[str] = None
+    sire_queen_id: Optional[int] = None
+
+
+class QueenRegisterIn(QueenIn):
+    replace: bool = False
+
+
 class EventIn(BaseModel):
     colony_id: int
     event_type: str
@@ -191,6 +369,8 @@ def read_dictionary(current: models.User = Depends(get_current_researcher)):
     return {
         "rounds": field_traits.ROUNDS,
         "queen_status": field_traits.QUEEN_STATUS,
+        "mating_methods": field_traits.MATING_METHODS,
+        "queen_origins": field_traits.QUEEN_ORIGINS,
         "event_types": field_traits.EVENT_TYPES,
         "traits": [{**t, "species": list(t["species"])} for t in field_traits.FIELD_TRAITS],
     }
@@ -268,7 +448,8 @@ def read_visit(visit_id: int, db: Session = Depends(get_db), current: models.Use
         colonies.append({
             "colony_id": member.colony_id, "hive_code": member.hive_code, "colony_code": colony.code if colony else None,
             "queen_tag": queen.tag if queen else None, "record": data,
-            "missing": _missing(visit, group.species, record, data["values"]),
+            "queen": _queen_json(db, queen, member.colony_id) if queen else None,
+            "missing": _missing(visit, group.species, record, data["values"], queen is not None),
             "samples": [{"code": s.code, "sample_type": s.sample_type, "n_individuals": s.n_individuals,
                          "storage": s.storage, "status": s.status} for s in samples],
         })
@@ -278,7 +459,73 @@ def read_visit(visit_id: int, db: Session = Depends(get_db), current: models.Use
         "group": {"id": group.id, "code": group.code, "species": group.species, "year": group.year},
         "fields": field_traits.fields_for(group.species, visit.round_no),
         "queen_status": field_traits.QUEEN_STATUS,
+        "mating_methods": field_traits.MATING_METHODS,
+        "queen_origins": field_traits.QUEEN_ORIGINS,
+        "queen_options": _queen_options(db, group.species),
         "colonies": colonies,
+    }
+
+
+@router.get("/visits/{visit_id}/comparison")
+def read_comparison(visit_id: int, db: Session = Depends(get_db), current: models.User = Depends(get_current_researcher)):
+    visit = _visit_or_404(db, visit_id)
+    group = _group_or_404(db, visit.group_id)
+    members = (db.query(models.TestGroupColony).filter(models.TestGroupColony.group_id == group.id)
+               .order_by(models.TestGroupColony.position).all())
+    colony_ids = [m.colony_id for m in members]
+    metrics = [{"code": f["code"], "name_ko": f["name_ko"], "unit": f["unit"], "better": f["better"]}
+               for f in field_traits.fields_for(group.species, visit.round_no) if "better" in f]
+    for metric in metrics:
+        if metric["code"] == "varroa_count":
+            metric["unit"] = "마리/100 g"
+    honey = _honey_totals(db, colony_ids, visit.date)
+    if honey:
+        metrics.append({"code": "honey_total", "name_ko": "채밀 누적", "unit": "kg", "better": "high"})
+
+    rows, assessors = [], set()
+    for member in members:
+        record = (db.query(models.FieldRecord)
+                  .filter(models.FieldRecord.visit_id == visit.id, models.FieldRecord.colony_id == member.colony_id).first())
+        if record is not None and record.assessor_id:
+            assessors.add(record.assessor_id)
+        queen_id = v2_service.queen_for_colony_on(db, member.colony_id, visit.date)
+        queen = db.query(models.Queen).filter(models.Queen.id == queen_id).first() if queen_id else None
+        values = {code: o.value for code, o in _observations(db, visit.id, member.colony_id).items()}
+        grams = values.pop("varroa_sample_g", None)
+        if "varroa_count" in values:
+            count = values.pop("varroa_count")
+            if grams:
+                values["varroa_count"] = round(count / grams * 100, 2)
+        if member.colony_id in honey:
+            values["honey_total"] = honey[member.colony_id]
+        reasons = _exclusions(db, visit, member.colony_id, record, queen_id)
+        rows.append({"colony_id": member.colony_id, "hive_code": member.hive_code,
+                     "queen_tag": queen.tag if queen else None, "eligible": not reasons, "reasons": reasons,
+                     "unknown": json.loads(record.unknown_json or "[]") if record else [],
+                     "cells": {code: {"value": value, "z": None, "rank": None} for code, value in values.items()}})
+
+    eligible = [row for row in rows if row["eligible"]]
+    for metric in metrics:
+        code = metric["code"]
+        values = {row["colony_id"]: row["cells"][code]["value"] for row in eligible if code in row["cells"]}
+        metric["n"] = len(values)
+        scores = _rank_scores(values, metric["better"])
+        for row in eligible:
+            if row["colony_id"] in scores:
+                row["cells"][code].update(scores[row["colony_id"]])
+
+    warnings = []
+    if visit.status == "open":
+        warnings.append("입력 중인 방문입니다. 값이 바뀔 수 있습니다")
+    if len(assessors) > 1:
+        warnings.append(f"평가자가 {len(assessors)}명입니다. 평가자 차이가 섞일 수 있습니다")
+    if len(eligible) < MIN_GROUP_COLONIES:
+        warnings.append(f"비교 가능 봉군이 {len(eligible)}군입니다. {MIN_GROUP_COLONIES}군 미만이면 순위 해석에 주의하세요")
+    return {
+        "visit": {"id": visit.id, "round_no": visit.round_no, "round_label": field_traits.ROUNDS[visit.round_no],
+                  "date": visit.date, "status": visit.status},
+        "group": {"id": group.id, "code": group.code, "species": group.species, "year": group.year},
+        "metrics": metrics, "rows": rows, "n_eligible": len(eligible), "warnings": warnings,
     }
 
 
@@ -357,7 +604,73 @@ def save_record(visit_id: int, colony_id: int, body: RecordIn, db: Session = Dep
     if frames is not None and previous is not None and abs(frames - previous) >= FRAMES_JUMP:
         warnings.append(f"벌 프레임 수가 직전 회차 {previous}에서 {frames}로 크게 달라졌습니다")
     data = _record_json(db, visit, record, colony_id)
-    return {"record": data, "missing": _missing(visit, group.species, record, data["values"]), "warnings": warnings}
+    return {"record": data, "missing": _missing(visit, group.species, record, data["values"], queen_id is not None),
+            "warnings": warnings}
+
+
+@router.post("/colonies/{colony_id}/queen", status_code=status.HTTP_201_CREATED)
+def register_queen(colony_id: int, body: QueenRegisterIn, db: Session = Depends(get_db),
+                   current: models.User = Depends(get_current_researcher)):
+    member = db.query(models.TestGroupColony).filter(models.TestGroupColony.colony_id == colony_id).first()
+    if not member:
+        raise HTTPException(status_code=404, detail="검정군에 등록된 봉군이 아닙니다")
+    group = _group_or_404(db, member.group_id)
+    link = _current_link(db, colony_id)
+    adopt = link is not None and link.change_reason == "migrated" and not body.replace
+    if link is not None and not adopt:
+        if not body.replace:
+            raise HTTPException(status_code=409, detail="이미 여왕이 있습니다. 교체로 등록하세요")
+        if body.introduced_date is None:
+            raise HTTPException(status_code=422, detail="교체 때는 도입일을 입력하세요")
+        if link.start_date and link.start_date >= body.introduced_date.isoformat():
+            raise HTTPException(status_code=422, detail="도입일이 이전 여왕의 시작일보다 늦어야 합니다")
+    start = body.introduced_date.isoformat() if body.introduced_date else None
+    _check_queen_input(db, body, link.queen_id if adopt else None)
+
+    if adopt:
+        queen = db.query(models.Queen).filter(models.Queen.id == link.queen_id).first()
+        queen.species = group.species
+        link.start_date = start
+        link.change_reason = "introduced"
+    else:
+        queen = models.Queen(dataset_id=_dataset(db).id, tag=body.tag, species=group.species)
+        db.add(queen)
+        db.flush()
+        if link is not None:
+            link.end_date = (body.introduced_date - datetime.timedelta(days=1)).isoformat()
+            logged = (db.query(models.FieldEvent)
+                      .filter(models.FieldEvent.colony_id == colony_id, models.FieldEvent.date == start,
+                              models.FieldEvent.event_type == "queen_replaced").first())
+            if not logged:
+                db.add(models.FieldEvent(colony_id=colony_id, event_type="queen_replaced", date=start,
+                                         recorded_by=current.id))
+        link = models.ColonyQueen(colony_id=colony_id, queen_id=queen.id, start_date=start,
+                                  change_reason="requeen" if link is not None else "introduced")
+        db.add(link)
+    _apply_queen(db, queen, body, current.id)
+    warnings = _relink(db, colony_id, link)
+    db.commit()
+    return {"queen": _queen_json(db, queen, colony_id), "warnings": warnings}
+
+
+@router.put("/queens/{queen_id}")
+def update_queen(queen_id: int, colony_id: int, body: QueenIn, db: Session = Depends(get_db),
+                 current: models.User = Depends(get_current_researcher)):
+    link = (db.query(models.ColonyQueen)
+            .join(models.TestGroupColony, models.TestGroupColony.colony_id == models.ColonyQueen.colony_id)
+            .filter(models.ColonyQueen.colony_id == colony_id, models.ColonyQueen.queen_id == queen_id)
+            .order_by(models.ColonyQueen.id.desc()).first())
+    queen = db.query(models.Queen).filter(models.Queen.id == queen_id).first()
+    if not link or not queen:
+        raise HTTPException(status_code=404, detail="검정군 봉군의 여왕이 아닙니다")
+    _check_queen_input(db, body, queen_id)
+    start = body.introduced_date.isoformat() if body.introduced_date else None
+    _revise(db, "colony_queens", link.id, "start_date", link.start_date, start, current.id)
+    link.start_date = start
+    _apply_queen(db, queen, body, current.id)
+    warnings = _relink(db, colony_id, link)
+    db.commit()
+    return {"queen": _queen_json(db, queen, colony_id), "warnings": warnings}
 
 
 @router.post("/visits/{visit_id}/samples", status_code=status.HTTP_201_CREATED)
@@ -376,6 +689,8 @@ def add_sample(visit_id: int, body: SampleIn, db: Session = Depends(get_db),
     if db.query(models.Sample).filter(models.Sample.dataset_id == dataset.id, models.Sample.code == body.code).first():
         raise HTTPException(status_code=409, detail="이미 있는 튜브 번호입니다")
     queen_id = v2_service.queen_for_colony_on(db, body.colony_id, visit.date)
+    if queen_id is None:
+        raise HTTPException(status_code=422, detail="여왕을 먼저 등록해야 시료를 저장할 수 있습니다")
     db.add(models.Sample(dataset_id=dataset.id, code=body.code, colony_id=body.colony_id, queen_id=queen_id,
                          sample_type=body.sample_type, n_individuals=body.n_individuals,
                          collected_date=visit.date, status="stored", visit_id=visit.id, storage=body.storage))
@@ -386,8 +701,6 @@ def add_sample(visit_id: int, body: SampleIn, db: Session = Depends(get_db),
     requeen = _requeen_warning(db, body.colony_id, visit.date)
     if requeen:
         warnings.append(requeen)
-    if queen_id is None:
-        warnings.append("이 봉군에 연결된 여왕이 없습니다")
     return {"warnings": warnings}
 
 
@@ -403,7 +716,8 @@ def close_visit(visit_id: int, force: bool = False, db: Session = Depends(get_db
         record = (db.query(models.FieldRecord)
                   .filter(models.FieldRecord.visit_id == visit.id, models.FieldRecord.colony_id == member.colony_id).first())
         values = {o.trait_code: o.value for o in _observations(db, visit.id, member.colony_id).values()}
-        missing = _missing(visit, group.species, record, values)
+        has_queen = v2_service.queen_for_colony_on(db, member.colony_id, visit.date) is not None
+        missing = _missing(visit, group.species, record, values, has_queen)
         if missing:
             incomplete.append({"hive_code": member.hive_code, "missing": missing})
     if incomplete and not force:
@@ -453,4 +767,5 @@ def add_event(body: EventIn, db: Session = Depends(get_db), current: models.User
                                        queen_id=v2_service.queen_for_colony_on(db, body.colony_id, date),
                                        value=body.value, date=date, measured_by=current.id))
     db.commit()
-    return {"id": event.id}
+    warnings = ["새 여왕을 교체로 등록해야 이후 기록과 시료가 새 여왕에 연결됩니다"] if body.event_type == "queen_replaced" else []
+    return {"id": event.id, "warnings": warnings}

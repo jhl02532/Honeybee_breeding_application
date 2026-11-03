@@ -132,7 +132,7 @@ class Queen(Base):
     mother_queen_id = Column(Integer, ForeignKey("queens.id", ondelete="SET NULL"), nullable=True, index=True)
     species = Column(String(50), nullable=True)
     line = Column(String(100), nullable=True)                          # 계통·품종·집단
-    birth_date = Column(String(10), nullable=True)                     # YYYY-MM-DD
+    birth_date = Column(String(10), nullable=True)                     # YYYY-MM-DD 또는 연도만 YYYY
     origin = Column(String(50), nullable=True)                         # 자체 육성, 구입, 공개 데이터, 시뮬레이션
     external_id = Column(String(100), nullable=True, index=True)       # BeeBreed ID, num_bs 등
     ancestry_json = Column(Text, nullable=True)                        # 아종 조상 비율 등 {"M": 0.7, ...}

@@ -21,6 +21,15 @@ QUEEN_STATUS = {
     "DL": "일벌 산란",
 }
 
+MATING_METHODS = {
+    "natural_open": "자연 교미",
+    "mating_station": "격리 교미장",
+    "instrumental": "인공수정",
+    "unknown": "모름",
+}
+
+QUEEN_ORIGINS = ("자체 육성", "구입", "모름")
+
 EVENT_TYPES = {
     "honey_harvest": "채밀",
     "queen_replaced": "여왕 교체",
@@ -53,48 +62,48 @@ def _cell_anchors(*limits: str) -> dict:
     return {score: f"감염 봉방 {text}" for score, text in enumerate(limits, start=1)}
 
 
-# required 는 해당 회차에 마감 전 입력이 필요한 회차 목록이다
+# required 는 해당 회차에 마감 전 입력이 필요한 회차 목록이다. better 는 비교표에서 좋은 방향이다
 FIELD_TRAITS = [
-    {"code": "frames_bees", "name_ko": "벌 프레임 수", "name_en": "Frames of bees", "unit": "프레임",
+    {"code": "frames_bees", "better": "high", "name_ko": "벌 프레임 수", "name_en": "Frames of bees", "unit": "프레임",
      "scale": "continuous", "category": "population", "min": 0, "max": 40, "step": 0.25,
      "rounds": [1, 2, 3], "required": [1, 2, 3], "species": SPECIES,
      "protocol": "양면이 벌로 덮인 소비를 1로 보고 ¼ 단위로 기록한다."},
-    {"code": "frames_brood", "name_ko": "봉아 프레임 수", "name_en": "Frames of brood", "unit": "프레임",
+    {"code": "frames_brood", "better": "high", "name_ko": "봉아 프레임 수", "name_en": "Frames of brood", "unit": "프레임",
      "scale": "continuous", "category": "population", "min": 0, "max": 30, "step": 0.25,
      "rounds": [1, 3], "required": [], "species": SPECIES,
      "protocol": "봉아가 차지한 면적을 ¼ 프레임 단위로 기록한다."},
-    {"code": "honey_store_frames", "name_ko": "저장꿀 프레임 수", "name_en": "Stored honey", "unit": "프레임",
+    {"code": "honey_store_frames", "better": "high", "name_ko": "저장꿀 프레임 수", "name_en": "Stored honey", "unit": "프레임",
      "scale": "continuous", "category": "production", "min": 0, "max": 40, "step": 0.25,
      "rounds": [2, 3], "required": [], "species": SPECIES,
      "protocol": "벌통에 남은 꿀을 ¼ 프레임 단위로 추정한다."},
-    {"code": "aggression", "name_ko": "공격성", "name_en": "Aggression", "unit": "1-5",
+    {"code": "aggression", "better": "low", "name_ko": "공격성", "name_en": "Aggression", "unit": "1-5",
      "scale": "ordinal", "category": "behaviour", "min": 1, "max": 5, "step": 1,
      "rounds": [2, 3], "required": [2], "species": SPECIES, "anchors": AGGRESSION_ANCHORS,
      "protocol": "검정군 안의 차이가 드러나게 평가하고 평가 순서를 회차마다 바꾼다."},
-    {"code": "swarming_score", "name_ko": "분봉성", "name_en": "Swarm tendency", "unit": "1-5",
+    {"code": "swarming_score", "better": "low", "name_ko": "분봉성", "name_en": "Swarm tendency", "unit": "1-5",
      "scale": "ordinal", "category": "behaviour", "min": 1, "max": 5, "step": 1,
      "rounds": [2], "required": [2], "species": SPECIES, "anchors": SWARMING_ANCHORS,
      "protocol": "지난 회차 이후 왕대와 분봉 관리 내용을 기준으로 평가한다."},
-    {"code": "sacbrood_score", "name_ko": "낭충봉아부패병", "name_en": "Sacbrood", "unit": "1-5",
+    {"code": "sacbrood_score", "better": "low", "name_ko": "낭충봉아부패병", "name_en": "Sacbrood", "unit": "1-5",
      "scale": "ordinal", "category": "disease", "min": 1, "max": 5, "step": 1,
      "rounds": [1, 2, 3], "required": [1, 2, 3], "species": SPECIES,
      "anchors": _cell_anchors("0", "1~5", "6~10", "11~20", "20 초과"),
      "protocol": "재래꿀벌 구간은 사전 시험에서 확정한다."},
-    {"code": "chalkbrood_score", "name_ko": "백묵병", "name_en": "Chalkbrood", "unit": "1-5",
+    {"code": "chalkbrood_score", "better": "low", "name_ko": "백묵병", "name_en": "Chalkbrood", "unit": "1-5",
      "scale": "ordinal", "category": "disease", "min": 1, "max": 5, "step": 1,
      "rounds": [1, 2, 3], "required": [], "species": ("mellifera",),
      "anchors": _cell_anchors("0", "1~5", "6~40", "41~80", "80 초과"), "protocol": None},
-    {"code": "foulbrood_efb_score", "name_ko": "유럽부저병", "name_en": "European foulbrood", "unit": "1-5",
+    {"code": "foulbrood_efb_score", "better": "low", "name_ko": "유럽부저병", "name_en": "European foulbrood", "unit": "1-5",
      "scale": "ordinal", "category": "disease", "min": 1, "max": 5, "step": 1,
      "rounds": [1, 2, 3], "required": [], "species": SPECIES,
      "anchors": _cell_anchors("0", "1~5", "6~20", "21~30", "30 초과"), "protocol": None},
-    {"code": "varroa_count", "name_ko": "응애 수", "name_en": "Varroa count", "unit": "마리",
+    {"code": "varroa_count", "better": "low", "name_ko": "응애 수", "name_en": "Varroa count", "unit": "마리",
      "scale": "count", "category": "disease", "min": 0, "max": 1000, "step": 1,
-     "rounds": [3], "required": [3], "species": ("mellifera",),
+     "rounds": [2, 3], "required": [2, 3], "species": ("mellifera",),
      "protocol": "측정법은 한 가지로 고정한다. 슈가파우더법과 세척법 중 사전 시험에서 정한다."},
     {"code": "varroa_sample_g", "name_ko": "응애 측정 표본 무게", "name_en": "Varroa sample weight", "unit": "g",
      "scale": "continuous", "category": "disease", "min": 0, "max": 500, "step": 1,
-     "rounds": [3], "required": [3], "species": ("mellifera",),
+     "rounds": [2, 3], "required": [2, 3], "species": ("mellifera",),
      "protocol": "응애를 센 벌 표본의 무게를 기록한다."},
 ]
 
