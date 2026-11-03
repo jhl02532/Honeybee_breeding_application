@@ -151,6 +151,14 @@ def _current_link(db: Session, colony_id: int) -> Optional[models.ColonyQueen]:
             .order_by(models.ColonyQueen.id.desc()).first())
 
 
+def _sync_colony_tag(db: Session, colony_id: int) -> None:
+    """봉군 목록에 보이는 queen_tag 를 현재 여왕 ID 와 맞춘다."""
+    link = _current_link(db, colony_id)
+    colony = db.query(models.Colony).filter(models.Colony.id == colony_id).first()
+    if link is not None and colony is not None:
+        colony.queen_tag = db.query(models.Queen).filter(models.Queen.id == link.queen_id).first().tag
+
+
 def _mating(db: Session, queen_id: int) -> Optional[models.Mating]:
     return db.query(models.Mating).filter(models.Mating.queen_id == queen_id).order_by(models.Mating.id).first()
 
@@ -649,6 +657,7 @@ def register_queen(colony_id: int, body: QueenRegisterIn, db: Session = Depends(
         db.add(link)
     _apply_queen(db, queen, body, current.id)
     warnings = _relink(db, colony_id, link)
+    _sync_colony_tag(db, colony_id)
     db.commit()
     return {"queen": _queen_json(db, queen, colony_id), "warnings": warnings}
 
@@ -669,6 +678,7 @@ def update_queen(queen_id: int, colony_id: int, body: QueenIn, db: Session = Dep
     link.start_date = start
     _apply_queen(db, queen, body, current.id)
     warnings = _relink(db, colony_id, link)
+    _sync_colony_tag(db, colony_id)
     db.commit()
     return {"queen": _queen_json(db, queen, colony_id), "warnings": warnings}
 

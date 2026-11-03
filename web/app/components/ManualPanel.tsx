@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { styles } from "../styles";
 
 interface SectionProps {
   title: string;
@@ -67,135 +66,80 @@ function ManualSection({ title, icon, isOpen, onToggle, children }: SectionProps
   );
 }
 
-export default function ManualPanel() {
-  const [openSection, setOpenSection] = useState<string | null>("intro");
+const SECTIONS: { key: string; title: string; icon: string; items: string[] }[] = [
+  {
+    key: "roles",
+    title: "역할",
+    icon: "🤝",
+    items: [
+      "연구자가 농가를 방문해 기록하고, 시료를 채집하고, 계보를 정정합니다.",
+      "농가는 형질 합의, 사건 보고, 최종 선발 논의, 여왕 교체를 맡습니다.",
+      "계정은 연구실 관리자가 발급합니다.",
+    ],
+  },
+  {
+    key: "setup",
+    title: "시작 전: 양봉장·봉군·검정군",
+    icon: "🏡",
+    items: [
+      "양봉장과 봉군을 등록합니다. 벌통 코드는 농가 안에서 겹치지 않게 정합니다.",
+      "현장 기록에서 검정군을 만듭니다. 같은 종, 같은 해, 한 농가의 봉군을 묶습니다.",
+      "1회차에 봉군마다 여왕을 등록합니다. 어미, 출생연도, 도입일, 교미 방식, 수벌군을 모르면 모름으로 둡니다.",
+    ],
+  },
+  {
+    key: "visit",
+    title: "방문 기록",
+    icon: "📝",
+    items: [
+      "회차를 시작하고 봉군마다 형질을 입력합니다. 값이 없으면 비워 두고(측정 안 함), 알 수 없으면 모름을 고릅니다.",
+      "범위를 벗어난 값은 저장되지 않습니다. 직전 회차와 크게 다르거나 여왕 교체 6주 이내면 경고가 뜹니다.",
+      "기록을 마치면 방문을 마감합니다. 마감 뒤 수정은 관리자가 다시 열어야 하고, 고친 값은 이력으로 남습니다.",
+    ],
+  },
+  {
+    key: "queen",
+    title: "여왕 교체와 시료",
+    icon: "👑",
+    items: [
+      "여왕이 바뀌면 봉군의 여왕을 교체로 등록합니다. 이전 여왕의 재임이 끝나고 교체 사건이 함께 남습니다.",
+      "시료는 여왕이 등록된 봉군에서만 저장됩니다. 채집 뒤 여왕이 바뀌면 다시 채집합니다.",
+      "여왕 계보 화면에서 어미, 딸, 교미, 재임 봉군을 확인합니다.",
+    ],
+  },
+  {
+    key: "compare",
+    title: "비교표 읽기",
+    icon: "📊",
+    items: [
+      "비교표는 같은 검정군, 같은 방문 안의 순위입니다. 다른 농가나 다른 종과 비교하지 않습니다.",
+      "z는 비교 가능 봉군 평균과의 거리이고 양수가 좋은 방향입니다. 육종가가 아닙니다.",
+      "여왕 미확정, 도입 42일 미만, 무왕, 일벌 산란, 시료-여왕 불일치 봉군은 순위에서 빠집니다.",
+    ],
+  },
+];
 
-  const toggle = (section: string) => {
-    setOpenSection(openSection === section ? null : section);
-  };
+export default function ManualPanel() {
+  const [openSection, setOpenSection] = useState<string | null>("roles");
 
   return (
     <div className="animate-fade" style={{ maxWidth: "800px", margin: "0 auto" }}>
-      {/* Visual Welcome Banner */}
-      <div
-        style={{
-          background: "linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.05))",
-          border: "1px solid rgba(245, 158, 11, 0.2)",
-          borderRadius: "16px",
-          padding: "28px",
-          marginBottom: "28px",
-          display: "flex",
-          alignItems: "center",
-          gap: "20px",
-        }}
-      >
-        <div style={{ fontSize: "44px" }}>📖</div>
-        <div>
-          <h2 style={{ ...styles.modalTitle, color: "#fbbf24", marginBottom: "6px" }}>K-BEE BANK 사용 안내서</h2>
-          <p style={{ color: "#9ca3af", fontSize: "13px", lineHeight: "1.5" }}>
-            본 시스템은 양봉 농가의 일상적인 내검 기록 관리부터, 대학 및 연구소 수준의 계통 추적과 형태학적 족보 관리를 원스톱으로 지원하는 육종 데이터 허브입니다.
-          </p>
-        </div>
-      </div>
-
-      {/* Manual Accordions */}
-      <ManualSection
-        title="소개: 농가와 연구원의 역할 분담 구조"
-        icon="🤝"
-        isOpen={openSection === "intro"}
-        onToggle={() => toggle("intro")}
-      >
-        <p style={{ marginBottom: "12px" }}>
-          K-BEE BANK는 데이터의 객관성과 신뢰성을 위해 현장 농민과 분석 연구원의 전문 영역을 명확히 구분하여 처리합니다.
-        </p>
-        <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
-          <li>
-            <strong>🏡 양봉 농가 (Farmer)</strong>: 매일 매일 봉장을 내검하며 꿀/프로폴리스 수확량, 벌의 성격(온순함), 응애 상태 및 분봉률 등을 기록합니다. 특히 <strong>VSH(응애 억제 발현율 %)</strong> 및 <strong>청소 청결율 (%)</strong> 등의 저항성 현장 수치는 농가가 직접 기입합니다.
-          </li>
-          <li>
-            <strong>🔬 육종 연구원 (Researcher)</strong>: 농가에서 벌 시료 샘플을 받아 현미경으로 날개 날맥(큐비탈 지수) 및 혀 길이, 다리 크기 등 미세 계량 측정 항목을 입력하며, 이 정보는 <strong>여왕벌 ID (`queen_tag`)</strong>에 영구 결합됩니다.
-          </li>
-        </ul>
-      </ManualSection>
-
-      <ManualSection
-        title="단계 1: 봉장(🏡) 및 봉군(🐝) 기초 관리"
-        icon="🏡"
-        isOpen={openSection === "step1"}
-        onToggle={() => toggle("step1")}
-      >
-        <ol style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "12px" }}>
-          <li>
-            <strong>양봉장 생성</strong>: <span style={{ color: "#fbbf24" }}>[양봉장 관리]</span> 메뉴로 이동하여 우측 상단의 <span style={{ color: "#fbbf24" }}>[+ 양봉장 추가]</span> 버튼을 누릅니다. 봉장 이름과 주소를 기입합니다.
-          </li>
-          <li>
-            <strong>봉군(벌통) 등록</strong>: 생성된 봉장의 카드를 선택하거나 <span style={{ color: "#fbbf24" }}>[봉군 관리]</span> 메뉴로 이동하여 벌통을 추가합니다.
-            <ul>
-              <li><strong>벌통 코드</strong>: 식별 가능한 고유 코드(예: A-01)를 작성합니다.</li>
-              <li><strong>여왕벌 태그</strong>: 해당 벌통에 들어있는 여왕벌의 고유 식별 명칭(예: Q-2026-Italian)을 부여합니다.</li>
-              <li><strong>모계 봉군 지정 (가계 족보)</strong>: 이 여왕벌이 이식되거나 탄생한 모태 벌통(어미 여왕)을 드롭다운에서 선택하여 계통 족보 사슬(Pedigree Chain)을 구축합니다.</li>
-            </ul>
-          </li>
-        </ol>
-      </ManualSection>
-
-      <ManualSection
-        title="단계 2: 농가 일상 내검 및 형질 평가 기입 (📋)"
-        icon="📋"
-        isOpen={openSection === "step2"}
-        onToggle={() => toggle("step2")}
-      >
-        <p style={{ marginBottom: "12px" }}>
-          현장에서 내검을 마치면 <span style={{ color: "#fbbf24" }}>[형질 기록]</span> 메뉴에서 벌통별 날짜와 기상 정보를 바탕으로 기록을 저장합니다.
-        </p>
-        <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
-          <li><strong>꿀 / 프로폴리스 / 로얄젤리 생산량</strong>: 수확한 무게를 kg 및 g 단위로 기입합니다.</li>
-          <li><strong>형질 평가 (1-5 스타 평점)</strong>: 벌의 사나움 정도(온순함), 질병에 버티는 응애 저항성 점수를 부여합니다.</li>
-          <li>
-            <strong>행동학적 저항성 형질 기입 (VSH & 청소율)</strong>:
-            <ul>
-              <li><strong>VSH 행동 발현율 (%)</strong>: 소비의 응애 기생 벌집 제거율을 산출하여 0%~100% 사이로 기입합니다.</li>
-              <li><strong>청소 청결율 (%)</strong>: 핀테스트(바늘로 유충을 찌름) 수행 후 24시간 내 청소 제거 비율을 기입합니다.</li>
-            </ul>
-            <span style={{ fontSize: "12px", color: "#fbbf24" }}>* 모바일에서는 + / - 버튼으로 5% 단위로 미세 조절하거나, 칸을 직접 눌러 원하는 수치를 키보드로 즉시 입력할 수 있습니다.</span>
-          </li>
-        </ul>
-      </ManualSection>
-
-      <ManualSection
-        title="단계 3: 실험실 정밀 시료 검사 및 족보 모니터링 (🔬)"
-        icon="🔬"
-        isOpen={openSection === "step3"}
-        onToggle={() => toggle("step3")}
-      >
-        <p style={{ marginBottom: "10px" }}>
-          대학 또는 연구소 연구원 계정(`researcher`)으로 로그인 시에만 작동하는 연동 관리 기능입니다.
-        </p>
-        <ol style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
-          <li><strong>샘플 수령 및 분석</strong>: 농가로부터 제공받은 여왕벌 시료 분석 의뢰가 완료되면 여왕벌 식별 태그(`queen_tag`) 기준의 현미경 데이터를 기입합니다.</li>
-          <li><strong>형태 미세 데이터 입력</strong>: 큐비탈 지수(Cubital Index), 설수장(혀 길이, mm), 테르지트 복판 색상, 다리 마디 마커 등을 저장합니다.</li>
-          <li><strong>빅데이터 일괄 추출</strong>: <span style={{ color: "#60a5fa" }}>[전국 빅데이터 마스터 CSV 내보내기]</span> 버튼을 클릭하여 전국 농민들의 생산/내검 수치와 본 연구실의 형태 기록이 족보 단위로 완전히 조인된 CSV 통합 대장을 다운로드하여 R 또는 Excel로 분석합니다.</li>
-        </ol>
-      </ManualSection>
-
-      <ManualSection
-        title="네트워크 불량 및 오지에서의 오프라인 동기화 (🌲)"
-        icon="🌲"
-        isOpen={openSection === "step4"}
-        onToggle={() => toggle("step4")}
-      >
-        <p style={{ marginBottom: "8px" }}>
-          인터넷 신호가 도달하지 않는 깊은 산간 지역에서도 안전하게 데이터를 기입하고 추후 동기화할 수 있는 강력한 **Bulk Sync 프로토콜**을 완비했습니다.
-        </p>
-        <ul style={{ paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
-          <li>
-            <strong>오프라인 상태 기록</strong>: 기기에 임시 수동 저장(앱 개발 시 로컬 저장)하여 보관해 둡니다.
-          </li>
-          <li>
-            <strong>2-Pass 지능형 벌크 업로드</strong>: 이동 전화 신호망이 확보되는 시점(집 또는 면사무소 등)에 모아둔 기록을 서버에 일괄 송신하면, 서버는 존재하지 않던 오프라인 봉장 명칭과 모계 관계를 순차적으로 해석하여 단 한 차례의 원격 트랜잭션으로 통합 정렬 등록을 안전하게 완료합니다.
-          </li>
-        </ul>
-      </ManualSection>
+      <p style={{ color: "var(--text-muted)", fontSize: "13px", lineHeight: 1.6, marginBottom: "20px" }}>
+        K-BEE BANK는 여왕 계보, 봉군 검정 기록, 시료를 여러 해 이어서 쌓는 육종 기록 도구입니다. 측정 기준은 2027 시범 형질 사전을 따릅니다.
+      </p>
+      {SECTIONS.map((sec) => (
+        <ManualSection
+          key={sec.key}
+          title={sec.title}
+          icon={sec.icon}
+          isOpen={openSection === sec.key}
+          onToggle={() => setOpenSection(openSection === sec.key ? null : sec.key)}
+        >
+          <ul style={{ margin: 0, paddingLeft: "20px" }}>
+            {sec.items.map((t) => <li key={t} style={{ marginBottom: "6px" }}>{t}</li>)}
+          </ul>
+        </ManualSection>
+      ))}
     </div>
   );
 }

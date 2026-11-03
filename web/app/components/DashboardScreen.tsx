@@ -1,43 +1,21 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { styles } from "../styles";
-import { User, Apiary, Colony, DashStats } from "../types";
+import { User, Apiary } from "../types";
 import { authFetch } from "../utils";
-import OverviewPanel from "./OverviewPanel";
 import ApiaryPanel from "./ApiaryPanel";
 import ColonyPanel from "./ColonyPanel";
-import RecordPanel from "./RecordPanel";
-import ResearcherPanel from "./ResearcherPanel";
 import ManualPanel from "./ManualPanel";
 import AdminPanel from "./AdminPanel";
-import GenomeBrowser from "./GenomeBrowser";
-import ComparativeSynteny from "./ComparativeSynteny";
-import ChemoreceptorExplorer from "./ChemoreceptorExplorer";
-import MarkerAssayDesigner from "./MarkerAssayDesigner";
-import FarmerTraitSimulator from "./FarmerTraitSimulator";
-import BreedingMatchmaker from "./BreedingMatchmaker";
-import SamplingStatusPanel from "./SamplingStatusPanel";
-import PhylogenyPanel from "./PhylogenyPanel";
-import TraitGenomePanel from "./TraitGenomePanel";
+import QueenPanel from "./QueenPanel";
 import FieldRecordPanel from "./FieldRecordPanel";
 
 type DashView =
-  | "overview"
   | "apiaries"
   | "colonies"
-  | "records"
-  | "researcher"
-  | "manual"
-  | "admin"
-  | "browser"
-  | "synteny"
-  | "chemo"
-  | "marker"
-  | "farmer"
-  | "matchmaker"
-  | "sampling"
-  | "phylogeny"
   | "fieldrecords"
-  | "traitgenome";
+  | "queens"
+  | "admin"
+  | "manual";
 
 interface DashboardScreenProps {
   user: User;
@@ -53,19 +31,18 @@ export default function DashboardScreen({
   onLogout, 
   theme = "light", 
   onToggleTheme, 
-  initialView = "overview", 
+  initialView, 
   onBackToLanding 
 }: DashboardScreenProps) {
-  const [view, setView] = useState<DashView>(initialView);
-  const [species, setSpecies] = useState<"mellifera" | "cerana">("mellifera");
-  const [stats, setStats] = useState<DashStats | null>(null);
+  const isPowerUser = user.role === "researcher" || user.role === "admin";
+  const defaultView: DashView = isPowerUser ? "fieldrecords" : "colonies";
+  const [view, setView] = useState<DashView>(initialView || defaultView);
   const [apiaries, setApiaries] = useState<Apiary[]>([]);
   const [selectedApiary, setSelectedApiary] = useState<Apiary | null>(null);
-  const [selectedColony, setSelectedColony] = useState<Colony | null>(null);
 
   // Sync internal view state if parent changes initialView (e.g. from launcher cards)
   useEffect(() => {
-    setView(initialView);
+    if (initialView) setView(initialView);
   }, [initialView]);
 
   // Researcher / Admin Farmer Selection State
@@ -101,11 +78,7 @@ export default function DashboardScreen({
       const isPowerUser = user.role === "admin" || user.role === "researcher";
       const targetId = farmerId !== undefined ? farmerId : selectedFarmerId;
       const query = isPowerUser ? (targetId ? `?owner_id=${targetId}` : "") : (targetId ? `?owner_id=${targetId}` : "");
-      const [statsRes, apiRes] = await Promise.all([
-        authFetch(`/api/v1/stats/dashboard${query}`),
-        authFetch(`/api/v1/apiaries${query}`),
-      ]);
-      if (statsRes.ok) setStats(await statsRes.json());
+      const apiRes = await authFetch(`/api/v1/apiaries${query}`);
       if (apiRes.ok) setApiaries(await apiRes.json());
     } catch (err) {
       console.error("Dashboard fetch error:", err);
@@ -136,7 +109,6 @@ export default function DashboardScreen({
   // Cascading reset handler when changing farmers
   const handleFarmerChange = (farmerId: string) => {
     setSelectedApiary(null);
-    setSelectedColony(null);
     setSelectedFarmerId(farmerId);
     fetchDashboard(farmerId);
   };
@@ -162,46 +134,18 @@ export default function DashboardScreen({
     return () => window.removeEventListener("focus", handleRefetch);
   }, [fetchDashboard]);
 
-  let navItems: { key: DashView; label: string; icon: string }[] = [];
-
-  if (user.role === "guest") {
-    navItems = [
-      { key: "browser", label: "게놈 브라우저", icon: "🧬" },
-      { key: "manual", label: "사용 매뉴얼", icon: "📖" }
-    ];
-  } else {
-    navItems = [
-      { key: "overview", label: "대시보드", icon: "📊" },
-      { key: "apiaries", label: "양봉장 관리", icon: "🏡" },
-      { key: "colonies", label: "봉군 관리", icon: "🐝" },
-      { key: "records", label: "형질 기록", icon: "📋" },
-    ];
-
-    if (user.role === "researcher" || user.role === "admin") {
-      navItems.push(
-        { key: "browser", label: "게놈 브라우저", icon: "🧬" },
-        { key: "synteny", label: "비교 유전체 분석", icon: "🔀" }
-      );
-    }
-
-    navItems.push({ key: "farmer", label: "형질 예측기 (개발 중)", icon: "📈" });
-
-    if (user.role === "researcher" || user.role === "admin") {
-      navItems.push(
-        { key: "matchmaker", label: "가상 교배 시뮬레이터", icon: "👑" },
-        { key: "fieldrecords", label: "현장 기록", icon: "📝" },
-        { key: "traitgenome", label: "형질·유전체 연결", icon: "🧷" },
-        { key: "researcher", label: "연구원 분석", icon: "🔬" }
-      );
-    }
-
-    if (user.role === "admin") {
-      navItems.push({ key: "admin", label: "시스템 관리", icon: "⚙️" });
-    }
-
-    // Always show guidebook manual to all users
-    navItems.push({ key: "manual", label: "사용 매뉴얼", icon: "📖" });
+  const navItems: { key: DashView; label: string; icon: string }[] = [
+    { key: "apiaries", label: "양봉장", icon: "🏡" },
+    { key: "colonies", label: "봉군", icon: "🐝" },
+  ];
+  if (isPowerUser) {
+    navItems.unshift({ key: "fieldrecords", label: "현장 기록", icon: "📝" });
+    navItems.push({ key: "queens", label: "여왕 계보", icon: "👑" });
   }
+  if (user.role === "admin") {
+    navItems.push({ key: "admin", label: "관리", icon: "⚙️" });
+  }
+  navItems.push({ key: "manual", label: "사용 안내", icon: "📖" });
 
   return (
     <div style={{ ...styles.dashLayout, position: "relative" }}>
@@ -253,7 +197,7 @@ export default function DashboardScreen({
           {sidebarOpen && (
             <div style={{ animation: "fade 0.2s ease" }}>
               <div style={styles.sidebarBrand}>K-BEE BANK</div>
-              <div style={styles.sidebarVersion}>v2.0 SaaS</div>
+              <div style={styles.sidebarVersion}>육종 기록</div>
             </div>
           )}
         </div>
@@ -266,12 +210,10 @@ export default function DashboardScreen({
           }}
         >
           {navItems.map((item) => {
-            const isDisabled = false;
             return (
               <button
                 key={item.key}
                 id={`nav-${item.key}`}
-                disabled={isDisabled}
                 style={{
                   ...styles.navItem,
                   ...(view === item.key ? styles.navItemActive : {}),
@@ -279,14 +221,12 @@ export default function DashboardScreen({
                   padding: sidebarOpen ? "12px 14px" : "12px 0",
                   width: "100%",
                   transition: "all 0.2s",
-                  ...(isDisabled ? { opacity: 0.4, cursor: "not-allowed" } : {})
                 }}
                 onClick={() => {
-                  if (isDisabled) return;
                   setView(item.key);
                   if (isMobile) setSidebarOpen(false);
                 }}
-                title={isDisabled ? "본 기능은 3년차(2027) 고도화 개발 예정 기능입니다" : (!sidebarOpen ? item.label : undefined)}
+                title={!sidebarOpen ? item.label : undefined}
               >
                 <span
                   style={{
@@ -530,13 +470,6 @@ export default function DashboardScreen({
             transition: "all 0.3s",
           }}
         >
-          {view === "overview" && (
-            <OverviewPanel
-              stats={stats}
-              apiaries={apiaries}
-              onRefresh={fetchDashboard}
-            />
-          )}
           {view === "apiaries" && (
             <ApiaryPanel
               apiaries={apiaries}
@@ -558,53 +491,16 @@ export default function DashboardScreen({
               apiaries={apiaries}
               selectedApiary={selectedApiary}
               onSelectApiary={setSelectedApiary}
-              onSelectColony={(c) => {
-                setSelectedColony(c);
-                setView("records");
-              }}
               onRefresh={fetchDashboard}
               showModal={showColonyModal}
               setShowModal={setShowColonyModal}
             />
           )}
-          {view === "records" && (
-            <RecordPanel
-              apiaries={apiaries}
-              selectedColony={selectedColony}
-              onSelectColony={setSelectedColony}
-              onRefresh={fetchDashboard}
-              farmers={farmers}
-              selectedFarmerId={selectedFarmerId}
-              onFarmerChange={handleFarmerChange}
-              userRole={user.role}
-            />
-          )}
-          {view === "browser" && (
-            <GenomeBrowser species={species} onSpeciesChange={setSpecies} />
-          )}
-          {view === "synteny" && (
-            <ComparativeSynteny />
-          )}
-          {view === "chemo" && (
-            <ChemoreceptorExplorer />
-          )}
-          {view === "marker" && (
-            <MarkerAssayDesigner />
-          )}
-          {view === "farmer" && (
-            <FarmerTraitSimulator apiaries={apiaries} />
-          )}
-          {view === "matchmaker" && (
-            <BreedingMatchmaker apiaries={apiaries} />
-          )}
           {view === "fieldrecords" && (
             <FieldRecordPanel apiaries={apiaries} />
           )}
-          {view === "traitgenome" && (
-            <TraitGenomePanel />
-          )}
-          {view === "researcher" && (
-            <ResearcherPanel />
+          {view === "queens" && (
+            <QueenPanel />
           )}
           {view === "admin" && (
             <AdminPanel />

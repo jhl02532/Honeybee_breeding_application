@@ -152,10 +152,16 @@ with TestClient(app) as client:
     r = client.put(f"/api/v2/field/queens/{q2}?colony_id={ids[2]}", headers=res, json={
         "tag": "Q2-A", "birth_year": 2025, "mother_queen_id": mother})
     check("여왕 수정", r.status_code == 200 and r.json()["queen"]["tag"] == "Q2-A" and r.json()["queen"]["mating_method"] is None, r.text)
+    db = SessionLocal()
+    check("봉군 목록의 여왕 ID 갱신", db.query(models.Colony).get(ids[2]).queen_tag == "Q2-A")
+    db.close()
     check("교체는 도입일 필요", client.post(q_url, headers=res, json={"tag": "Q3", "replace": True}).status_code == 422)
     r = client.post(q_url, headers=res, json={"tag": "Q3", "replace": True, "introduced_date": "2027-03-01",
                                               "mother_queen_id": q2, "origin": "구입"})
     check("교체 시 이전 시료 재채집 안내", r.status_code == 201 and any("T4" in w for w in r.json()["warnings"]), r.text)
+    db = SessionLocal()
+    check("교체 후 봉군 목록의 여왕 ID", db.query(models.Colony).get(ids[2]).queen_tag == "Q3")
+    db.close()
     q3 = r.json()["queen"]["id"]
     db = SessionLocal()
     links = db.query(models.ColonyQueen).filter_by(colony_id=ids[2]).order_by(models.ColonyQueen.id).all()

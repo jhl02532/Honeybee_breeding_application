@@ -1,14 +1,13 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { styles } from "../styles";
-import { Apiary, Colony } from "../types";
+import { Apiary } from "../types";
 import { authFetch } from "../utils";
 
 interface ColonyPanelProps {
   apiaries: Apiary[];
   selectedApiary: Apiary | null;
   onSelectApiary: (a: Apiary | null) => void;
-  onSelectColony: (c: Colony) => void;
   onRefresh: () => void;
   showModal: boolean;
   setShowModal: (v: boolean) => void;
@@ -18,7 +17,6 @@ export default function ColonyPanel({
   apiaries,
   selectedApiary,
   onSelectApiary,
-  onSelectColony,
   onRefresh,
   showModal,
   setShowModal,
@@ -124,7 +122,7 @@ export default function ColonyPanel({
       {colonies.length === 0 ? (
         <div style={styles.emptyState}>
           <div style={{ fontSize: "48px", marginBottom: "16px" }}>🐝</div>
-          <p>봉군을 추가하여 형질 기록을 시작하세요</p>
+          <p>봉군을 추가하세요. 검정 기록은 현장 기록에서 입력합니다.</p>
         </div>
       ) : (
         <div style={styles.cardGrid}>
@@ -142,15 +140,8 @@ export default function ColonyPanel({
                 {c.mother_colony_id && (
                   <div>🧬 모계 벌통: {allColoniesForLineage.find((parent) => parent.id === c.mother_colony_id)?.code || "연결됨"}</div>
                 )}
-                <div>📋 기록: {c.records?.length || 0}건</div>
               </div>
               <div style={styles.apiaryActions}>
-                <button
-                  style={styles.cardBtnPrimary}
-                  onClick={() => onSelectColony(c)}
-                >
-                  기록 보기 →
-                </button>
                 <button
                   style={styles.cardBtnDanger}
                   onClick={() => deleteColony(c.id)}
