@@ -49,6 +49,16 @@ with TestClient(app) as client:
     res, adm, far = users["researcher"], users["admin"], users["farmer"]
 
     check("농가는 사전 접근 불가", client.get("/api/v2/field/dictionary", headers=far).status_code == 403)
+    db = SessionLocal()
+    db.add_all([models.User(username="login_far", hashed_password=auth.get_password_hash("pw-check"), role="farmer"),
+                models.User(username="login_res", hashed_password=auth.get_password_hash("pw-check"), role="researcher")])
+    db.commit()
+    db.close()
+    r = client.post("/api/v1/auth/login/json", json={"username": "login_far", "password": "pw-check"})
+    check("농가 계정 로그인 차단", r.status_code == 403, r.text)
+    r = client.post("/api/v1/auth/login/json", json={"username": "login_res", "password": "pw-check"})
+    check("연구자 로그인", r.status_code == 200, r.text)
+    check("농가 토큰으로 양봉장 조회 차단", client.get("/api/v1/apiaries", headers=far).status_code == 403)
     r = client.post("/api/v2/field/groups", headers=res, json={
         "code": "KR-AM-1-2027", "apiary_id": apiary_id, "species": "mellifera", "year": 2027,
         "hives": [{"colony_id": c, "hive_code": f"H{i}"} for i, c in enumerate(ids)]})

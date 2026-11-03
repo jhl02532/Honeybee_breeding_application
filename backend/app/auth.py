@@ -55,6 +55,16 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
+STAFF_ROLES = ("researcher", "admin")
+
+
+def require_staff(user: models.User) -> None:
+    """2027 시범은 연구자가 모두 기록한다. 농가 계정으로는 로그인하지 않는다."""
+    if user.role not in STAFF_ROLES:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="농가 계정은 사용하지 않습니다. 연구실에 문의하세요")
+
+
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> models.User:
     """Decode JWT and return the User ORM instance, or raise 401."""
     credentials_exception = HTTPException(
@@ -74,4 +84,5 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:
         raise credentials_exception
+    require_staff(user)
     return user

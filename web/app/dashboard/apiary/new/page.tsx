@@ -8,7 +8,6 @@ export default function NewApiaryPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [farmers, setFarmers] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
 
   const [form, setForm] = useState({
@@ -17,7 +16,6 @@ export default function NewApiaryPage() {
     location: "",
     latitude: "",
     longitude: "",
-    owner_id: ""
   });
 
   // Guard & Load User Details
@@ -27,31 +25,8 @@ export default function NewApiaryPage() {
       window.location.href = "/";
       return;
     }
-    if (stored.role === "guest") {
-      alert("게스트는 양봉장을 등록할 수 없습니다.");
-      router.push("/");
-      return;
-    }
     setUser(stored);
-
-    // If researcher or admin, load farmers list
-    if (stored.role === "researcher" || stored.role === "admin") {
-      const loadFarmers = async () => {
-        try {
-          const res = await authFetch("/api/v1/researcher/farmers");
-          if (res.ok) {
-            setFarmers(await res.json());
-          }
-        } catch (err) {
-          console.error("Failed to load farmers registry", err);
-        } finally {
-          setLoading(false);
-        }
-      };
-      loadFarmers();
-    } else {
-      setLoading(false);
-    }
+    setLoading(false);
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,10 +39,6 @@ export default function NewApiaryPage() {
         location: form.location || null,
         latitude: form.latitude ? parseFloat(form.latitude) : null,
         longitude: form.longitude ? parseFloat(form.longitude) : null,
-        owner_id:
-          (user.role === "researcher" || user.role === "admin") && form.owner_id
-            ? parseInt(form.owner_id)
-            : null,
       };
 
       const res = await authFetch("/api/v1/apiaries", {
@@ -120,27 +91,8 @@ export default function NewApiaryPage() {
         <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col gap-6">
           <div className="border-b border-slate-100 pb-4">
             <h2 className="text-xl font-bold text-slate-900">📝 양봉장 정보 입력</h2>
-            <p className="text-xs text-slate-500 mt-1">새로운 양봉장의 명칭, 위치, 소유 농가를 설정해 주세요.</p>
+            <p className="text-xs text-slate-500 mt-1">양봉장 이름, 농가명, 위치를 입력하세요. 농가 계정은 만들지 않습니다.</p>
           </div>
-
-          {(user?.role === "researcher" || user?.role === "admin") && (
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-600">소유 농가 지정 *</label>
-              <select
-                value={form.owner_id}
-                onChange={(e) => setForm({ ...form, owner_id: e.target.value })}
-                required
-                className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-amber-500 focus:bg-white transition cursor-pointer"
-              >
-                <option value="">농가 선택...</option>
-                {farmers.map((f) => (
-                  <option key={f.id} value={String(f.id)}>
-                    {f.farm_name} ({f.username})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
@@ -156,12 +108,13 @@ export default function NewApiaryPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-600">관리자 이름</label>
+              <label className="text-xs font-bold text-slate-600">농가명 *</label>
               <input
                 type="text"
+                required
                 value={form.owner}
                 onChange={(e) => setForm({ ...form, owner: e.target.value })}
-                placeholder="예: 홍길동"
+                placeholder="예: OO양봉원"
                 className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-amber-500 focus:bg-white transition"
               />
             </div>

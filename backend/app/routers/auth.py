@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from .. import crud, schemas, models
-from ..auth import create_access_token, verify_password, get_current_user, get_password_hash
+from ..auth import create_access_token, verify_password, get_current_user, get_password_hash, require_staff
 
 router = APIRouter(
     prefix="/api/v1/auth",
@@ -122,6 +122,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     user = crud.get_user_by_username(db, username=form_data.username)
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="아이디 또는 비밀번호가 올바르지 않습니다")
+    require_staff(user)
     token = create_access_token(data={"sub": user.id})
     return {"access_token": token, "token_type": "bearer", "user": user}
 
@@ -132,6 +133,7 @@ def login_json(creds: schemas.UserLogin, db: Session = Depends(get_db)):
     user = crud.get_user_by_username(db, username=creds.username)
     if not user or not verify_password(creds.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="아이디 또는 비밀번호가 올바르지 않습니다")
+    require_staff(user)
     token = create_access_token(data={"sub": user.id})
     return {"access_token": token, "token_type": "bearer", "user": user}
 

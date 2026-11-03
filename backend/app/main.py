@@ -9,7 +9,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy import text
 from .database import engine, Base, get_db
 from . import crud, v2_service
-from .routers import auth, apiaries, colonies, researcher, admin, v2, field
+from .routers import auth, apiaries, colonies, admin, v2, field
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -129,7 +129,6 @@ def read_root():
 app.include_router(auth.router)
 app.include_router(apiaries.router)
 app.include_router(colonies.router)
-app.include_router(researcher.router)
 app.include_router(admin.router)
 app.include_router(v2.router)
 app.include_router(field.router)

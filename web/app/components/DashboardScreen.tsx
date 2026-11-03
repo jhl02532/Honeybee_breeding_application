@@ -45,9 +45,6 @@ export default function DashboardScreen({
     if (initialView) setView(initialView);
   }, [initialView]);
 
-  // Researcher / Admin Farmer Selection State
-  const [selectedFarmerId, setSelectedFarmerId] = useState<string>("");
-  const [farmers, setFarmers] = useState<any[]>([]);
 
   // Modal states
   const [showApiaryModal, setShowApiaryModal] = useState(false);
@@ -72,50 +69,22 @@ export default function DashboardScreen({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const fetchDashboard = useCallback(async (farmerId?: string) => {
-    if (user.role === "guest") return; // Guest has no data
+  const fetchDashboard = useCallback(async () => {
     try {
-      const isPowerUser = user.role === "admin" || user.role === "researcher";
-      const targetId = farmerId !== undefined ? farmerId : selectedFarmerId;
-      const query = isPowerUser ? (targetId ? `?owner_id=${targetId}` : "") : (targetId ? `?owner_id=${targetId}` : "");
-      const apiRes = await authFetch(`/api/v1/apiaries${query}`);
+      const apiRes = await authFetch("/api/v1/apiaries");
       if (apiRes.ok) setApiaries(await apiRes.json());
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     }
-  }, [selectedFarmerId, user.role]);
+  }, []);
 
   useEffect(() => {
     fetchDashboard();
   }, [fetchDashboard]);
 
-  // Load farmers registry if current user is researcher or admin
-  useEffect(() => {
-    if (user.role === "researcher" || user.role === "admin") {
-      const fetchFarmers = async () => {
-        try {
-          const res = await authFetch("/api/v1/researcher/farmers");
-          if (res.ok) {
-            setFarmers(await res.json());
-          }
-        } catch (err) {
-          console.error("Fetch farmers error:", err);
-        }
-      };
-      fetchFarmers();
-    }
-  }, [user.role]);
-
-  // Cascading reset handler when changing farmers
-  const handleFarmerChange = (farmerId: string) => {
-    setSelectedApiary(null);
-    setSelectedFarmerId(farmerId);
-    fetchDashboard(farmerId);
-  };
-
   // Persistence for current dashboard view tab (F5 Guard)
   useEffect(() => {
-    if (view && user.role !== "guest") {
+    if (view) {
       localStorage.setItem("melitta_dashboard_view", view);
     }
   }, [view, user.role]);
@@ -480,9 +449,6 @@ export default function DashboardScreen({
               }}
               showModal={showApiaryModal}
               setShowModal={setShowApiaryModal}
-              farmers={farmers}
-              selectedFarmerId={selectedFarmerId}
-              onFarmerChange={handleFarmerChange}
               userRole={user.role}
             />
           )}

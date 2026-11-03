@@ -10,9 +10,6 @@ interface ApiaryPanelProps {
   onSelectApiary: (a: Apiary) => void;
   showModal: boolean;
   setShowModal: (v: boolean) => void;
-  farmers: any[];
-  selectedFarmerId: string;
-  onFarmerChange: (id: string) => void;
   userRole: string;
 }
 
@@ -22,9 +19,6 @@ export default function ApiaryPanel({
   onSelectApiary,
   showModal,
   setShowModal,
-  farmers,
-  selectedFarmerId,
-  onFarmerChange,
   userRole,
 }: ApiaryPanelProps) {
   const router = useRouter();
@@ -76,31 +70,6 @@ export default function ApiaryPanel({
       <div style={styles.panelHeader}>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <h2 style={styles.sectionTitle}>🏡 양봉장 목록</h2>
-          {(userRole === "researcher" || userRole === "admin") && (
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(59, 130, 246, 0.05)", border: "1px solid rgba(59, 130, 246, 0.2)", borderRadius: "8px", padding: "4px 12px" }}>
-              <label style={{ fontSize: "12px", fontWeight: "bold", color: "#60a5fa" }}>통합 관제:</label>
-              <select
-                value={selectedFarmerId}
-                onChange={(e) => onFarmerChange(e.target.value)}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "#fff",
-                  fontSize: "12px",
-                  fontWeight: "bold",
-                  outline: "none",
-                  cursor: "pointer"
-                }}
-              >
-                <option value="" style={{ background: "#151d30" }}>전체 농가</option>
-                {farmers.map((f) => (
-                  <option key={f.id} value={String(f.id)} style={{ background: "#151d30" }}>
-                    {f.farm_name} ({f.username})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
         </div>
         <button
           id="btn-add-apiary"
